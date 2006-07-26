@@ -1,0 +1,89 @@
+
+=head1 NAME
+
+XML::Compile::Schema::Specs - Predefined Schema Information
+
+
+
+=head1 SYNOPSIS
+
+ # not for end-users
+ use XML::Compile::Schema::Specs;
+
+
+=head1 DESCRIPTION
+
+This package defines the various schema-specifications, however
+currently only supports the last one: L<http://www.w3.org/2001/XMLSchema>.
+It is simple to extend the list of supported schema's, but someone has
+to do it.  Feel invited.
+
+
+
+=head1 METHODS
+
+
+XML::Compile::Schema::Specs-E<gt>B<builtInType>(EXPANDED | (URI,LOCAL), OPTIONS)
+
+=over 4
+
+Provide an EXPANDED (full) type name or an namespace URI and a LOCAL node
+name.  Returned is a HASH with process information or C<undef> if not
+found.
+
+-Option         --Defined in--Default
+ sloppy_integers              <false>
+
+. sloppy_integers BOOLEAN
+
+=over 4
+
+the <decimal> and <integer> types must accept huge integers, which
+require C<Math::Big*> objects to process.  But often, Perl's normal
+signed 32bit integers suffice... which is good for performance, but not
+standard compliant.
+
+=back
+
+=back
+
+XML::Compile::Schema::Specs-E<gt>B<predefinedSchema>(URI)
+
+=over 4
+
+Return a HASH which contains the schema information for the specified
+URI (or undef if it doesn't exist).
+
+=back
+
+XML::Compile::Schema::Specs-E<gt>B<predefinedSchemas>
+
+=over 4
+
+Returns the uri of all predefined schema's.
+
+=back
+
+
+
+
+
+
+
+
+
+=head1 REFERENCES
+
+See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for more details.
+
+=head1 COPYRIGHTS
+
+Module version 0.01.
+Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
+other contributors.
+
+Copyright (c) 2006 by the author(s). All rights reserved.  This program
+is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
+
+

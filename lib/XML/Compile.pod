@@ -1,0 +1,104 @@
+
+=head1 NAME
+
+XML::Compile - Compilation based XML processing
+
+
+
+=head1 SYNOPSIS
+
+ # See XML::Compile::Schema
+
+
+=head1 DESCRIPTION
+
+Many applications which process XML do that based on a nice specification,
+expressed in an XML Schema.  XML::Compile reads and writes XML
+data with the help of schema's.  On the Perl side, it uses a tree of
+nested hashes with the same structure.
+
+Where other Perl modules, like SOAP::WSDL help you using these schema's
+with a lot of XPath searches, this module takes a different approach:
+in stead of a run-time processing of the specification, it will first
+compile the expected structure into real Perl, and then use that to
+process the data.
+
+There are many perl modules which do the same: translate between XML
+and hashes.  However, there are a few serious differences:  because
+the schema is used here, we make sure we only handle correct data.
+Furthermore, data-types like Integer do accept huge values as the
+specification prescribes.  Also more complex data-types like C<list>
+and C<union> are correctly supported.
+
+
+
+=head1 METHODS
+
+
+=head2 Constructors
+
+
+$obj-E<gt>B<new>(TOP, OPTIONS)
+
+=over 4
+
+The TOP is a XML::LibXML::Document (a direct result from parsing
+activities) or a XML::LibXML::Node (a sub-tree).  In any case,
+a product of the XML::LibXML module (based on libxml2).
+
+If you have compiled/collected all the information you need,
+then simply terminate the compiler object: that will clean-up
+the XML::LibXML objects.
+
+=back
+
+=head2 Accessors
+
+
+$obj-E<gt>B<top>
+
+=over 4
+
+Returns the XML::LibXML object tree which needs to be compiled.
+
+=back
+
+=head2 Filters
+
+
+$obj-E<gt>B<walkTree>(NODE, CODE)
+
+=over 4
+
+Walks the whole tree from NODE downwards, calling the CODE reference
+for each NODE found.  When the routine returns false, the child
+nodes will be skipped.
+
+=back
+
+=head2 Compilers
+
+
+
+
+
+
+
+
+
+
+=head1 REFERENCES
+
+See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for more details.
+
+=head1 COPYRIGHTS
+
+Module version 0.01.
+Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
+other contributors.
+
+Copyright (c) 2006 by the author(s). All rights reserved.  This program
+is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
+
+
