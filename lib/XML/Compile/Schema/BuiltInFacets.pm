@@ -3,20 +3,17 @@ use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.01';
+$VERSION = '0.02';
 use base 'Exporter';
 
 our @EXPORT = qw/builtin_facet/;
 
-# values from values.h, limits.h, stdint.h, or float.h
 use constant DBL_MAX_DIG => 15;
 use constant DBL_MAX_EXP => 307;
-use constant INT32_MIN   => -2147483648;
-use constant INT32_MAX   =>  2147483647;
 
 # depends on Perl's compile flags
-use constant INT_MIN     =>  INT32_MIN;
-use constant INT_MAX     =>  INT32_MAX;
+use constant INT_MAX => int((sprintf"%u\n",-1)/2);
+use constant INT_MIN => -1 - INT_MAX;
 
 
 my %facets =
@@ -99,7 +96,6 @@ sub _maybe_big($$$)
     $value;
 }
 
-       
 sub _minInclusive($$$)
 {   my ($path, $args, $min) = @_;
     $min = _maybe_big $path, $args, $min;

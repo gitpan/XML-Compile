@@ -3,7 +3,7 @@ use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.01';
+$VERSION = '0.02';
 use base 'Exporter';
 
 use XML::LibXML;
@@ -25,7 +25,7 @@ sub run_test($$$$;$$)
 {   my ($schema, $test, $xml, $hash, $expect, $h2) = @_;
 
     # Read testing
-    my $abs = $test =~ m/\#/ ? $test : "$TestNS#$test";
+    my $abs = $test =~ m/\{/ ? $test : "{$TestNS}$test";
 
     my $read_t = $schema->compile
      ( READER             => $abs

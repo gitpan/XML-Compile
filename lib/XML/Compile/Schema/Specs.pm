@@ -4,9 +4,10 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
+use Carp;
 
 
 ### Who will extend this?
@@ -117,19 +118,23 @@ sub predefinedSchema($) { defined $_[1] ? $schemas{$_[1]} : () }
 
 
 sub builtInType($;$@)
-{   my ($class, $full) = (shift, shift);
-    my ($uri, $local) = @_ % 1 ? ($full, shift) : split(/\#/, $full,2);
+{   my ($class, $ns) = (shift, shift);
+    my $name = @_ % 1 ? shift : undef;
+    unless(defined $name)
+    {   if($ns =~ m/^\s*\{(.*)\}(.*)/ ) { ($ns, $name) = ($1, $2) }
+        else { croak "ERROR: incomplete type $ns" }
+    }
 
-    my $schema = $schemas{$uri}
+    my $schema = $schemas{$ns}
         or return ();
 
     my %args = @_;
 
-    $local   = $sloppy_int_version{$local}
-        if $args{sloppy_integers} && exists $sloppy_int_version{$local};
+    $name    = $sloppy_int_version{$name}
+        if $args{sloppy_integers} && exists $sloppy_int_version{$name};
 
     # only official names are exported this way
-    my $public = $schema->{builtin_public}{$local};
+    my $public = $schema->{builtin_public}{$name};
     defined $public ? $builtin_types{$public} : ();
 }
 

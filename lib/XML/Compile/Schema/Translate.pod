@@ -32,14 +32,21 @@ one CODE reference which can be used in the main user program.
 
 This implementation is work in progress, but most structures in
 W3C schema's are implemented.  A few nuts are still to crack:
- schema elementFormDefault
- schema attributeFormDefault
- element default
+ schema schemaLocation
+ schema noNamespaceSchemaLocation
+ schema version
  element mixed
  facets on dates
  limited understanding of patterns
+ import
  include
- some name-space features
+ anyAttribute
+ attribute use="prohibited" 
+ attribute form
+ group minOccurs maxOccurs
+ final and abstract
+ substitutionGroup
+ unique, keyref, selector, field, include, notation
 
 Of course, these are all fixed in next release ;-)
 
@@ -132,6 +139,28 @@ extra security.
 
 =back
 
+=head2 Qualified XML
+
+The produced XML may not use the name-spaces as defined by the schema's,
+just to simplify the input and output.  The structural definition of
+the schema's is still in-tact, but name-space collission may appear.
+
+Per schema, it can be specified whether the elements and attributes
+defined in-there need to be used qualified (with prefix) or not.
+This can cause horrible output when within an unqualified schema
+elements are used from an other schema which is qualified.
+
+The suggested solution in articles about the subject is to provide
+people with both a schema which is qualified as one which is not.
+Perl is known to be blunt in its approach: we simply define a flag
+which can force one of both on all schema's together, using
+C<elements_qualified> and C<attributes_qualified>.  May people and
+applications do not understand name-spaces sufficiently, and these
+options may make your day!
+
+An exception will be made for the C<xmlns> and C<xml> prefixed attributes,
+which are used on many places and need to be qualified always.
+
 =head2 Name-spaces
 
 The translator does respect name-spaces, but not all senders and
@@ -176,12 +205,6 @@ consistent name-space usage.  However, when C<include_namespaces> is
 used, you may get ghost name-space listings.  This option will reset
 the counts on all defined name-spaces.
 
-=item ignore_namespaces BOOLEAN
-
-Do not use prefixes in the output XML for WRITER when C<false>.
-For instance, because the destination application does not understand
-name-spaces.  The C<include_namespaces> will now also default to C<false>
-
 =back
 
 
@@ -202,6 +225,8 @@ between Perl datastructures and XML, based on a schema.  Before
 this method is called is the schema already translated into
 a table of types.
 
+=required nss L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces>
+
 =back
 
 
@@ -217,7 +242,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.01.
+Module version 0.02.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

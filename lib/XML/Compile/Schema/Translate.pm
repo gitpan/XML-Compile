@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.01';
+$VERSION = '0.02';
 use base 'Exporter';
 
 our @EXPORT = 'compile_tree';
@@ -13,6 +13,7 @@ use Carp;
 
 use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::BuiltInFacets;
+use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
 
 sub _rel2abs($$);
 
@@ -23,7 +24,7 @@ sub compile_tree($@)
     ref $typename
        and croak 'ERROR: expecting a type name as point to start';
  
-    my $processor = _final_type($args{path}, $typename, \%args);
+    my $processor = _final_type($args{path}, \%args, $typename);
     defined $processor or return ();
 
     my $produce   = $args{run}{wrapper}->($processor);
@@ -33,8 +34,14 @@ sub compile_tree($@)
     : $produce;
 }
 
+sub _assert_type($$$$)
+{   my ($path, $field, $type, $value) = @_;
+    return if $builtin_types{$type}{check}->($value);
+    die "ERROR: Field $field contains `$value' which is not a valid $type.\n";
+}
+
 sub _final_type($$$)
-{   my ($path, $typename, $args) = @_;
+{   my ($path, $args, $typename) = @_;
 
     #
     # Is a built-in type?  Special handlers
@@ -46,17 +53,20 @@ sub _final_type($$$)
     if($code)
     {
 #warn "TYPE FINAL: $typename\n";
-        return $args->{run}
+       return $args->{run}
          ->{$args->{check_values} ? 'builtin_checked' : 'builtin_unchecked'}
-         ->($path, $typename, $code, $args);
+         ->($path, $args, $typename, $code);
     }
 
     #
     # Not a built-in type: a bit more work to do.
     #
 
-    my $top    = $args->{types}{$typename}
-       or croak "ERROR: cannot find type $typename for $path\n";
+    my $nss    = $args->{nss};
+    my $top    = $nss->findID($typename)
+              || $nss->findElement($typename)
+              || $nss->findType($typename)
+       or croak "ERROR: cannot find $typename for $path\n";
 
     my $node   = $top->{node};
 
@@ -65,17 +75,28 @@ sub _final_type($$$)
     defined $schema
        or croak "ERROR: $typename not in a predefined schema namespace";
 
+    my $elems_qual
+     = exists $args->{elements_qualified} ? $args->{elements_qualified}
+     : $top->{efd} eq 'qualified';
+
+    my $attrs_qual
+     = exists $args->{attributes_qualified} ? $args->{attributes_qualified}
+     : $top->{afd} eq 'qualified';
+
 #warn "TYPE: $typename\n";
     my $label  = $top->{name};
     my $name   = $node->localname;
-    local $args->{tns} = $top->{ns};
+
+    local $args->{tns}        = $top->{ns};
+    local $args->{elems_qual} = $elems_qual;
+    local $args->{attrs_qual} = $attrs_qual;
 
     if($name eq 'simpleType')
-    {   return _simpleType($path, $node, $args) }
+    {   return _simpleType($path, $args, $node) }
     elsif($name eq 'complexType')
-    {   return _complexType($path, $node, $args) }
+    {   return _complexType($path, $args, $node) }
     elsif($name eq 'element')
-    {   return _element($path, $node, $args) }
+    {   return _element($path, $args, $node) }
 
     if($name eq 'group' || $name eq 'attributeGroup')
     {   croak "ERROR: $name is not a final type, only for reference\n" }
@@ -84,9 +105,10 @@ sub _final_type($$$)
 }
 
 sub _ref_type($$$$)
-{   my ($path, $typename, $name, $args) = @_;
+{   my ($path, $args, $typename, $name) = @_;
 
-    my $top    = $args->{types}{$typename}
+    my $nss    = $args->{nss};
+    my $top    = $nss->findElement($typename)
        or croak "ERROR: cannot find ref-type $typename for $path\n";
 
     my $node   = $top->{node};
@@ -99,7 +121,7 @@ sub _ref_type($$$$)
 }
 
 sub _simpleType($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 #warn "simpleType $path\n";
     my $ns   = $node->namespaceURI;
 
@@ -111,9 +133,9 @@ sub _simpleType($$$)
         next if $local eq 'notation';
 
         return
-        $local eq 'restriction' ? _simple_restriction($path, $child, $args)
-      : $local eq 'list'        ? _simple_list($path, $child, $args)
-      : $local eq 'union'       ? _simple_union($path, $child, $args)
+        $local eq 'restriction' ? _simple_restriction($path, $args, $child)
+      : $local eq 'list'        ? _simple_list($path, $args, $child)
+      : $local eq 'union'       ? _simple_union($path, $args, $child)
       : die "ERROR: do not understand simpleType component $local in $path\n";
     }
 
@@ -121,19 +143,19 @@ sub _simpleType($$$)
 }
 
 sub _simple_list($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 
     my $type = $node->getAttribute('itemType')
         or die "ERROR: list requires attribute itemType in $path\n";
 
     my $typename = _rel2abs($node, $type);
-    my $per_item = _final_type($path, $typename, $args);
+    my $per_item = _final_type($path, $args, $typename);
 
-    $args->{run}{list}->($path, $per_item, $args);
+    $args->{run}{list}->($path, $args, $per_item);
 }
 
 sub _simple_union($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
     my $ns   = $node->namespaceURI;
 
     my @types;
@@ -157,24 +179,24 @@ sub _simple_union($$$)
         die "ERROR: only simpleType's within union in $path\n"
             if $local ne 'simpleType';
 
-        push @types, _simpleType($path, $child, $args);
+        push @types, _simpleType($path, $args, $child);
     }
 
     $args->{run}{union}->($path, $args, $err, @types);
 }
 
 sub _simple_restriction($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
     my $ns = $node->namespaceURI;
     my $st;
 
     if(my $base = $node->getAttribute('base'))
     {   my $typename = _rel2abs($node, $base);
-        $st = _final_type($path, $typename, $args);
+        $st = _final_type($path, $args, $typename);
     }
     elsif($base = $node->getChildrenByTagNameNS($ns,'simpleType'))
     {   # untested
-        $st = _simpleType("$path/st", $base, $args);
+        $st = _simpleType("$path/st", $args, $base);
     }
     else
     {   die "ERROR: restriction $path requires either base or simpleType\n";
@@ -213,7 +235,7 @@ sub _simple_restriction($$$)
 
     foreach my $facet ( qw/whiteSpace pattern/ )
     {   my $value = delete $facets{$facet};
-        push @rules, builtin_facet($path,$args, $facet, $value)
+        push @rules, builtin_facet($path, $args, $facet, $value)
            if defined $value;
     }
 
@@ -244,37 +266,43 @@ sub _call_facets($@)
 }
 
 sub _element($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 #warn "element: $path\n";
 
-    my $name   = $node->getAttribute('name')
-       or croak "ERROR: element $path without name";
-
-    $path     .= "/el($name)";
-    my $tag    = $args->{run}{translate_tag}->($node, $name, $args);
-    my @childs = grep {$_->isa('XML::LibXML::Element')} $node->childNodes;
-
     my $do;
-    if(my $fixed = $node->getAttribute('fixed'))
-    {   @childs and warn "ERROR: no childs expected with fixed in $path\n";
-        $do = $args->{run}{element_fixed}->($path, $fixed, $args);
-    }
-    elsif(my $type = $node->getAttribute('type'))
-    {   @childs and warn "ERROR: no childs expected with type in $path\n";
-        my $typename = _rel2abs($node, $type);
-        $do = _final_type($path, $typename, $args);
-    }
-    elsif(my $ref = $node->getAttribute('ref'))
+    my @childs   = grep {$_->isa('XML::LibXML::Element')} $node->childNodes;
+    if(my $ref = $node->getAttribute('ref'))
     {   @childs and warn "ERROR: no childs expected with ref in $path\n";
         my $typename = _rel2abs($node, $ref);
-        my $dest     = _ref_type($path, $typename, 'element', $args)
+        my $dest     = _ref_type($path, $args, $typename, 'element')
            or return ();
-        $do = _final_type($path, $typename, $args);
-        return $args->{run}{rename_element}->($tag, $do);
+        $path       .= "/ref($ref)";
+        return _final_type($path, $args, $typename);
+    }
+
+    my $name     = $node->getAttribute('name')
+       or croak "ERROR: element $path without name";
+    _assert_type($path, name => NCName => $name);
+    $path       .= "/el($name)";
+
+    my $qual     = $args->{elems_qual};
+    if(my $form = $node->getAttribute('form'))
+    {   $qual = $form eq 'qualified'   ? 1
+              : $form eq 'unqualified' ? 0
+              : croak "ERROR: form must be (un)qualified, not $form";
+    }
+
+    my $trans    = $qual ? 'tag_qualified' : 'tag_unqualified';
+    my $tag      = $args->{run}{$trans}->($args, $node, $name);
+
+    if(my $type = $node->getAttribute('type'))
+    {   @childs and warn "ERROR: no childs expected with type in $path\n";
+        my $typename = _rel2abs($node, $type);
+        $do = _final_type($path, $args, $typename);
     }
     elsif(!@childs)
     {   my $typename = _rel2abs($node, 'anyType');
-        $do = _final_type($path, $typename, $args);
+        $do = _final_type($path, $args, $typename);
     }
     else
     {   @childs > 1
@@ -283,18 +311,18 @@ sub _element($$$)
         # nameless types
         my $child = $childs[0];
         my $local = $child->localname;
-        $do = $local eq 'simpleType'  ? _simpleType($path, $child, $args)
-            : $local eq 'complexType' ? _complexType($path, $child, $args)
+        $do = $local eq 'simpleType'  ? _simpleType($path, $args, $child)
+            : $local eq 'complexType' ? _complexType($path, $args, $child)
             : $local =~ m/^(sequence|choice|all|group)$/
-            ?                           _complexType($path, $child, $args)
+            ?                           _complexType($path, $args, $child)
             : die "ERROR: unexpected element child $local at $path\n";
     }
 
-    $args->{run}{create_element}->($path, $tag, $do, $args);
+    $args->{run}{create_element}->($path, $args, $tag, $do);
 }
 
 sub _choice($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
     my $min = $node->getAttribute('minOccurs');
     my $max = $node->getAttribute('maxOccurs');
     defined $min or $min = 0;
@@ -302,14 +330,14 @@ sub _choice($$$)
 
     # sloppy: sum should not exceed max, we let each to max.
     # nested sequences not supported correctly
-    map {_particle($path, $_, $min, $max, 0, $max, $args)}
+    map {_particle($path, $args, $_, $min, $max, 0, $max)}
        grep {$_->isa('XML::LibXML::Element')}
            $node->childNodes;
 }
 
 sub _particle($$$$$$$)
-{   my ( $path, $node, $min_default, $max_default, $min_perm, $max_perm
-       , $args) = @_;
+{   my ( $path, $args, $node, $min_default, $max_default
+       , $min_perm, $max_perm) = @_;
 
     my $ns     = $node->namespaceURI;
     my @childs = $node;
@@ -326,19 +354,19 @@ sub _particle($$$$$$$)
         }
 
         if($name eq 'group')
-        {   unshift @childs, _group_particle($path, $child, $args);
+        {   unshift @childs, _group_particle($path, $args, $child);
             next;
         }
 
         if($name eq 'choice')
-        {   push @do, _choice($path, $child, $args);
+        {   push @do, _choice($path, $args, $child);
             next;
         }
         # 'all' is not permitted
 
         next if $name ne 'element';
 
-        my $do = _element($path, $child, $args);
+        my $do = _element($path, $args, $child);
         my $childname = $child->getAttribute('name');
 
         my $min = $child->getAttribute('minOccurs');
@@ -359,6 +387,9 @@ sub _particle($$$$$$$)
         {    $nillable = $nil eq 'true';
         }
 
+        my $default = $child->getAttributeNode('default');
+        my $fixed   = $child->getAttributeNode('fixed');
+
         my $generate
          = ($max eq 'unbounded' || $max > 1)
          ? ( $args->{check_occurs}
@@ -366,33 +397,48 @@ sub _particle($$$$$$$)
            : 'element_array'
            )
          : ($args->{check_occurs} && $min==1)
-         ? ( $nillable
-           ? 'element_nillable'
-           : 'element_obligatory'
+         ? ( $nillable      ? 'element_nillable'
+           : defined $fixed ? 'element_fixed'
+           :                  'element_obligatory'
            )
-         : 'element_optional';
+         : ( defined $default ? 'element_default'
+           : defined $fixed   ? 'element_fixed'
+           : 'element_optional'
+           );
+
+        my $value = defined $default ? $default : $fixed;
 
         push @do, $childname => 
            $args->{run}{$generate}
-                ->("$path/$childname", $ns, $childname, $do, $args, $min, $max);
+                ->("$path/$childname", $args, $ns, $childname, $do
+                  , $min, $max, $value);
     }
 
     @do;
 }
 
 sub _attribute($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 
     my $name = $node->getAttribute('name')
        or croak "ERROR: attribute $path without name";
 
     $path   .= "/at($name)";
-    my $tag  = $args->{run}{translate_tag}->($node, $name, $args);
+
+    my $qual = $args->{attrs_qual};
+    if(my $form = $node->getAttribute('form'))
+    {   $qual = $form eq 'qualified'   ? 1
+              : $form eq 'unqualified' ? 0
+              : croak "ERROR: form must be (un)qualified, not $form";
+    }
+
+    my $trans    = $qual ? 'tag_qualified' : 'tag_unqualified';
+    my $tag  = $args->{run}{$trans}->($args, $node, $name);
 
     my $do;
     if(my $type = $node->getAttribute('type'))
     {   my $typename = _rel2abs($node, $type);
-        $do = _final_type($path, $typename, $args);
+        $do = _final_type($path, $args, $typename);
     }
     else
     {   die "attribute without type in $path\n";
@@ -404,11 +450,11 @@ sub _attribute($$$)
      : $use eq 'optional' ? 'attribute_optional'
      : die "attribute should be required or optional (not $use) in $path.\n";
 
-    $name => $args->{run}{$generate}->($path, $tag, $do, $args);
+    $name => $args->{run}{$generate}->($path, $args, $tag, $do);
 }
 
 sub _group_particle($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 
     my $ref = $node->getAttribute('ref')
        or croak "ERROR: group $path without ref";
@@ -417,13 +463,13 @@ sub _group_particle($$$)
     my $typename = _rel2abs($node, $ref);
 #warn $typename;
 
-    my $dest   = _ref_type($path, $typename, 'group', $args);
+    my $dest   = _ref_type($path, $args, $typename, 'group');
     defined $dest ? $dest->childNodes : ();
 }
 
 sub _attribute_group($$$);
 sub _attribute_group($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 
     my $ref = $node->getAttribute('ref')
        or croak "ERROR: attributeGroup $path without ref";
@@ -433,29 +479,29 @@ sub _attribute_group($$$)
 #warn $typename;
 
     my @res;
-    my $dest   = _ref_type($path, $typename, 'attributeGroup', $args);
+    my $dest   = _ref_type($path, $args, $typename, 'attributeGroup');
     defined $dest or return ();
 
     foreach my $child ($dest->childNodes)
     {   next unless $child->isa('XML::LibXML::Element');
         my $local = $child->localname;
         if($local eq 'attribute')
-        {   push @res, _attribute($path, $child, $args) }
+        {   push @res, _attribute($path, $args, $child) }
         elsif($local eq 'attributeGroup')
-        {   push @res, _attribute_group($path, $child, $args) }
+        {   push @res, _attribute_group($path, $args, $child) }
     }
 
     @res;
 }
 
 sub _complexType($$$)
-{   my ($path, $node, $args) = @_;
-    my @elems = _complex_elems($path, $node, $args);
-    @elems ? $args->{run}{complexType}->($path, $args, @elems) : ();
+{   my ($path, $args, $node) = @_;
+    my @elems = _complex_elems($path, $args, $node);
+    @elems ? $args->{run}{complexType}->($path, $args, $node, @elems) : ();
 }
 
 sub _complex_elems($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 
     my @childs = $node->localName eq 'complexType' ? $node->childNodes : $node;
     my @elems;
@@ -470,20 +516,20 @@ sub _complex_elems($$$)
             next;
         }
         if($name eq 'complexContent')
-        {   push @elems, _complexContent($path, $child, $args) }
+        {   push @elems, _complexContent($path, $args, $child) }
         elsif($name eq 'attribute')
-        {   push @elems, _attribute($path, $child, $args) }
+        {   push @elems, _attribute($path, $args, $child) }
         elsif($name eq 'attributeGroup')
-        {   push @elems, _attribute_group($path, $child, $args) }
+        {   push @elems, _attribute_group($path, $args, $child) }
         else
-        {   push @elems, _particles($path, $child, $args) }
+        {   push @elems, _particles($path, $args, $child) }
     }
 
     @elems;
 }
 
 sub _complexContent($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 
     my @childs = $node->childNodes;
     my @elems;
@@ -491,17 +537,17 @@ sub _complexContent($$$)
     while(my $child = shift @childs)
     {   next unless $child->isa('XML::LibXML::Element');
         my $name = $child->localName;
-    
+ 
         if(   $name eq 'sequence' || $name eq 'choice' || $name eq 'all'
            || $name eq 'element'  || $name eq 'group')
-        {   push @elems, _particles($path, $child, $args);
+        {   push @elems, _particles($path, $args, $child);
         }
         elsif($name eq 'extension')
-        {   push @elems, _complex_extension($path, $child, $args);
+        {   push @elems, _complex_extension($path, $args, $child);
         }
         elsif($name eq 'restriction')
         {   # nice for validating, but base can be ignored
-            push @elems, map {_particles($path, $_, $args)}
+            push @elems, map {particles($path, $args, $_)}
                grep {$_->isa('XML::LibXML::Element')} $child->childNodes;
         }
         else
@@ -513,39 +559,39 @@ sub _complexContent($$$)
 }
 
 sub _complex_extension($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 
     my $base = $node->getAttribute('base') || 'anyType';
     my @elems;
 
     if($base ne 'anyType')
     {   my $typename = _rel2abs($node, $base);
-        my $typedef  = $args->{types}{$typename}
+        my $typedef  = $args->{nss}->findType($typename)
             or die "ERROR: cannot base on unknown $base, at $path";
 
         $typedef->{type} eq 'complexType'
             or die "ERROR: base $base not complexType, at $path";
 
-        push @elems, _complex_elems("$path#base", $typedef->{node}, $args);
+        push @elems, _complex_elems("$path#base", $args, $typedef->{node});
     }
 
-    push @elems, map {_particles($path, $_, $args)}
+    push @elems, map {_particles($path, $args, $_)}
         grep {$_->isa('XML::LibXML::Element')} $node->childNodes;
 
     @elems;
 }
 
 sub _particles($$$)
-{   my ($path, $node, $args) = @_;
+{   my ($path, $args, $node) = @_;
 
     my $name = $node->localName;
 
       $name eq 'sequence' || $name eq 'element' || $name eq 'group'
-    ? _particle($path, $node, 1, 1, 0, 'unbounded', $args)
+    ? _particle($path, $args, $node, 1, 1, 0, 'unbounded')
     : $name eq 'choice'
-    ? _choice($path, $node, $args)
+    ? _choice($path, $args, $node)
     : $name eq 'all'
-    ? _particle($path, $node, 1, 1, 1, 'unbounded', $args)
+    ? _particle($path, $args, $node, 1, 1, 1, 'unbounded')
     : die "ERROR: unrecognized particle '$name' in $path\n";
 }
 
@@ -553,11 +599,11 @@ sub _particles($$$)
 # Helper routines
 #
 
-# print _rel2abs($node, 'ns#type')     ->  'ns#type'
-# print _rel2abs($node, 'prefix:type') ->  'ns(prefix)#type'
+# print _rel2abs($node, '{ns}type')    ->  '{ns}type'
+# print _rel2abs($node, 'prefix:type') ->  '{ns(prefix)}type'
 
 sub _rel2abs($$)
-{   return $_[1] if index($_[1], '#') >= 0;
+{   return $_[1] if substr($_[1], 0, 1) eq '{';
 
     my ($url, $local)
      = $_[1] =~ m/^(.+?)\:(.*)/
@@ -567,7 +613,7 @@ sub _rel2abs($$)
      defined $url
          or croak "ERROR: cannot understand type '$_[1]'";
 
-     "$url#$local";
+     "{$url}$local";
 }
 
 1;

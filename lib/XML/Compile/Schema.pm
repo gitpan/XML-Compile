@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.01';
+$VERSION = '0.02';
 use base 'XML::Compile';
 
 use Carp;
@@ -14,123 +14,49 @@ use XML::LibXML;
 use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::BuiltInStructs qw/builtin_structs/;
 use XML::Compile::Schema::Translate      qw/compile_tree/;
+use XML::Compile::Schema::Instance;
+use XML::Compile::Schema::NameSpaces;
 
 
 sub init($)
 {   my ($self, $args) = @_;
+    $self->{namespaces} = XML::Compile::Schema::NameSpaces->new;
     $self->SUPER::init($args);
+
+    if(my $top = $self->top)
+    {   $self->addSchemas($top);
+    }
+
     $self;
 }
 
 
-sub types(@)
-{   my ($self, %args) = @_;
-    my $indexformat = $args{namespace} || 'EXPANDED';
+sub namespaces() { shift->{namespaces} }
 
-    my $types = $self->{XCS_types}
-            ||= $self->_discover_types(\%args);
 
-    if($indexformat eq 'EXPANDED')
-    {  return wantarray ? keys %$types : $types;
-    }
-    elsif($indexformat eq 'LOCAL')
-    {  return map {$_->{name}} values %$types if wantarray;
-       my %local = map { ($_->{name} => $_) } values %$types;
-       return \%local;
-    }
-    elsif($indexformat eq 'PREFIXED')
-    {   my %pref
-         = map { ( ($_->{prefix} ? "$_->{prefix}:$_->{name}" : $_->{name})
-                    => $_) } values %$types;
-       return wantarray ? keys %pref : \%pref;
-    }
+sub addSchemas($$)
+{   my ($self, $top) = @_;
 
-    croak "namespace: EXPANDED, PREFIXED, or LOCAL";
-}
-
-sub _find_attr($$)
-{   my ($node, $tag) = @_;
-    first {$_->localname eq $tag} $node->attributes;
-}
-
-sub _discover_types($$)
-{   my ($self, $args) = @_;
-
-    my $top = $self->top;
-    $top = $top->documentElement
+    $top    = $top->documentElement
        if $top->isa('XML::LibXML::Document');
 
-    my (%types, $tns);
+    my $nss = $self->namespaces;
 
     $self->walkTree
     ( $top,
-      sub { my $schema = shift;
-            return 1 unless $schema->isa('XML::LibXML::Element')
-                         && $schema->localname eq 'schema';
+      sub { my $node = shift;
+            return 1 unless $node->isa('XML::LibXML::Element')
+                         && $node->localname eq 'schema';
 
-            my $ns   = $schema->namespaceURI;
-            return 1
-                unless XML::Compile::Schema::Specs->predefinedSchema($ns);
+            my $schema = XML::Compile::Schema::Instance->new($node)
+                or next;
 
-            my $tns_attr = _find_attr($schema, 'targetNamespace');
-            defined $tns_attr
-                or croak "missing targetNamespace in schema";
-
-            $tns = $tns_attr->value;
-
-            foreach my $node ($schema->childNodes)
-            {   next unless $node->isa('XML::LibXML::Element');
-                next unless $node->namespaceURI eq $ns;
-                next if $node->localname eq 'notation';
-
-                my $name_attr = _find_attr($node, 'name');
-                next unless defined $name_attr;
-
-                my $name_val  = $name_attr->value;
-                my ($prefix, $local)
-                 = index($name_val, ':') >= 0
-                 ? split(/\:/,$name_val,2)
-                 : (undef, $name_val);
-
-                my $uri
-                 = defined $prefix ? $node->lookupNamespaceURI($prefix) : $tns;
-                my $label = "$uri#$local";
-
-                $types{$label}
-                 = { full => $label, type => $node->localname
-                   , ns => $uri, name => $local, prefix => $prefix
-                   , node => $node
-                   };
-              }
-
-              return 0;   # do not decend in schema
+#warn $schema->targetNamespace;
+#$schema->printIndex(\*STDERR);
+            $nss->add($schema);
+            return 0;
           }
     );
-
-    \%types;
-}
-
-
-sub typesPerNamespace()
-{   my $types = shift->types(namespace => 'EXPANDED');
-    my %ns;
-    foreach (values %$types)
-    {   $ns{$_->{ns}}{$_->{name}} = $_;
-    }
-
-    \%ns;
-}
-
-
-sub printTypes()
-{   my $types = shift->typesPerNamespace or return;
-    foreach my $ns (sort keys %$types)
-    {   print "Namespace: $ns\n";
-        foreach my $name (sort keys %{$types->{$ns}})
-        {   my $type = $types->{$ns}{$name};
-            printf "  %14s %s\n", $type->{type}, $name;
-        }
-    }
 }
 
 
@@ -154,24 +80,23 @@ sub compile($$@)
             if $@;
     }
 
-    exists $args{include_namespaces}
-       or $args{include_namespaces} = !$args{ignore_namespaces};
-
-    $args{output_namespaces} ||= {};
+    $args{include_namespaces} ||= 1;
+    $args{output_namespaces}  ||= {};
 
     do { $_->{used} = 0 for values %{$args{output_namespaces}} }
        if $args{namespace_reset};
 
-    my $top   = $self->type($type)
+    my $nss   = $self->namespaces;
+    my $top   = $nss->findType($type) || $nss->findElement($type)
        or croak "ERROR: type $type is not defined";
 
     $args{path} ||= $top->{full};
 
     compile_tree
      ( $top->{full}, %args
-     , run   => builtin_structs($direction) 
-     , types => scalar($self->types)
-     , err   => $self->invalidsErrorHandler($args{invalid})
+     , run => builtin_structs($direction) 
+     , err => $self->invalidsErrorHandler($args{invalid})
+     , nss => $self->namespaces
      );
 }
 
@@ -194,14 +119,6 @@ sub template($@)
 }
 
 
-sub type($)
-{   my ($self, $label) = @_;
-
-       $self->types(namespace => 'EXPANDED')->{$label}
-    || $self->types(namespace => 'LOCAL'   )->{$label};
-}
-
-
 sub invalidsErrorHandler($)
 {   my $key = $_[1] || 'DIE';
 
@@ -216,6 +133,22 @@ sub invalidsErrorHandler($)
     ? sub {die  "$_[2] (".(defined $_[1] ? $_[1] : 'undef').") for $_[0]\n"}
     : die "ERROR: error handler expects CODE, 'IGNORE',"
         . "'USE','WARN', or 'DIE', not $key";
+}
+
+
+sub types()
+{   my $nss = shift->namespaces;
+    sort map {$_->types}
+          map {$nss->schemas($_)}
+             $nss->namespaces;
+}
+
+
+sub elements()
+{   my $nss = shift->namespaces;
+    sort map {$_->elements}
+          map {$nss->schemas($_)}
+             $nss->namespaces;
 }
 
 1;

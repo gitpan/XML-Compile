@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 use XML::LibXML;
 use Carp;
@@ -12,6 +12,9 @@ use Carp;
 
 sub new(@)
 {   my ($class, $top) = (shift, shift);
+    croak "ERROR: you should instantiate a sub-class, $class is base only"
+        if $class eq __PACKAGE__;
+
     (bless {}, $class)->init( {top => $top, @_} );
 }
 

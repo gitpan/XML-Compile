@@ -3,7 +3,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.01';
+$VERSION = '0.02';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -29,10 +29,10 @@ sub num2str  { use warnings FATAL => 'all'; eval {sprintf "%lf", $_[0]} };
 sub str      { "$_[0]" };
 sub collapse { $_[0] =~ s/\s+//g; $_[0]}
 sub preserve { for($_[0]) {s/\s+/ /g; s/^ //; s/ $//}; $_[0]}
-sub bigint   { $_[0] =~ s/\s+//g; my $v = Math::BigInt->new($_[0]);
-               $v->is_nan ? undef : $v }
-sub bigfloat { $_[0] =~ s/\s+//g; my $v = Math::BigFloat->new($_[0]);
-               $v->is_nan ? undef : $v }
+sub bigint   { $_[0] =~ s/\s+//g;
+   my $v = Math::BigInt->new($_[0]); $v->is_nan ? undef : $v }
+sub bigfloat { $_[0] =~ s/\s+//g;
+   my $v = Math::BigFloat->new($_[0]); $v->is_nan ? undef : $v }
 
 
 $builtin_types{anySimpleType} =
@@ -348,7 +348,4 @@ $builtin_types{QName} =
 
 $builtin_types{NOTATION} = {};
 
-
 1;
-
-

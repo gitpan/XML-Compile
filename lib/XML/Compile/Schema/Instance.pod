@@ -1,0 +1,131 @@
+
+=head1 NAME
+
+XML::Compile::Schema::Instance - Represents one schema
+
+
+
+=head1 SYNOPSIS
+
+ # Used internally by XML::Compile::Schema
+ my $schema = XML::Compile::Schema::Instance->new($xml);
+
+
+=head1 DESCRIPTION
+
+This module collect information from one schema, and helps to
+process it.
+
+
+
+=head1 METHODS
+
+
+=head2 Constructors
+
+
+$obj-E<gt>B<new>(TOP, OPTIONS)
+
+=over 4
+
+Get's the top of an XML::LibXML tree, which must be a schema element.
+The tree is parsed: the information collected.
+
+=back
+
+=head2 Accessors
+
+
+$obj-E<gt>B<element>(URI)
+
+=over 4
+
+Returns one global element definition.
+
+=back
+
+$obj-E<gt>B<elements>
+
+=over 4
+
+Returns a list of all globally defined element names.
+
+=back
+
+$obj-E<gt>B<ids>
+
+=over 4
+
+Returns a list of all found ids.
+
+=back
+
+$obj-E<gt>B<schemaInstance>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<schemaNamespace>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<targetNamespace>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<type>(URI)
+
+=over 4
+
+Returns the type definition with the specified name.
+
+=back
+
+$obj-E<gt>B<types>
+
+=over 4
+
+Returns a list of all used names.
+
+=back
+
+=head2 Index
+
+
+$obj-E<gt>B<printIndex>([FILEHANDLE])
+
+=over 4
+
+Prints an overview over the defined objects within this schema to the
+selected FILEHANDLE.
+
+=back
+
+
+
+
+
+
+
+
+
+=head1 REFERENCES
+
+See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for more details.
+
+=head1 COPYRIGHTS
+
+Module version 0.02.
+Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
+other contributors.
+
+Copyright (c) 2006 by the author(s). All rights reserved.  This program
+is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
+
+
