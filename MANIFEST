@@ -1,5 +1,6 @@
 ChangeLog
 MANIFEST
+META.yml                                 Module meta-data (added by MakeMaker)
 Makefile.PL
 html/manual/doclist.html
 html/manual/grouped.html
@@ -19,14 +20,23 @@ html/other/manuals/list.html
 html/other/methods/index.html
 html/other/xml.css
 lib/XML/Compile.pm
+lib/XML/Compile.pod
 lib/XML/Compile/Schema.pm
+lib/XML/Compile/Schema.pod
 lib/XML/Compile/Schema/BuiltInFacets.pm
+lib/XML/Compile/Schema/BuiltInFacets.pod
 lib/XML/Compile/Schema/BuiltInStructs.pm
+lib/XML/Compile/Schema/BuiltInStructs.pod
 lib/XML/Compile/Schema/BuiltInTypes.pm
+lib/XML/Compile/Schema/BuiltInTypes.pod
 lib/XML/Compile/Schema/Instance.pm
+lib/XML/Compile/Schema/Instance.pod
 lib/XML/Compile/Schema/NameSpaces.pm
+lib/XML/Compile/Schema/NameSpaces.pod
 lib/XML/Compile/Schema/Specs.pm
+lib/XML/Compile/Schema/Specs.pod
 lib/XML/Compile/Schema/Translate.pm
+lib/XML/Compile/Schema/Translate.pod
 t/01use.t
 t/20types.t
 t/30builtin.t
@@ -51,4 +61,3 @@ t/TestTools.pm
 version
 xsd/1998-namespace.xsd
 xsd/2001-XMLSchema.xsd
-META.yml                                 Module meta-data (added by MakeMaker)

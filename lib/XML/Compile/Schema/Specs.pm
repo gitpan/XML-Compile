@@ -3,28 +3,12 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::Specs;
+use vars '$VERSION';
+$VERSION = '0.05';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
 use Carp;
 
-=chapter NAME
-
-XML::Compile::Schema::Specs - Predefined Schema Information
-
-=chapter SYNOPSIS
-
- # not for end-users
- use XML::Compile::Schema::Specs;
-
-=chapter DESCRIPTION
-This package defines the various schema-specifications, however
-currently only supports the last one: L<http://www.w3.org/2001/XMLSchema>.
-It is simple to extend the list of supported schema's, but someone has
-to do it.  Feel invited.
-
-=chapter METHODS
-
-=cut
 
 ### Who will extend this?
 # everything which is not caught by a special will need to pass through
@@ -126,34 +110,12 @@ my %schema_2001 =
 my %schemas = map { ($_->{uri_xsd} => $_) }
  \%schema_1999, \%schema_2000, \%schema_2001;
 
-=c_method predefinedSchemas
-Returns the uri of all predefined schema's.
-
-=cut
 
 sub predefinedSchemas() { keys %schemas }
 
-=c_method predefinedSchema URI
-Return a HASH which contains the schema information for the specified
-URI (or undef if it doesn't exist).
-
-=cut
 
 sub predefinedSchema($) { defined $_[1] ? $schemas{$_[1]} : () }
 
-=c_method builtInType EXPANDED | (URI,LOCAL), OPTIONS
-Provide an EXPANDED (full) type name or an namespace URI and a LOCAL node
-name.  Returned is a HASH with process information or C<undef> if not
-found.
-
-=option  sloppy_integers BOOLEAN
-=default sloppy_integers <false>
-the <decimal> and <integer> types must accept huge integers, which
-require C<Math::Big*> objects to process.  But often, Perl's normal
-signed 32bit integers suffice... which is good for performance, but not
-standard compliant.
-
-=cut
 
 sub builtInType($;$@)
 {   my ($class, $ns) = (shift, shift);

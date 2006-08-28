@@ -3,29 +3,11 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::NameSpaces;
+use vars '$VERSION';
+$VERSION = '0.05';
 
 use Carp;
 
-=chapter NAME
-
-XML::Compile::Schema::NameSpaces - Connect name-spaces from schemas
-
-=chapter SYNOPSIS
-
- # Used internally by XML::Compile::Schema
- my $nss = XML::Compile::Schema::NameSpaces->new;
- $nss->add($schema);
-
-=chapter DESCRIPTION
-
-This module keeps overview on a set of schema's.
-
-=chapter METHODS
-
-=section Constructors
-
-=method new OPTIONS
-=cut
 
 sub new($@)
 {   my $class = shift;
@@ -38,18 +20,9 @@ sub init($)
     $self;
 }
 
-=section Accessors
-
-=method namespaces
-Returns the list of names defined until now.
-=cut
 
 sub namespaces() { keys %{shift->{tns}} }
 
-=method namespace URI
-Returns a list of M<XML::Compile::Schema::Instance> objects which have
-the URI as target namespace.
-=cut
 
 sub namespace($)
 {   my $self = shift;
@@ -57,10 +30,6 @@ sub namespace($)
     $nss ? @$nss : ();
 }
 
-=method add SCHEMA
-Adds the M<XML::Compile::Schema::Instance> object to the internal
-knowledge of this object.
-=cut
 
 sub add($)
 {   my ($self, $schema) = @_;
@@ -69,9 +38,6 @@ sub add($)
     $schema;
 }
 
-=method schemas URI
-We need the name-space; when it is lacking then import must help.
-=cut
 
 sub schemas($)
 {   my ($self, $ns) = @_;
@@ -82,10 +48,6 @@ sub schemas($)
     croak "ERROR: namespace $ns not known";
 }
 
-=method findElement ADDRESS|(URI,NAME)
-Lookup the definition for the specified element, which is constructed as
-C< {uri}name > or as seperate URI and NAME.
-=cut
 
 sub findElement($;$)
 {   my ($self, $ns, $name) = @_;
@@ -102,10 +64,6 @@ sub findElement($;$)
     undef;
 }
 
-=method findType ADDRESS|(URI,NAME)
-Lookup the definition for the specified type, which is constructed as
-C< {uri}name > or as seperate URI and NAME.
-=cut
 
 sub findType($;$)
 {   my ($self, $ns, $name) = @_;
@@ -122,10 +80,6 @@ sub findType($;$)
     undef;
 }
 
-=method findID ADDRESS|(URI,ID)
-Lookup the definition for the specified id, which is constructed as
-C< uri#id > or as seperate URI and ID.
-=cut
 
 sub findID($;$)
 {   my ($self, $ns, $name) = @_;

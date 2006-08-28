@@ -2,6 +2,8 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::BuiltInStructs;
+use vars '$VERSION';
+$VERSION = '0.05';
 use base 'Exporter';
 
 our @EXPORT = qw/builtin_structs/;
@@ -13,33 +15,6 @@ use XML::Compile;
 use Carp;
 use List::Util    qw/first/;
 
-=chapter NAME
-
-XML::Compile::Schema::BuiltInStructs - handling of built-in data-structures
-
-=chapter SYNOPSIS
-
- # Not for end-users
- use XML::Compile::Schema::BuiltInStructs;
- my $run = builtin_structs('READER');
-
-=chapter DESCRIPTION
-The translator understands schema's, but does not encode that into
-actions.  This module implements those actions, which are different
-for the reader and the writer.
-
-In a later release, this module will probably be split in a separate
-READER and WRITER module, because we usually do not need both reader
-and writer within one program.
-
-=chapter METHODS
-
-=c_method builtin_structs 'READER'|'WRITER'
-Returns a hash which defines the code to produce the code which
-will do the job... code which produces code... I know, it is not
-that simple.
-
-=cut
 
 sub builtin_structs($)
 {   my $direction = shift;

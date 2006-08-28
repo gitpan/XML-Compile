@@ -1,0 +1,60 @@
+
+=head1 NAME
+
+XML::Compile::Schema::BuiltInFacets - handling of built-in facet checks
+
+
+=head1 INHERITANCE
+
+ XML::Compile::Schema::BuiltInFacets
+   is an Exporter
+
+
+=head1 SYNOPSIS
+
+ # Not for end-users
+ use XML::Compile::Schema::BuiltInFacets qw/%facets/;
+
+
+=head1 DESCRIPTION
+
+This package implements the facet checks.  Facets are used to
+express restrictions on variable content which need to be checked
+dynamically.
+
+The content is not for end-users, but called by the schema translator.
+
+
+
+
+=head1 FUNCTIONS
+
+
+B<builtin_facet>(PATH, ARGS, TYPE, [VALUE])
+
+=over 4
+
+=back
+
+
+
+
+
+
+
+
+=head1 REFERENCES
+
+See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for more details.
+
+=head1 COPYRIGHTS
+
+Module version 0.05.
+Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
+other contributors.
+
+Copyright (c) 2006 by the author(s). All rights reserved.  This program
+is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
+
+

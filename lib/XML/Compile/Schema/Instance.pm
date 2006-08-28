@@ -3,6 +3,8 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::Instance;
+use vars '$VERSION';
+$VERSION = '0.05';
 
 use Carp;
 
@@ -10,29 +12,6 @@ use XML::Compile::Schema::Specs;
 
 use Scalar::Util   qw/weaken/;
 
-=chapter NAME
-
-XML::Compile::Schema::Instance - Represents one schema
-
-=chapter SYNOPSIS
-
- # Used internally by XML::Compile::Schema
- my $schema = XML::Compile::Schema::Instance->new($xml);
-
-=chapter DESCRIPTION
-
-This module collect information from one schema, and helps to
-process it.
-
-=chapter METHODS
-
-=section Constructors
-
-=method new TOP, OPTIONS
-Get's the top of an XML::LibXML tree, which must be a schema element.
-The tree is parsed: the information collected.
-
-=cut
 
 sub new($@)
 {   my $class = shift;
@@ -49,49 +28,26 @@ sub init($)
     $self;
 }
 
-=section Accessors
-
-=method targetNamespace
-=method schemaNamespace
-=method schemaInstance
-=cut
 
 sub targetNamespace { shift->{tns} }
 sub schemaNamespace { shift->{xsd} }
 sub schemaInstance  { shift->{xsi} }
 
-=method ids
-Returns a list of all found ids.
-=cut
 
 sub ids() {keys %{shift->{ids}}}
 
-=method types
-Returns a list of all used names.
-=cut
 
 sub types() { keys %{shift->{types}} }
 
-=method type URI
-Returns the type definition with the specified name.
-=cut
 
 sub type($) { $_[0]->{types}{$_[1]} }
 
-=method elements
-Returns a list of all globally defined element names.
-=cut
 
 sub elements() { keys %{shift->{elements}} }
 
-=method element URI
-Returns one global element definition.
-=cut
 
 sub element($) { $_[0]->{elements}{$_[1]} }
 
-=section Index
-=cut
 
 my %as_element = map { ($_ => 1) } qw/element group attributeGroup/;
 
@@ -163,10 +119,6 @@ sub _collectTypes($)
     $self;
 }
 
-=method printIndex [FILEHANDLE]
-Prints an overview over the defined objects within this schema to the
-selected FILEHANDLE.
-=cut
 
 sub printIndex(;$)
 {   my $self  = shift;

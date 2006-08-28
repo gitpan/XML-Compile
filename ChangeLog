@@ -4,6 +4,10 @@
 Unless noted otherwise, these changes where initiated and applied by
 Mark Overmeer.
 
+version 0.05: Sun Aug 27 12:00:00 CEST 2006
+
+	- Release as OODoc processed package :(
+
 version 0.04: Sun Aug 27 11:49:54 CEST 2006
 
 	- Rewrote the particle handling to better process nesting and
