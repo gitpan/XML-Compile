@@ -2,8 +2,6 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::BuiltInStructs;
-use vars '$VERSION';
-$VERSION = '0.02';
 use base 'Exporter';
 
 our @EXPORT = qw/builtin_structs/;
@@ -15,6 +13,33 @@ use XML::Compile;
 use Carp;
 use List::Util    qw/first/;
 
+=chapter NAME
+
+XML::Compile::Schema::BuiltInStructs - handling of built-in data-structures
+
+=chapter SYNOPSIS
+
+ # Not for end-users
+ use XML::Compile::Schema::BuiltInStructs;
+ my $run = builtin_structs('READER');
+
+=chapter DESCRIPTION
+The translator understands schema's, but does not encode that into
+actions.  This module implements those actions, which are different
+for the reader and the writer.
+
+In a later release, this module will probably be split in a separate
+READER and WRITER module, because we usually do not need both reader
+and writer within one program.
+
+=chapter METHODS
+
+=c_method builtin_structs 'READER'|'WRITER'
+Returns a hash which defines the code to produce the code which
+will do the job... code which produces code... I know, it is not
+that simple.
+
+=cut
 
 sub builtin_structs($)
 {   my $direction = shift;
@@ -386,7 +411,7 @@ $writer{union} =
 
 # complexType
 
-$reader{complexType} =
+$reader{complexContent} =
  sub { splice @_, 0, 3;
        my @do;
        while(@_) {shift; push @do, shift};
@@ -396,7 +421,7 @@ $reader{complexType} =
            }
      };
 
-$writer{complexType} =
+$writer{complexContent} =
  sub { my ($path, $args, $node, @do) = @_;
        my $err = $args->{err};
        sub { my ($doc, $data) = @_;
@@ -418,13 +443,47 @@ $writer{complexType} =
           }
      };
 
+$reader{simpleContent} =
+ sub { splice @_, 0, 3;
+       my @do;
+       while(@_) {shift; push @do, shift};
+
+       sub { my %h = ('_', map { $_->(@_) } @do);
+             keys %h ? \%h : ();
+           }
+     };
+
+$writer{simpleContent} =
+ sub { my ($path, $args, $node, @do) = @_;
+       my $err = $args->{err};
+       sub { my ($doc, $data) = @_;
+             unless(UNIVERSAL::isa($data, 'HASH'))
+             {   $data = defined $data ? "$data" : 'undef';
+                 $err->($path, $data, 'expected hash of input data');
+                 return ();
+             }
+             my @elems   = @do;
+             my $default = shift @elems;
+             my $content = (shift @elems)->($doc, delete $data->{$default});
+             my @res     = $doc->createTextNode($content);
+             while(@elems)
+             {   my $childname = shift @elems;
+                 push @res, (shift @elems)
+                            ->($doc, delete $data->{$childname});
+             }
+             $err->($path, join(' ', sort keys %$data), 'unused data')
+                 if keys %$data;
+             @res;
+          }
+     };
+
 # Attributes
 
 $reader{attribute_required} =
  sub { my ($path, $args, $tag, $do) = @_;
        my $err  = $args->{err};
        sub { my $node = $_[0]->getAttributeNode($tag)
-                     || $err->($path, undef, "attribute required");
+                     || $err->($path, undef, "attribute $tag required");
              defined $node or return ();
              my $value = $do->($node);
              defined $value ? ($tag => $value) : ();
@@ -444,6 +503,27 @@ $writer{attribute_required} =
            }
      };
 
+$reader{attribute_prohibited} =
+ sub { my ($path, $args, $tag, $do) = @_;
+       my $err  = $args->{err};
+       sub { my $node = $_[0]->getAttributeNode($tag);
+             defined $node or return ();
+             $err->($path, $node->textContent, "attribute $tag prohibited");
+             ();
+           }
+     };
+
+$writer{attribute_prohibited} =
+ sub { my ($path, $args, $tag, $do) = @_;
+       my $err = $args->{err};
+
+       sub { my $value = $do->(@_);
+             $err->($path, $value, "attribute $tag prohibited")
+                if defined $value;
+             ();
+           }
+     };
+
 $reader{attribute_optional} =
  sub { my ($path, $args, $tag, $do) = @_;
        my $err  = $args->{err};
@@ -454,10 +534,50 @@ $reader{attribute_optional} =
            }
      };
 
+$writer{attribute_default} =
 $writer{attribute_optional} =
  sub { my ($path, $args, $tag, $do) = @_;
-       sub { my $value = $do->(@_) or return ();
-             $_[0]->createAttribute($tag, $value);
+       sub { my $value = $do->(@_);
+             defined $value ? $_[0]->createAttribute($tag, $value) : ();
+           }
+     };
+
+$reader{attribute_default} =
+ sub { my ($path, $args, $tag, $do, $default) = @_;
+       my $err  = $args->{err};
+       my $def  = $do->($default);
+
+       sub { my $node = $_[0]->getAttributeNode($tag);
+             ($tag => defined $node ? $do->($node) : $def);
+           }
+     };
+
+$reader{attribute_fixed} =
+ sub { my ($path, $args, $tag, $do, $fixed) = @_;
+       my $err = $args->{err};
+       my $def  = $do->($fixed);
+
+       sub { my $node  = $_[0]->getAttributeNode($tag);
+             my $value = defined $node ? $do->($node) : undef;
+             $err->($path, $value, "attr value fixed to '".$fixed->value."'")
+                 if !defined $value || $value ne $def;
+             ($tag => $def);
+           }
+     };
+
+$writer{attribute_fixed} =
+ sub { my ($path, $args, $tag, $do, $fixed) = @_;
+       my $err  = $args->{err};
+       $fixed   = $fixed->value;
+
+       sub { my ($doc, $value) = @_;
+             my $ret = defined $value ? $do->($doc, $value) : undef;
+             return $doc->createAttribute($tag, $ret)
+                 if defined $ret && $ret eq $fixed;
+
+             $err->($path, $value, "attr value fixed to '$fixed'");
+             $ret = $do->($doc, $fixed);
+             defined $ret ? $doc->createAttribute($tag, $ret) : ();
            }
      };
 

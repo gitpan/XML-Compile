@@ -2,8 +2,6 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
-use vars '$VERSION';
-$VERSION = '0.02';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -16,6 +14,35 @@ use POSIX            qw/strftime/;
 
 # use XML::RegExp;  ### can we use this?
 
+=chapter NAME
+
+XML::Compile::Schema::BuiltInTypes - Define handling of built-in data-types
+
+=chapter SYNOPSIS
+
+ # Not for end-users
+ use XML::Compile::Schema::BuiltInTypes qw/%builtin_types/;
+
+=chapter DESCRIPTION
+
+Different schema specifications specify different available types,
+but there is a lot over overlap.  The M<XML::Compile::Schema::Specs>
+module defines the availability, but here the types are implemented.
+
+The implementation certainly does not try to be minimal (using the
+restriction rules as set in the schema specification), because that
+would be too slow.
+
+=chapter FUNCTIONS
+
+The functions named in this chapter are all used at compile-time
+by the translator.  At that moment, they will be placed in the
+kind-of opcode tree which will process the data at run-time.
+You B<cannot call> these functions yourself.
+
+=section Any
+
+=cut
 
 # The XML reader calls
 #     check(parse(value))  or check_read(parse(value))
@@ -34,10 +61,22 @@ sub bigint   { $_[0] =~ s/\s+//g;
 sub bigfloat { $_[0] =~ s/\s+//g;
    my $v = Math::BigFloat->new($_[0]); $v->is_nan ? undef : $v }
 
+=function anySimpleType
+=function anyType
+Both any*Type built-ins can contain any kind of data.  Perl decides how
+to represent the passed values.
+=cut
 
 $builtin_types{anySimpleType} =
 $builtin_types{anyType}       = { };
 
+=section Single
+
+=function boolean
+Contains C<true>, C<false>, C<1> (is true), or C<0> (is false).  Unchecked,
+the actual value is used.  Otherwise, C<0> and C<1> are preferred for the
+hash value and C<true> and C<false> in XML.
+=cut
 
 $builtin_types{boolean} =
  { parse  => \&collapse
@@ -45,30 +84,50 @@ $builtin_types{boolean} =
  , check  => sub { $_[0] =~ m/^(false|true|0|1)$/ }
  };
 
+=section Big Integers
+Schema's define integer types which are derived from the C<decimal>
+type.  These values can grow enormously large, and therefore can only be
+handled correctly using M<Math::BigInt>.  When the translator is
+built with the C<sloppy_integers> option, this will simplify (speed-up)
+the produced code considerably: all integers then shall be between
+-2G and +2G.
+
+=function integer
+An integer with an undertermined, but maximally huge number of
+digits.
+=cut
 
 $builtin_types{integer} =
  { parse => \&bigint
  , check => sub { $_[0] =~ m/^\s*[-+]?\s*\d[\s\d]*$/ }
  };
 
+=function negativeInteger
+=cut
 
 $builtin_types{negativeInteger} =
  { parse => \&bigint
  , check => sub { $_[0] =~ m/^\s*\-\s*\d[\s\d]*$/ }
  };
 
+=function nonNegativeInteger
+=cut
 
 $builtin_types{nonNegativeInteger} =
  { parse => \&bigint
  , check => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ }
  };
 
+=function positiveInteger
+=cut
 
 $builtin_types{positiveInteger} =
  { parse => \&bigint
  , check => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ && m/[1-9]/ }
  };
 
+=function nonPositiveInteger
+=cut
 
 $builtin_types{nonPositiveInteger} =
  { parse => \&bigint
@@ -76,6 +135,9 @@ $builtin_types{nonPositiveInteger} =
                || $_[0] =~ m/^\s*(?:\+\s*)0[0\s]*$/ }
  };
 
+=function long
+A little bit shorter than an integer, but still up-to 19 digits.
+=cut
 
 $builtin_types{long} =
  { parse => \&bigint
@@ -83,12 +145,18 @@ $builtin_types{long} =
      sub { $_[0] =~ m/^\s*[-+]?\s*\d[\s\d]*$/ && ($_[0] =~ tr/0-9//) < 20 }
  };
 
+=function unsignedLong
+Value up-to 20 digits.
+=cut
 
 $builtin_types{unsignedLong} =
  { parse => \&bigint
  , check => sub {$_[0] =~ m/^\s*\+?\s*\d[\s\d]*$/ && ($_[0] =~ tr/0-9//) < 21}
  };
 
+=function unsignedInt
+Just too long to fit in Perl's ints.
+=cut
 
 $builtin_types{unsignedInt} =
  { parse => \&bigint
@@ -122,6 +190,10 @@ $builtin_types{unsigned_int} =
  , check  => sub {$_[0] =~ m/^\s*(?:\+\s*)?\d[\d\s]*$/ && $_[0] >= 0}
  };
 
+=section Integers
+
+=function int
+=cut
 
 $builtin_types{int} =
  { parse  => \&str2int
@@ -129,6 +201,9 @@ $builtin_types{int} =
  , check  => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/}
  };
 
+=function short
+Signed 16-bits value.
+=cut
 
 $builtin_types{short} =
  { parse  => \&str2int
@@ -137,6 +212,9 @@ $builtin_types{short} =
     sub { $_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= -32768 && $_[0] <= 32767 }
  };
 
+=function unsigned Short
+unsigned 16-bits value.
+=cut
 
 $builtin_types{unsignedShort} =
  { parse  => \&str2int
@@ -145,6 +223,9 @@ $builtin_types{unsignedShort} =
     sub { $_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= 0 && $_[0] <= 65535 }
  };
 
+=function byte
+Signed 8-bits value.
+=cut
 
 $builtin_types{byte} =
  { parse  => \&str2int
@@ -152,6 +233,9 @@ $builtin_types{byte} =
  , check  => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= -128 && $_[0] <=127}
  };
 
+=function unsignedByte
+Unsigned 8-bits value.
+=cut
 
 $builtin_types{unsignedByte} =
  { parse  => \&str2int
@@ -159,15 +243,35 @@ $builtin_types{unsignedByte} =
  , check  => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= 0 && $_[0] <=255}
  };
 
+=function precissionDecimal
+PARTIAL IMPLEMENTATION.  Special values INF and NaN not handled.
+=cut
 
 $builtin_types{precissionDecimal} = $builtin_types{int};
 
+=section Floating-point
+PARTIAL IMPLEMENTATION: INF, NaN not handled.  The C<float> is not limited
+in size, but mapped on double.
+
+=function decimal
+Decimals are painful: they can be very large, much larger than Perl's
+internal floats.  The value is therefore kept as string.
+Use M<Math::BigFloat> when you need calculations.  You can also pass such
+object here.
+=cut
 
 $builtin_types{decimal} =
  { parse  => \&bigfloat
  , check  => sub { my $x = eval {$_[0] + 0.0}; !$@ }
  };
 
+=function float
+A small floating-point value.
+
+=function double
+A floating-point value.
+
+=cut
 
 $builtin_types{float} =
 $builtin_types{double} =
@@ -176,6 +280,12 @@ $builtin_types{double} =
  , check  => sub { my $val = eval {$_[0] + 0.0}; !$@ }
  };
 
+=section Binary
+
+=function base64binary
+In the hash, it will be kept as binary data.  In XML, it will be
+base64 encoded.
+=cut
 
 $builtin_types{base64binary} =
  { parse  => sub { eval { decode_base64 $_[0] } }
@@ -183,6 +293,10 @@ $builtin_types{base64binary} =
  , check  => sub { !$@ }
  };
 
+=function hexBinary
+In the hash, it will be kept as binary data.  In XML, it will be
+hex encoded, two hex digits per byte.
+=cut
 
 # (Use of) an XS implementation would be nice
 $builtin_types{hexBinary} =
@@ -193,6 +307,14 @@ $builtin_types{hexBinary} =
      sub { $_[0] !~ m/[^0-9a-fA-F\s]/ && (($_[0] =~ tr/0-9a-fA-F//) %2)==0}
  };
 
+=section Dates
+
+=function date
+A day, represented in localtime as C<YYYY-MM-DD> or C<YYYY-MM-DD[-+]HH:mm>.
+When a decimal value is passed, it is interpreted as C<time> value in UTC,
+and will be formatted as required.  When reading, the date string will
+not be parsed.
+=cut
 
 $builtin_types{date} =
  { parse  => \&collapse
@@ -205,6 +327,15 @@ $builtin_types{date} =
     $/x }
  };
 
+=function dateTime
+A moment, represented in localtime as "date T time tz", where date is
+C<YYYY-MM-DD>, time is C<HH:MM:SS> and optional, and time-zone tz
+is either C<-HH:mm>, C<+HH:mm>, or C<Z> for UTC.
+
+When a decimal value is passed, it is interpreted as C<time> value in UTC,
+and will be formatted as required.  When reading, the date string will
+not be parsed.
+=cut
 
 $builtin_types{dateTime} =
  { parse  => \&collapse
@@ -223,6 +354,9 @@ $builtin_types{dateTime} =
     $/x ? $1 : 0 }
  };
 
+=function gDay
+Format C<---12> or C<---12+9:00> (12 days, optional time-zone)
+=cut
 
 $builtin_types{gDay} =
  { parse  => \&collapse
@@ -230,6 +364,9 @@ $builtin_types{gDay} =
       m/^\-\-\-\d+(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
  };
 
+=function gMonth
+Format C<--9> or C<--9+7:00> (9 months, optional time-zone)
+=cut
 
 $builtin_types{gMonth} =
  { parse  => \&collapse
@@ -237,6 +374,9 @@ $builtin_types{gMonth} =
       m/^\-\-\d+(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
  };
 
+=function gMonthDay
+Format C<--9-12> or C<--9-12+7:00> (9 months 12 days, optional time-zone)
+=cut
 
 $builtin_types{gMonthDay} =
  { parse  => \&collapse
@@ -244,6 +384,9 @@ $builtin_types{gMonthDay} =
       m/^\-\-\d+\-\d+(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
  };
 
+=function gYear
+Format C<2006> or C<2006+7:00> (year 2006, optional time-zone)
+=cut
 
 $builtin_types{gYear} =
  { parse  => \&collapse
@@ -251,6 +394,9 @@ $builtin_types{gYear} =
       m/^\d+(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
  };
 
+=function gYearMonth
+Format C<2006-11> or C<2006-11+7:00> (november 2006, optional time-zone)
+=cut
 
 $builtin_types{gYearMonth} =
  { parse  => \&collapse
@@ -258,6 +404,13 @@ $builtin_types{gYearMonth} =
       m/^\d+\-(?:0?[1-9]|1[0-2])(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
  };
 
+=section Duration
+
+=function duration
+Format C<-PnYnMnDTnHnMnS>, where optional starting C<-> means negative.
+The C<P> is obligatory, and the C<T> indicates start of a time part.
+All other C<n[YMDHMS]> are optional.
+=cut
 
 $builtin_types{duration} =
  { parse  => \&collapse
@@ -266,6 +419,11 @@ $builtin_types{duration} =
         (?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?)S)?$/x }
  };
 
+=function dayTimeDuration
+Format C<-PDTnHnMnS>, where optional starting C<-> means negative.
+The C<P> is obligatory, and the C<T> indicates start of a time part.
+All other C<n[DHMS]> are optional.
+=cut
 
 $builtin_types{dayTimeDuration} =
  { parse  => \&collapse
@@ -273,6 +431,10 @@ $builtin_types{dayTimeDuration} =
      m/^\-?P(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?)S)?$/ }
  };
 
+=function yearMonthDuration
+Format C<-PnYnMn>, where optional starting C<-> means negative.
+The C<P> is obligatory, the C<n[YM]> are optional.
+=cut
 
 $builtin_types{yearMonthDuration} =
  { parse  => \&collapse
@@ -280,14 +442,27 @@ $builtin_types{yearMonthDuration} =
      m/^\-?P(?:\d+Y)?(?:\d+M)?$/ }
  };
 
+=section Strings
+
+=function string
+(Usually utf8) string.
+=cut
 
 $builtin_types{string} = {};
 
+=function normalizedString
+String where all sequence of white-spaces (including new-lines) are
+interpreted as one blank.  Blanks at beginning and the end of the
+string are ignored.
+=cut
 
 $builtin_types{normalizedString} =
  { parse => \&preserve
  };
 
+=function language
+An RFC3066 language indicator.
+=cut
 
 $builtin_types{language} =
  { parse => \&collapse
@@ -295,6 +470,11 @@ $builtin_types{language} =
        m/^[a-zA-Z]{1,8}(?:\-[a-zA-Z0-9]{1,8})*$/ }
  };
 
+=function ID, IDREF, IDREFS
+A label, reference to a label, or set of references.
+
+PARTIAL IMPLEMENTATION: the validity of used characters is not checked.
+=cut
 
 sub _valid_ncname($)
 {  (my $name = $_[0]) =~ s/\s//;
@@ -315,6 +495,11 @@ $builtin_types{ENTITIES} =
  , check  => sub { $_[0] !~ m/\:/ }
  };
 
+=function NCName, ENTITY, ENTITIES
+A name which contains no colons (a non-colonized name).
+
+=function Name
+=cut
 
 $builtin_types{Name} =
 $builtin_types{token} =
@@ -322,17 +507,29 @@ $builtin_types{NMTOKEN} =
  { parse  => \&collapse
  };
 
+=function token, NMTOKEN, NMTOKENS
+=cut
 
 $builtin_types{NMTOKENS} =
  { parse  => \&preserve
  };
 
+=section URI
+
+=function anyURI
+You may pass a string or, for instance, an M<URI> object which will be
+stringified into an URI.  When read, the data will not automatically
+be translated into an URI object: it may not be used that way.
+=cut
 
 $builtin_types{anyURI} =
  { parse  => \&collapse
  , check  => sub { $_[0] =~ $RE{URI} }
  };
 
+=function QName
+A qualified type name: a type name with optional prefix.
+=cut
 
 sub _valid_qname($)
 {   my @ncnames = split /\:/, $_[0];
@@ -345,6 +542,9 @@ $builtin_types{QName} =
  { check  => \&_valid_qname
  };
 
+=function NOTATION
+NOT IMPLEMENTED, so treated as string.
+=cut
 
 $builtin_types{NOTATION} = {};
 

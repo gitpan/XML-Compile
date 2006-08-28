@@ -2,8 +2,6 @@ use warnings;
 use strict;
 
 package TestTools;
-use vars '$VERSION';
-$VERSION = '0.02';
 use base 'Exporter';
 
 use XML::LibXML;
