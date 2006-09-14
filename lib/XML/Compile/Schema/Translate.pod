@@ -38,14 +38,11 @@ W3C schema's are implemented.  A few nuts are still to crack:
  element mixed
  facets on dates
  limited understanding of patterns
- import
  include
  anyAttribute
  substitutionGroup, final, and abstract
  unique, keyref, selector, field, include, notation
  inherited attributes for simpleContent extend
- simpleContent restrict
- facets on list objects
 
 Of course, these are all fixed in next release ;-)
 
@@ -217,7 +214,7 @@ the counts on all defined name-spaces.
 =head1 FUNCTIONS
 
 
-XML::Compile::Schema::Translate-E<gt>B<compile_tree>(TYPENAME, OPTIONS)
+XML::Compile::Schema::Translate-E<gt>B<compile_tree>(ELEMENT, OPTIONS)
 
 =over 4
 
@@ -249,7 +246,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.05.
+Module version 0.06.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 use XML::LibXML;
 use Carp;
@@ -28,13 +28,20 @@ sub init($)
       = ref $top && $top->isa('XML::LibXML::Node') ? $top
       : $self->parse(\$top);
 
+    $self->addSchemaDirs($ENV{SCHEMA_DIRECTORIES});
+    $self->addSchemaDirs($args->{schema_dirs});
     $self;
 }
 
-# Extend this later with other input mechamisms.
 sub parse($)
 {   my ($thing, $data) = @_;
     my $xml = XML::LibXML->new->parse_string($$data);
+    defined $xml ? $xml->documentElement : undef;
+}
+
+sub parseFile($)
+{   my ($thing, $fn) = @_;
+    my $xml = XML::LibXML->new->parse_file($fn);
     defined $xml ? $xml->documentElement : undef;
 }
 
@@ -42,13 +49,40 @@ sub parse($)
 sub top() {shift->{XC_top}}
 
 
+sub addSchemaDirs(@)
+{   my $self = shift;
+    foreach (@_)
+    {   my $dir  = shift;
+        my @dirs = grep {defined} ref $dir eq 'ARRAY' ? @$dir : $dir;
+        push @{$self->{schema_dirs}},
+           $^O eq 'MSWin32' ? @dirs : map { split /\:/ } @dirs;
+    }
+    $self;
+}
+
+
+sub findSchemaFile($)
+{   my ($self, $fn) = @_;
+
+    return (-r $fn ? $fn : undef)
+        if File::Spec->file_name_is_absolute($fn);
+
+    foreach my $dir (@{$self->{schema_dirs}})
+    {   my $full = File::Spec->catfile($dir, $fn);
+        next unless -e $full;
+        return -r $full ? $full : undef;
+    }
+
+    undef;
+}
+
+
 sub walkTree($$)
 {   my ($self, $node, $code) = @_;
     if($code->($node))
     {   $self->walkTree($_, $code)
-            foreach $node->getChildNodes;
+            for $node->getChildNodes;
     }
 }
-
 
 1;

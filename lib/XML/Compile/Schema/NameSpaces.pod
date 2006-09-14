@@ -69,20 +69,20 @@ C< {uri}name > or as seperate URI and NAME.
 
 =back
 
+$obj-E<gt>B<list>
+
+=over 4
+
+Returns the list of names defined until now.
+
+=back
+
 $obj-E<gt>B<namespace>(URI)
 
 =over 4
 
 Returns a list of L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects which have
 the URI as target namespace.
-
-=back
-
-$obj-E<gt>B<namespaces>
-
-=over 4
-
-Returns the list of names defined until now.
 
 =back
 
@@ -108,7 +108,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.05.
+Module version 0.06.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

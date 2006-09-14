@@ -3,12 +3,14 @@ use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.05';
+$VERSION = '0.06';
 use base 'Exporter';
 
 use XML::LibXML;
 use Test::More;
 use Test::Deep   qw/cmp_deeply/;
+
+$ENV{SCHEMA_DIRECTORIES} = 'xsd';
 
 our @EXPORT = qw/
  $TestNS

@@ -4,18 +4,23 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.05';
+$VERSION = '0.06';
 use base 'XML::Compile';
 
 use Carp;
 use List::Util   qw/first/;
-use XML::LibXML;
+use XML::LibXML  ();
+use File::Spec   ();
 
 use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::BuiltInStructs qw/builtin_structs/;
 use XML::Compile::Schema::Translate      qw/compile_tree/;
 use XML::Compile::Schema::Instance;
 use XML::Compile::Schema::NameSpaces;
+
+my %schemaLocation =
+ ( 'http://www.w3.org/2001/XMLSchema' => '2001-XMLSchema.xsd'
+ );
 
 
 sub init($)
@@ -57,6 +62,21 @@ sub addSchemas($$)
             return 0;
           }
     );
+}
+
+
+sub importSchema($)
+{   my ($self, $thing) = @_;
+
+    my $filename = $schemaLocation{$thing} || $thing;
+
+    my $path = $self->findSchemaFile($filename)
+        or croak "ERROR: cannot find $filename for $thing";
+
+    my $tree = $self->parseFile($path)
+        or croak "ERROR: cannot parse XML from $path";
+
+    $self->addSchema($tree);
 }
 
 
@@ -140,7 +160,7 @@ sub types()
 {   my $nss = shift->namespaces;
     sort map {$_->types}
           map {$nss->schemas($_)}
-             $nss->namespaces;
+             $nss->list;
 }
 
 
@@ -148,7 +168,7 @@ sub elements()
 {   my $nss = shift->namespaces;
     sort map {$_->elements}
           map {$nss->schemas($_)}
-             $nss->namespaces;
+             $nss->list;
 }
 
 1;

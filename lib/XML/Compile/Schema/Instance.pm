@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 use Carp;
 
@@ -112,6 +112,8 @@ sub _collectTypes($)
             };
         weaken($self->{schema});
 
+        # Id's can also be set on nested items, but these are ignored
+        # for now...
         $self->{ids}{"$ns#$id"} = $info
            if defined $id;
     }
@@ -128,6 +130,5 @@ sub printIndex(;$)
       for sort {$a->{name} cmp $b->{name}}
              values %{$self->{types}}, values %{$self->{elements}}
 }
-
 
 1;

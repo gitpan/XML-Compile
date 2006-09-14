@@ -3,7 +3,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInStructs;
 use vars '$VERSION';
-$VERSION = '0.05';
+$VERSION = '0.06';
 use base 'Exporter';
 
 our @EXPORT = qw/builtin_structs/;
@@ -270,19 +270,123 @@ $writer{element_optional} =
        sub { defined $_[1] ? $do->(@_) : (); };
      };
 
-$reader{create_element} =
-   sub {$_[3]};
+#
+# complexType/ComplexContent
+#
 
-$writer{create_element} =
-   sub { my ($path, $args, $tag, $do) = @_;
-         sub { my @values = $do->(@_) or return ();
-               my $node = $_[0]->createElement($tag);
-               $node->addChild
-                 ( ref $_ && $_->isa('XML::LibXML::Node') ? $_
-                 : $_[0]->createTextNode(defined $_ ? $_ : ''))
-                    for @values;
-               $node;
+$reader{create_complex_element} =
+ sub { my ($path, $args, $tag, @childs) = @_;
+       my @do;
+       while(@childs) {shift @childs; push @do, shift @childs}
+
+       sub { my @pairs = map {$_->(@_) } @do;
+             @pairs ? {@pairs} : ();
+           };
+     };
+
+$writer{create_complex_element} =
+ sub { my ($path, $args, $tag, @do) = @_;
+       my $err = $args->{err};
+       sub { my ($doc, $data) = @_;
+             unless(UNIVERSAL::isa($data, 'HASH'))
+             {   $data = defined $data ? "$data" : 'undef';
+                 $err->($path, $data, 'expected hash of input data');
+                 return ();
              }
+             my @elems = @do;
+             my @childs;
+             while(@elems)
+             {   my $childname = shift @elems;
+                 push @childs, (shift @elems)
+                     ->($doc, delete $data->{$childname});
+             }
+             $err->($path, join(' ', sort keys %$data), 'unused data')
+                 if keys %$data;
+
+             @childs or return ();
+             my $node  = $_[0]->createElement($tag);
+             $node->addChild
+               ( ref $_ && $_->isa('XML::LibXML::Node') ? $_
+               : $_[0]->createTextNode(defined $_ ? $_ : ''))
+                  for @childs;
+
+             $node;
+           };
+     };
+
+#
+# complexType/simpleContent
+#
+
+$reader{create_tagged_element} =
+ sub { my ($path, $args, $tag, $st, $attrs) = @_;
+       my @attrs = @$attrs;
+       my @do;
+       while(@attrs) {shift @attrs; push @do, shift @attrs}
+
+       sub { my @a = @do;
+             my $simple = $st->(@_);
+             my @pairs = map {$_->(@_)} @do;
+             defined $simple or @pairs or return ();
+             defined $simple or $simple = 'undef';
+             {_ => $simple, @pairs};
+           };
+     };
+
+$writer{create_tagged_element} =
+ sub { my ($path, $args, $tag, $st, $attrs) = @_;
+       my @do  = @$attrs;
+       my $err = $args->{err};
+       sub { my ($doc, $data) = @_;
+             unless(UNIVERSAL::isa($data, 'HASH'))
+             {   $data = defined $data ? "$data" : 'undef';
+                 $err->($path, $data, 'expected hash of input data');
+                 return ();
+             }
+             my $content = $st->($doc, delete $data->{_});
+             my @childs;
+             push @childs, $doc->createTextNode($content)
+                if defined $content;
+
+             my @attrs   = @do;
+             while(@attrs)
+             {   my $childname = shift @attrs;
+                 push @childs,
+                   (shift @attrs)->($doc, delete $data->{$childname});
+             }
+             $err->($path, join(' ', sort keys %$data), 'unused data')
+                 if keys %$data;
+
+             @childs or return ();
+             my $node  = $_[0]->createElement($tag);
+             $node->addChild
+               ( ref $_ && $_->isa('XML::LibXML::Node') ? $_
+               : $_[0]->createTextNode(defined $_ ? $_ : ''))
+                  for @childs;
+             $node;
+          };
+     };
+
+#
+# simpleType
+#
+
+$reader{create_simple_element} =
+   sub { my ($path, $args, $tag, $st) = @_;
+         sub { my $value = $st->(@_);
+               defined $value ? $value : undef;
+             };
+       };
+
+$writer{create_simple_element} =
+   sub { my ($path, $args, $tag, $st) = @_;
+         sub { my $value = $st->(@_);
+               my $node  = $_[0]->createElement($tag);
+               $node->addChild
+                 ( ref $value && $value->isa('XML::LibXML::Node') ? $value
+                 : $_[0]->createTextNode(defined $value ? $value : ''));
+               $node;
+             };
        };
 
 $reader{builtin_checked} =
@@ -349,20 +453,76 @@ $writer{builtin_unchecked} =
 # simpleType
 
 $reader{list} =
- sub { my ($path, $args, $do) = @_;
+ sub { my ($path, $args, $st) = @_;
        sub { defined $_[0] or return undef;
-             my @v = grep {defined} map {$do->($_)}
-                 split " ", $_[0]->textContent;
-             @v ? \@v : undef;
-           }
+             my $v = $_[0]->textContent;
+             my @v = grep {defined} map {$st->($_) } split(" ",$v);
+             \@v;
+           };
      };
 
 $writer{list} =
- sub { my ($path, $args, $do) = @_;
+ sub { my ($path, $args, $st) = @_;
        sub { defined $_[1] or return undef;
              my @el = ref $_[1] eq 'ARRAY' ? (grep {defined} @{$_[1]}) : $_[1];
-             my @r = grep {defined} map {$do->($_[0], $_)} @el;
-             @r ? join(' ', @r) : undef;
+             my @r = grep {defined} map {$st->($_[0], $_)} @el;
+             @r or return undef;
+             join ' ', grep {defined} @r;
+           };
+     };
+
+$reader{facets_list} =
+ sub { my ($path, $args, $st, $early, $late) = @_;
+       sub { defined $_[0] or return undef;
+             my $v = $st->(@_);
+             for(@$early) { defined $v or return (); $v = $_->($v) }
+             my @v = defined $v ? split(" ",$v) : ();
+             my @r;
+         EL: for my $e (@v)
+             {   for(@$late) { defined $e or next EL; $e = $_->($e) }
+                 push @r, $e;
+             }
+             @r ? \@r : ();
+           }
+     };
+
+$writer{facets_list} =
+ sub { my ($path, $args, $st, $early, $late) = @_;
+       sub { defined $_[1] or return undef;
+             my @el = ref $_[1] eq 'ARRAY' ? (grep {defined} @{$_[1]}) : $_[1];
+
+             my @r = grep {defined} map {$st->($_[0], $_)} @el;
+
+         EL: for(@r)
+             {   for my $l (@$late)
+                 { defined $_ or next EL; $_ = $l->($_) }
+             }
+
+             @r or return undef;
+             my $r = join ' ', grep {defined} @r;
+
+             my $v = $r;  # do not test with original
+             for(@$early) { defined $v or return (); $v = $_->($v) }
+             $r;
+           };
+     };
+
+$reader{facets} =
+ sub { my ($path, $args, $st, @do) = @_;
+       sub { defined $_[0] or return undef;
+             my $v = $st->(@_);
+             for(@do) { defined $v or return (); $v = $_->($v) }
+             $v;
+           }
+     };
+
+$writer{facets} =
+ sub { my ($path, $args, $st, @do) = @_;
+       sub { defined $_[1] or return undef;
+             my $v = $st->(@_);
+             for(reverse @do)
+             { defined $v or return (); $v = $_->($v) }
+             $v;
            };
      };
 
@@ -382,74 +542,6 @@ $writer{union} =
              for(@types) {my $v = $_->(@_); defined $v and return $v }
              $err->($path, $_[1], "no match in union");
            };
-     };
-
-# complexType
-
-$reader{complexContent} =
- sub { splice @_, 0, 3;
-       my @do;
-       while(@_) {shift; push @do, shift};
-
-       sub { my %h = map { $_->(@_) } @do;
-             keys %h ? \%h : ();
-           }
-     };
-
-$writer{complexContent} =
- sub { my ($path, $args, $node, @do) = @_;
-       my $err = $args->{err};
-       sub { my ($doc, $data) = @_;
-             unless(UNIVERSAL::isa($data, 'HASH'))
-             {   $data = defined $data ? "$data" : 'undef';
-                 $err->($path, $data, 'expected hash of input data');
-                 return ();
-             }
-             my @elems = @do;
-             my @res;
-             while(@elems)
-             {   my $childname = shift @elems;
-                 push @res, (shift @elems)
-                            ->($doc, delete $data->{$childname});
-             }
-             $err->($path, join(' ', sort keys %$data), 'unused data')
-                 if keys %$data;
-             @res;
-          }
-     };
-
-$reader{simpleContent} =
- sub { splice @_, 0, 3;
-       my @do;
-       while(@_) {shift; push @do, shift};
-
-       sub { my %h = ('_', map { $_->(@_) } @do);
-             keys %h ? \%h : ();
-           }
-     };
-
-$writer{simpleContent} =
- sub { my ($path, $args, $node, @do) = @_;
-       my $err = $args->{err};
-       sub { my ($doc, $data) = @_;
-             unless(UNIVERSAL::isa($data, 'HASH'))
-             {   $data = defined $data ? "$data" : 'undef';
-                 $err->($path, $data, 'expected hash of input data');
-                 return ();
-             }
-             my @elems   = @do;
-             my $default = shift @elems;
-             my $content = (shift @elems)->($doc, delete $data->{$default});
-             my @res     = $doc->createTextNode($content);
-             while(@elems)
-             {   my $childname = shift @elems;
-                 push @res, (shift @elems)
-                            ->($doc, delete $data->{$childname});
-             }
-             $err->($path, join(' ', sort keys %$data), 'unused data')
-                 if keys %$data;
-             @res;
-          }
      };
 
 # Attributes

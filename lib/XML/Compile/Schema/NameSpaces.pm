@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 use Carp;
 
@@ -21,7 +21,7 @@ sub init($)
 }
 
 
-sub namespaces() { keys %{shift->{tns}} }
+sub list() { keys %{shift->{tns}} }
 
 
 sub namespace($)
@@ -44,8 +44,7 @@ sub schemas($)
     my @schemas = $self->namespace($ns);
     @schemas and return @schemas;
 
-    # now look for import... and load and compile it
-    croak "ERROR: namespace $ns not known";
+    ();
 }
 
 

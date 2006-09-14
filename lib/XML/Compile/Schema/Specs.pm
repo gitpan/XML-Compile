@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
 use Carp;
@@ -101,8 +101,8 @@ my %schema_2000 =
  );
 
 my %schema_2001 =
- ( uri_xsd => 'http://www.w3.org/2001/XMLSchema'
- , uri_xsi => 'http://www.w3.org/2001/XMLSchema-instance'
+ ( uri_xsd  => 'http://www.w3.org/2001/XMLSchema'
+ , uri_xsi  => 'http://www.w3.org/2001/XMLSchema-instance'
 
  , builtin_public => \%builtin_public_2001
  );
@@ -115,6 +115,7 @@ sub predefinedSchemas() { keys %schemas }
 
 
 sub predefinedSchema($) { defined $_[1] ? $schemas{$_[1]} : () }
+
 
 
 sub builtInType($;$@)

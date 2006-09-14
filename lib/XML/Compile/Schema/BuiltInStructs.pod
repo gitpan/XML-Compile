@@ -23,9 +23,11 @@ The translator understands schema's, but does not encode that into
 actions.  This module implements those actions, which are different
 for the reader and the writer.
 
-In a later release, this module will probably be split in a separate
-READER and WRITER module, because we usually do not need both reader
-and writer within one program.
+In a later release of XML::Compile, this module will probably be split
+in a separate READER and WRITER module, because we usually do not need
+both reader and writer within one program.  It will make the code
+cleaner.  For now, development is easier because both reader and
+writer code are visible at once.
 
 
 
@@ -56,7 +58,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.05.
+Module version 0.06.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

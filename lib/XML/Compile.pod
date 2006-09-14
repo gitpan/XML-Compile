@@ -12,25 +12,47 @@ XML::Compile - Compilation based XML processing
 
 =head1 DESCRIPTION
 
-Many applications which process data-centric XML do that based on a
-nice specification, expressed in an XML Schema.  C<XML::Compile> reads
-and writes XML data with the help of such schema's.  On the Perl side,
-it uses a tree of nested hashes with the same structure.
+Many professional applications which process data-centric XML do that
+based on a formal specification, expressed as XML Schema.  XML::Compile
+reads and writes XML data with the help of such schema's.  On the Perl
+side, the module uses a tree of nested hashes with the same structure.
 
 Where other Perl modules, like SOAP::WSDL help you using these schema's
-(often with a lot of run-time (XPath) searches), this module takes a
+(often with a lot of run-time [XPath] searches), this module takes a
 different approach: in stead of run-time processing of the specification,
 it will first compile the expected structure into real Perl, and then use
 that to process the data.
 
-There are many perl modules with the same as this one: translate
+There are many perl modules with the same intention as this one: translate
 between XML and nested hashes.  However, there are a few serious
-differences:  because the schema is used here, we make sure we only
-handle correct data.  Data-types are formatted and processed correctly;
-for instance, C<integer> does accept huge values (at least 18 digits) as
-the specification prescribes.  Also more complex data-types like C<list>,
-C<union>, and C<substitutionGroup> (unions on complex type level) are
-supported, which is rarely the case in other modules.
+differences:  because the schema is used here (and not in the other
+modules), we can validate the data.  XML requires validation.  Next to
+this, data-types are formatted and processed correctly.  for instance,
+the specification prescribes that the C<integer> data-type must accept
+huge values of at least 18 digits.  Also more complex data-types like
+C<list>, C<union>, and C<substitutionGroup> (unions on complex type level)
+are supported, which is rarely the case in other modules.
+
+In general two WARNINGS:
+
+=over 4
+
+=item .
+
+The compiler is implemented in L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>,
+which is B<not finished>.  See that manual page about the specific behavior
+and its (current) limitations!  Please help to find missing pieces and
+mistakes.
+
+=item .
+
+The provided B<schema is not validated>!  In some cases,
+compile-time and run-time errors will be reported, but typically only
+in cases that the parser has no idea what to do with such a mistake.
+On the other hand, the processed B<data is validated>: the output will
+follow the specs closely.
+
+=back
 
 
 
@@ -39,25 +61,65 @@ supported, which is rarely the case in other modules.
 
 =head2 Constructors
 
-These constructors are base class methods, and therefore not directly
-accessed.
+These constructors are base class methods to be extended,
+and therefore should not be accessed directly.
 
 $obj-E<gt>B<new>(TOP, OPTIONS)
 
 =over 4
 
 The TOP is a XML::LibXML::Document (a direct result from parsing
-activities) or a XML::LibXML::Node (a sub-tree).  In any case,
-a product of the XML::LibXML module (based on libxml2).
+activities) or a XML::LibXML::Node (a sub-tree).  It may also be a
+text which represents one or more schema's, as long as it is one node.
 
 If you have compiled/collected all the information you need,
-then simply terminate the compiler object: that will clean-up
-the XML::LibXML objects.
+you may simply terminate the compiler object: that will clean-up
+(most of) the XML::LibXML objects.
+
+-Option     --Defined in--Default
+ schema_dirs              C<undef>
+
+. schema_dirs DIRECTORY|ARRAY-OF-DIRECTORIES
+
+=over 4
+
+Where to find schema's.  This can be specified with the
+environment variable C<SCHEMA_DIRECTORIES> or with this option.
+See L<addSchemaDirs()|XML::Compile/"Accessors"> for a detailed explanation.
+
+=back
 
 =back
 
 =head2 Accessors
 
+
+$obj-E<gt>B<addSchemaDirs>(DIRECTORIES)
+
+=over 4
+
+Each time this method is called, the specified DIRECTORIES will be added
+in front of the list of already known schema directories.  Initially,
+the value of the environment variable C<SCHEMA_DIRECTORIES> is added
+(therefore used last), then the constructor option C<schema_dirs>
+is processed.
+
+Values which are C<undef> are skipped.  ARRAYs are flattened.  
+Arguments are split on colons (only when on UNIX) after flattening.
+
+=back
+
+$obj-E<gt>B<findSchemaFile>(FILENAME)
+
+=over 4
+
+Runs through all defined schema directories (see L<addSchemaDirs()|XML::Compile/"Accessors">)
+in search of the specified FILENAME.  When the FILENAME is absolute,
+that will be used, and no search will take place.  An C<undef> is returned
+when the file is not found or not readible, otherwise a full path to
+the file is returned to the caller.
+
+=back
 
 $obj-E<gt>B<top>
 
@@ -75,13 +137,10 @@ $obj-E<gt>B<walkTree>(NODE, CODE)
 =over 4
 
 Walks the whole tree from NODE downwards, calling the CODE reference
-for each NODE found.  When the routine returns false, the child
+for each NODE found.  When that routine returns false, the child
 nodes will be skipped.
 
 =back
-
-=head2 Compilers
-
 
 
 
@@ -97,7 +156,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.05.
+Module version 0.06.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 
