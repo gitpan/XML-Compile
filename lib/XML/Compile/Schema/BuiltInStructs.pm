@@ -3,7 +3,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInStructs;
 use vars '$VERSION';
-$VERSION = '0.06';
+$VERSION = '0.07';
 use base 'Exporter';
 
 our @EXPORT = qw/builtin_structs/;
@@ -279,7 +279,7 @@ $reader{create_complex_element} =
        my @do;
        while(@childs) {shift @childs; push @do, shift @childs}
 
-       sub { my @pairs = map {$_->(@_) } @do;
+       sub { my @pairs = map {$_->(@_)} @do;
              @pairs ? {@pairs} : ();
            };
      };
@@ -645,6 +645,20 @@ $writer{attribute_fixed} =
              $err->($path, $value, "attr value fixed to '$fixed'");
              $ret = $do->($doc, $fixed);
              defined $ret ? $doc->createAttribute($tag, $ret) : ();
+           }
+     };
+
+# SubstitutionGroups
+
+$reader{element_substgroup} =
+ sub { my ($path, $args, $name, $defs) = @_;
+       my $err  = $args->{err};
+       sub { foreach my $def (@$defs)
+             {   my $node = $_[0]->getChildrenByTagName($def->[1])
+                    or next;
+                 return $def->[2]->(@_);
+             }
+             $err->($path, $name, "none of the substitution alternatives found.");
            }
      };
 

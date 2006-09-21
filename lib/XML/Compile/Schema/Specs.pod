@@ -31,8 +31,8 @@ Provide an EXPANDED (full) type name or an namespace URI and a LOCAL node
 name.  Returned is a HASH with process information or C<undef> if not
 found.
 
--Option         --Defined in--Default
- sloppy_integers              <false>
+S<< Option         --Defined in--Default >>
+S<< sloppy_integers              <false> >>
 
 . sloppy_integers BOOLEAN
 
@@ -78,7 +78,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.06.
+Module version 0.07.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

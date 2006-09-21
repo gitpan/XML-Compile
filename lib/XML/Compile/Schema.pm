@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.06';
+$VERSION = '0.07';
 use base 'XML::Compile';
 
 use Carp;
@@ -19,7 +19,11 @@ use XML::Compile::Schema::Instance;
 use XML::Compile::Schema::NameSpaces;
 
 my %schemaLocation =
- ( 'http://www.w3.org/2001/XMLSchema' => '2001-XMLSchema.xsd'
+ ( 'http://www.w3.org/1999/XMLSchema'     => '1999-XMLSchema.xsd'
+ , 'http://www.w3.org/1999/part2.xsd'     => '1999-XMLSchema-part2.xsd'
+ , 'http://www.w3.org/2000/10/XMLSchema'  => '2000-XMLSchema.xsd'
+ , 'http://www.w3.org/2001/XMLSchema'     => '2001-XMLSchema.xsd'
+ , 'http://www.w3.org/XML/1998/namespace' => '1998-namespace.xsd'
  );
 
 
@@ -42,18 +46,21 @@ sub namespaces() { shift->{namespaces} }
 sub addSchemas($$)
 {   my ($self, $top) = @_;
 
-    $top    = $top->documentElement
-       if $top->isa('XML::LibXML::Document');
+    my $node = ref $top && $top->isa('XML::LibXML::Node') ? $top
+      : $self->parse(\$top);
+
+    $node    = $node->documentElement
+       if $node->isa('XML::LibXML::Document');
 
     my $nss = $self->namespaces;
 
     $self->walkTree
-    ( $top,
-      sub { my $node = shift;
-            return 1 unless $node->isa('XML::LibXML::Element')
-                         && $node->localname eq 'schema';
+    ( $node,
+      sub { my $this = shift;
+            return 1 unless $this->isa('XML::LibXML::Element')
+                         && $this->localname eq 'schema';
 
-            my $schema = XML::Compile::Schema::Instance->new($node)
+            my $schema = XML::Compile::Schema::Instance->new($this)
                 or next;
 
 #warn $schema->targetNamespace;
@@ -118,24 +125,6 @@ sub compile($$@)
      , err => $self->invalidsErrorHandler($args{invalid})
      , nss => $self->namespaces
      );
-}
-
-
-sub template($@)
-{   my ($self, $direction) = (shift, shift);
-
-    my %args =
-     ( check_values       => 0
-     , check_occurs       => 0
-     , invalid            => 'IGNORE'
-     , ignore_facets      => 1
-     , include_namespaces => 1
-     , sloppy_integers    => 1
-     , auto_value         => sub { warn @_; $_[0] }
-     , @_
-     );
-
-   die "ERROR not implemented";
 }
 
 

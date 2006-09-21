@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
 use Carp;

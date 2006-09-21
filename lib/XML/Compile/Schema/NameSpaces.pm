@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 use Carp;
 
@@ -41,10 +41,13 @@ sub add($)
 
 sub schemas($)
 {   my ($self, $ns) = @_;
-    my @schemas = $self->namespace($ns);
-    @schemas and return @schemas;
+    $self->namespace($ns);
+}
 
-    ();
+
+sub allSchemas()
+{   my $self = shift;
+    map {$self->schemas($_)} $self->list;
 }
 
 
@@ -77,6 +80,19 @@ sub findType($;$)
     }
 
     undef;
+}
+
+
+
+sub findSgMembers($;$)
+{   my ($self, $ns, $name) = @_;
+    my $label  = $ns;
+    if(defined $name) { $label = "{$ns}$name" }
+    elsif($label =~ m/^\s*\{(.*)\}(.*)/) { ($ns, $name) = ($1, $2) }
+    else { return undef  } 
+
+    map {$_->substitutionGroupMembers($label)}
+        $self->allSchemas;
 }
 
 

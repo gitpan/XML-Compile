@@ -39,62 +39,13 @@ W3C schema's are implemented.  A few nuts are still to crack:
  facets on dates
  limited understanding of patterns
  include
+ auto-import
  anyAttribute
- substitutionGroup, final, and abstract
+ final
  unique, keyref, selector, field, include, notation
- inherited attributes for simpleContent extend
+ explicit ordering within choice and all
 
 Of course, these are all fixed in next release ;-)
-
-=head2 Rules of translation
-
-The following rules are used during translation, applicable to
-both the reader as the writer:
-
-=over 4
-
-=item Encoding
-
-this module uses XML::LibXML which does the character encoding for
-us: you do not have to escape characters like E<lt> yourself.
-
-=item Nesting
-
-Elements can be complex, and themselve contain elements which
-are complex.  In the Perl representation of the data, this will
-be shown as nested hashes with the same structure as the XML.
-
-=item Arrays
-
-Any element which has a maxOccurs larger than 1 will be returned
-as an array (or undef).  This will avoid the situation where the
-user code only handles a single element instance where the schema
-defines that multiple values can be returned.  The same is true
-for list types.
-
-=item Schema validation
-
-Be warned that the schema itself is NOT VALIDATED; you can easily
-construct schema's which do work with this module, but are not
-valid according to W3C.  Only in some cases, the translater will
-refuse to accept mistakes: mainly because it cannot produce valid
-code.
-
-=item Value checking
-
-The code will do its best to produce a correct translation. For
-instance, an accidental C<1.9999> will be converted into C<2>
-when the schema says that the field is an C<int>.
-
-=item Wildcards
-
-The C<any> and C<anyAttribute> elements frustrate our attempt for
-simplification.  Where we normally know which name-space we are
-dealing with, these wildcard elements can use any name-space.  Therefore,
-in the HASH, these elements will use keys like C<{url}name>, in stead
-of simply the name... both in the reader and the writer.
-
-=back
 
 =head2 Performance optimization
 
@@ -226,8 +177,8 @@ between Perl datastructures and XML, based on a schema.  Before
 this method is called is the schema already translated into
 a table of types.
 
--Option--Defined in--Default
- nss                 <required>
+S<< Option--Defined in--Default >>
+S<< nss                 <required> >>
 
 . nss L<XML::Compile::Schema::NameSpaces>
 
@@ -246,7 +197,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.06.
+Module version 0.07.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

@@ -26,12 +26,12 @@ XML::Compile::Schema - Compile a schema
  $schema->importSchema('2001-XMLSchema.xsd');
 
  # create and use a reader
- my $read   = $schema->compile(READER => 'mytype');
+ my $read   = $schema->compile(READER => '{myns}mytype');
  my $hash   = $read->($xml);
  
  # create and use a writer
  my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
- my $write  = $schema->compile(WRITER => 'mytype');
+ my $write  = $schema->compile(WRITER => '{myns}mytype');
  my $xml    = $write->($doc, $hash);
 
  # show result
@@ -56,13 +56,42 @@ XML string.  Those represent the input data.  The values are checked.
 An error produced when a value or the data-structure is not according
 to the specs.
 
+I<Example:> create an XML reader
+
+
+ my $msgin  = $rules->compile(READER => '{myns}mytype');
+ my $xml    = $parser->parse("some-xml.xml");
+ my $hash   = $msgin->($xml);
+
+or
+
+ my $hash   = $msgin->($xml_string);
+
 =item XML Writer
 
 The writer produces schema compliant XML, based on a HASH.  To get the
 data encoding correct, you are required to pass a document in which the
 XML nodes may get a place later.
 
+I<Example:> create an XML writer
+
+
+ my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
+ my $write  = $schema->compile(WRITER => '{myns}mytype');
+ my $xml    = $write->($doc, $hash);
+ print $xml->toString;
+ 
+alternative
+
+ my $write  = $schema->compile(WRITER => 'myns#myid');
+
 =back
+
+Be warned that the schema itself is NOT VALIDATED; you can easily
+construct schema's which do work with this module, but are not
+valid according to W3C.  Only in some cases, the translater will
+refuse to accept mistakes: mainly because it cannot produce valid
+code.
 
 =head2 Addressing components
 
@@ -83,9 +112,29 @@ refers to the built-in C<int> data-type.  You may also start with
 
 as long as this ID refers to an element.
 
+Wildcard elements C<any> and C<anyAttribute> elements frustrate our
+attempt for simplification.  Where we normally know which name-space
+we are dealing with, these wildcard elements can use any name-space.
+Therefore, in the HASH, these elements will use keys like C<{url}name>,
+in stead of simply the name.
+
 =head2 Representing data-structures
 
-The schemas defines kinds of data types.  There are various ways to define
+The code will do its best to produce a correct translation. For
+instance, an accidental C<1.9999> will be converted into C<2>
+when the schema says that the field is an C<int>.  It will also
+strip superfluous blanks when the data-type permits.  Especially
+watch-out for the C<Integer> types, which produce Math::BigInt
+objects unless L<compile(sloppy_integers)|XML::Compile::Schema/"Compilers"> is used.
+
+Elements can be complex, and themselve contain elements which
+are complex.  In the Perl representation of the data, this will
+be shown as nested hashes with the same structure as the XML.
+
+You should not take tare of character encodings, whereas XML::LibXML is
+doing that for us: you shall not escape characters like "E<lt>" yourself.
+
+The schemas define kinds of data types.  There are various ways to define
 them (with restrictions and extensions), but for the resulting data
 structure is that knowledge not important.
 
@@ -94,7 +143,17 @@ structure is that knowledge not important.
 =item simpleType
 
 A single value.  A lot of single value data-types are built-in (see
-L<XML::Compile::Schema::BuiltInTypes|XML::Compile::Schema::BuiltInTypes>).  In XML, it looks like this:
+L<XML::Compile::Schema::BuiltInTypes|XML::Compile::Schema::BuiltInTypes>).
+
+Simple types may have range limiting restrictions (facets), which will
+be checked by default.  Types may also have some white-space behavior,
+for instance blanks are stripped from integers: before, after, but also
+inside the number representing string.
+
+I<Example:> typical simpleType
+
+
+In XML, it looks like this:
 
  <test1>42</test1>
 
@@ -102,28 +161,34 @@ In the HASH structure, the data will be represented as
 
  test1 => 42
 
-Simple types may have range limiting restrictions (facets), which will
-be checked by default.  Types may also have some white-space behavior,
-for instance blanks are stripped from integers: before, after, but also
-inside the number representing string.
-
 =item complexType/simpleContent
 
-In this case, the single value container may have attributes.  In XML,
-this looks like this:
+In this case, the single value container may have attributes.  The number
+of attributes can be endless, and the value is only one.  This value
+has no name, and therefore gets a predefined name C<_>.
+
+I<Example:> typical simpleContent example
+
+
+In XML, this looks like this:
 
  <test2 question="everything">42</test2>
 
-The number of attributes can be endless, and the value is only one.  This
-value has no name, and therefore gets a predefined name C<_>.  As a HASH,
-this looks like
+As a HASH, this looks like
 
  test2 => { _ => 42, question => 'everything' }
 
 =item complexType and complexType/complexContent
 
 These containers not only have attributes, but also multiple values
-as content.  The XML could look like:
+as content.  The C<complexContent> is used to create inheritance
+structures in the data-type definition.  This does not affect the
+XML data package itself.
+
+I<Example:> typical complexType element
+
+
+The XML could look like:
 
  <test3 question="everything" by="mouse">
    <answer>42</answer>
@@ -154,8 +219,17 @@ appear exactly once.  When missing, this is an error.
 
 =item maxOccurs larger than 1
 
-In this case, the element can appear multiple times.  The elements
-will be kept in an ARRAY within the HASH. So
+In this case, the element can appear multiple times.  Multiple values will
+be kept in an ARRAY within the HASH.  Non-schema based XML processors
+will not return a single value as an ARRAY, which makes that code more
+complicated.
+
+An error will be produced when the number of elements found is
+less than C<minOccurs> or more than C<maxOccurs>, unless
+L<compile(check_occurs)|XML::Compile::Schema/"Compilers"> is C<false>.
+
+I<Example:> two values for C<a>
+
 
  <test4><a>12</a><a>13</a><b>14</b></test4>
 
@@ -163,21 +237,19 @@ will become
 
  test4 => { a => [12, 13], b => 14 };
 
+I<Example:> always an array
+
+
 Even when there is only one element found, it will be returned as
 ARRAY (of one element).  Therefore, you can write
 
  my $data = $reader->($xml);
  foreach my $a ( @{$data->{a}} ) {...}
 
-Non-schema based XML processors will not return a single value within
-an ARRAY, which makes the code more complicated.
-
-An error will be produced when the number of elements found is
-less than minOccurs or more than maxOccurs.
 
 =item use="optional" or minOccurs="0"
 
-The element may be skipped.  When found, it is a single value.
+The element may be skipped.  When found it is a single value.
 
 =item use="forbidden"
 
@@ -199,14 +271,58 @@ the white-space rules where applied).
 =head2 List type
 
 List simpleType objects are also represented as ARRAY, like elements
-with a minOccurs or maxOccurs unequal 1.  An example with a list of
-ints:
+with a minOccurs or maxOccurs unequal 1.
+
+I<Example:> with a list of ints
+
 
   <test5>3 8 12</test5>
 
 as Perl structure:
 
   test5 => [3, 8, 12]
+
+=head2 substitutionGroup
+
+A substitution group is kind-of choice between alternative (complex)
+types.  However, in this case roles have reversed: instead a C<choice>
+which lists the alternatives, here the alternative elements register
+themselves as valid for an abstract (I<head>) element.  All alternatives
+should be extensions of the head element's type, but there is no way to
+check that.
+
+I<Example:> substitutionGroup
+
+
+ <xs:element name="price"  type="xs:int" abstract="true" />
+ <xs:element name="euro"   type="xs:int" substitutionGroup="price" />
+ <xs:element name="dollar" type="xs:int" substitutionGroup="price" />
+
+ <xs:element name="product">
+   <xs:complexType>
+      <xs:element name="name" type="xs:string" />
+      <xs:element ref="price" />
+   </xs:complexType>
+ </xs:element>
+ 
+Now, valid XML data is
+
+ <product>
+   <name>Ball</name>
+   <euro>12</euro>
+ </product>
+
+and
+
+ <product>
+   <name>Ball</name>
+   <dollar>6</dollar>
+ </product>
+
+The HASH repesentation is respectively
+
+ product => {name => 'Ball', euro  => 12}
+ product => {name => 'Ball', dollar => 6}
 
 
 
@@ -235,7 +351,7 @@ See L<XML::Compile/"Accessors">
 
 =back
 
-$obj-E<gt>B<addSchemas>(NODE)
+$obj-E<gt>B<addSchemas>(NODE|TEXT)
 
 =over 4
 
@@ -317,18 +433,18 @@ to be called with a HASH, and returns a XML::LibXML::Node.
 Most options below are explained in more detailed in the manual-page
 L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
 
--Option              --Defined in     --Default
- attributes_qualified                   <undef>
- check_occurs                           <true>
- check_values                           <true>
- elements_qualified                     <undef>
- ignore_facets                          C<false>
- include_namespaces                     <true>
- invalid                                DIE
- namespace_reset                        <false>
- output_namespaces                      {}
- path                                   <expanded name of type>
- sloppy_integers                        <false>
+S<< Option              --Defined in     --Default >>
+S<< attributes_qualified                   <undef> >>
+S<< check_occurs                           <true> >>
+S<< check_values                           <true> >>
+S<< elements_qualified                     <undef> >>
+S<< ignore_facets                          <false> >>
+S<< include_namespaces                     <true> >>
+S<< invalid                                DIE >>
+S<< namespace_reset                        <false> >>
+S<< output_namespaces                      {} >>
+S<< path                                   <expanded name of type> >>
+S<< sloppy_integers                        <false> >>
 
 . attributes_qualified BOOLEAN
 
@@ -454,23 +570,6 @@ are.
 
 =back
 
-I<Example:> create an XML reader
-
-
- my $msgin  = $rules->compile(READER => 'myns#mytype');
- my $xml    = $parser->parse("some-xml.xml");
- my $hash   = $msgin->($xml);
-
-or
- my $hash   = $msgin->($xml_string);
-
-I<Example:> create an XML writer
-
-
- my $msgout = $rules->compile(WRITER => 'myns#mytype');
- my $xml    = $msgout->($hash);
- print $xml->toString;
-
 =back
 
 $obj-E<gt>B<elements>
@@ -502,16 +601,6 @@ value, and an error string.
 
 =back
 
-$obj-E<gt>B<template>(OPTIONS)
-
-=over 4
-
-This method will try to produce a HASH template, to express how
-Perl's side of the data structure could look like.
-NOT IMPLEMENTED YET
-
-=back
-
 $obj-E<gt>B<types>
 
 =over 4
@@ -534,7 +623,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.06.
+Module version 0.07.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

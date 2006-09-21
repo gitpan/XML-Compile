@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 use XML::LibXML;
 use Carp;

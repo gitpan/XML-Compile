@@ -42,6 +42,14 @@ knowledge of this object.
 
 =back
 
+$obj-E<gt>B<allSchemas>
+
+=over 4
+
+Returns a list of all known schema instances.
+
+=back
+
 $obj-E<gt>B<findElement>(ADDRESS|(URI,NAME))
 
 =over 4
@@ -60,6 +68,16 @@ C< uri#id > or as seperate URI and ID.
 
 =back
 
+$obj-E<gt>B<findSgMembers>(ADDRESS|(URI,NAME))
+
+=over 4
+
+Lookup the substitutionGroup alternatives for a specific element,
+which is an ADDRESS of form C< {uri}name > or as seperate URI and NAME.
+Returned is a list of parse nodes (HASHes)
+
+=back
+
 $obj-E<gt>B<findType>(ADDRESS|(URI,NAME))
 
 =over 4
@@ -73,7 +91,7 @@ $obj-E<gt>B<list>
 
 =over 4
 
-Returns the list of names defined until now.
+Returns the list of name-space names defined until now.
 
 =back
 
@@ -90,7 +108,8 @@ $obj-E<gt>B<schemas>(URI)
 
 =over 4
 
-We need the name-space; when it is lacking then import must help.
+We need the name-space; when it is lacking then import must help, but that
+must be called explictly.
 
 =back
 
@@ -108,7 +127,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.06.
+Module version 0.07.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

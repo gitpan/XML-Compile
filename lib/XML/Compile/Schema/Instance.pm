@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 use Carp;
 
@@ -47,6 +47,16 @@ sub elements() { keys %{shift->{elements}} }
 
 
 sub element($) { $_[0]->{elements}{$_[1]} }
+
+
+sub substitutionGroups() { keys %{shift->{sgs}} }
+
+
+sub substitutionGroupMembers($)
+{   my $sgs = shift->{sgs}      or return ();
+    my $sg  = $sgs->{ (shift) } or return ();
+    @$sg;
+}
 
 
 my %as_element = map { ($_ => 1) } qw/element group attributeGroup/;
@@ -95,20 +105,31 @@ sub _collectTypes($)
         my $id    = $schema->getAttribute('id');
 
         my ($prefix, $name)
-         = index($tag, ':') >= 0
-         ? split(/\:/,$tag,2)
-         : ('', $tag);
+         = index($tag, ':') >= 0 ? split(/\:/,$tag,2) : ('', $tag);
 
         # prefix existence enforced by xml parser
-        my $ns = length $prefix ? $node->lookupNamespaceURI($prefix) : $tns;
-
+        my $ns    = length $prefix ? $node->lookupNamespaceURI($prefix) : $tns;
         my $label = "{$ns}$name";
+
+        my $sg;
+        if(my $subst = $node->getAttribute('substitutionGroup'))
+        {    my ($sgpref, $sgname)
+              = index($subst, ':') >= 0 ? split(/\:/,$subst,2) : ('', $subst);
+             my $sgns = length $sgpref ? $node->lookupNamespaceURI($sgpref) : $tns;
+             defined $sgns
+                or croak "ERROR: no namespace for "
+                       . (length $sgpref ? "'$sgpref'" : 'target')
+                       . " in substitutionGroup of $tag\n";
+             $sg = "{$sgns}$sgname";
+        }
+
         my $class = $as_element{$local} ? 'elements' : 'types';
+
         my $info  = $self->{$class}{$label}
           = { type => $local, id => $id,   node => $node, full => "{$ns}$name"
             , ns   => $ns,  name => $name, prefix => $prefix
             , afd  => $afd, efd  => $efd,  schema => $self
-            , ref  => $ref
+            , ref  => $ref, sg   => $sg
             };
         weaken($self->{schema});
 
@@ -116,6 +137,9 @@ sub _collectTypes($)
         # for now...
         $self->{ids}{"$ns#$id"} = $info
            if defined $id;
+
+        push @{$self->{sgs}{$sg}}, $info
+           if defined $sg;
     }
 
     $self;
