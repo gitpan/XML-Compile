@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.07';
+$VERSION = '0.08';
 
 use Carp;
 

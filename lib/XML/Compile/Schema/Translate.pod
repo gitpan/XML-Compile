@@ -4,22 +4,18 @@
 XML::Compile::Schema::Translate - create an XML data parser
 
 
-=head1 INHERITANCE
-
- XML::Compile::Schema::Translate
-   is an Exporter
-
 
 =head1 SYNOPSIS
 
- # for internal use only!
+ # for internal use only
+ my $code = XML::Compile::Schema::Translate->compileTree(...);
 
 
 =head1 DESCRIPTION
 
 This module converts a schema type definition into a code
 reference which can be used to interpret a schema.  The sole public
-function in this package is L<compile_tree()|XML::Compile::Schema::Translate/"FUNCTIONS">, and is called by
+function in this package is L<compileTree()|XML::Compile::Schema::Translate/"METHODS">, and is called by
 L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">, which does a lot of set-ups.
 Please do not try to use this package directly!
 
@@ -161,11 +157,10 @@ the counts on all defined name-spaces.
 
 
 
+=head1 METHODS
 
-=head1 FUNCTIONS
 
-
-XML::Compile::Schema::Translate-E<gt>B<compile_tree>(ELEMENT, OPTIONS)
+XML::Compile::Schema::Translate-E<gt>B<compileTree>(ELEMENT, OPTIONS)
 
 =over 4
 
@@ -177,12 +172,19 @@ between Perl datastructures and XML, based on a schema.  Before
 this method is called is the schema already translated into
 a table of types.
 
-S<< Option--Defined in--Default >>
-S<< nss                 <required> >>
+S<< Option--Defined in     --Default >>
+S<< bricks                   <required> >>
+S<< err                      <required> >>
+S<< nss                      <required> >>
+
+. bricks CLASS
+
+. err CODE
 
 . nss L<XML::Compile::Schema::NameSpaces>
 
 =back
+
 
 
 
@@ -197,7 +199,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.07.
+Module version 0.08.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

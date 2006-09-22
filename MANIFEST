@@ -37,6 +37,10 @@ lib/XML/Compile/Schema/Specs.pm
 lib/XML/Compile/Schema/Specs.pod
 lib/XML/Compile/Schema/Translate.pm
 lib/XML/Compile/Schema/Translate.pod
+lib/XML/Compile/Schema/XmlReader.pm
+lib/XML/Compile/Schema/XmlReader.pod
+lib/XML/Compile/Schema/XmlWriter.pm
+lib/XML/Compile/Schema/XmlWriter.pod
 t/01use.t
 t/20types.t
 t/30builtin.t

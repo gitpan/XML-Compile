@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.07';
+$VERSION = '0.08';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
 use Carp;
@@ -115,7 +115,6 @@ sub predefinedSchemas() { keys %schemas }
 
 
 sub predefinedSchema($) { defined $_[1] ? $schemas{$_[1]} : () }
-
 
 
 sub builtInType($;$@)
