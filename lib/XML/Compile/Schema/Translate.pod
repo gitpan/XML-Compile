@@ -43,6 +43,45 @@ W3C schema's are implemented.  A few nuts are still to crack:
 
 Of course, these are all fixed in next release ;-)
 
+See chapter L</DETAILS> for more on how the tune the translator.
+
+
+
+=head1 METHODS
+
+
+XML::Compile::Schema::Translate-E<gt>B<compileTree>(ELEMENT, OPTIONS)
+
+=over 4
+
+Do not call this function yourself, but use
+L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers"> (or wrappers around that).
+
+This function returns a CODE reference, which can translate
+between Perl datastructures and XML, based on a schema.  Before
+this method is called is the schema already translated into
+a table of types.
+
+S<< Option--Defined in     --Default >>
+S<< bricks                   <required> >>
+S<< err                      <required> >>
+S<< nss                      <required> >>
+
+. bricks CLASS
+
+. err CODE
+
+. nss L<XML::Compile::Schema::NameSpaces>
+
+=back
+
+
+
+
+
+=head1 DETAILS
+
+
 =head2 Performance optimization
 
 The L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers"> method (and wrappers) defines
@@ -157,40 +196,6 @@ the counts on all defined name-spaces.
 
 
 
-=head1 METHODS
-
-
-XML::Compile::Schema::Translate-E<gt>B<compileTree>(ELEMENT, OPTIONS)
-
-=over 4
-
-Do not call this function yourself, but use
-L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers"> (or wrappers around that).
-
-This function returns a CODE reference, which can translate
-between Perl datastructures and XML, based on a schema.  Before
-this method is called is the schema already translated into
-a table of types.
-
-S<< Option--Defined in     --Default >>
-S<< bricks                   <required> >>
-S<< err                      <required> >>
-S<< nss                      <required> >>
-
-. bricks CLASS
-
-. err CODE
-
-. nss L<XML::Compile::Schema::NameSpaces>
-
-=back
-
-
-
-
-
-
-
 
 
 =head1 REFERENCES
@@ -199,7 +204,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.08.
+Module version 0.09.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

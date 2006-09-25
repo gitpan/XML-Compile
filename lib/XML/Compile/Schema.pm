@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.08';
+$VERSION = '0.09';
 use base 'XML::Compile';
 
 use Carp;
@@ -13,7 +13,6 @@ use XML::LibXML  ();
 use File::Spec   ();
 
 use XML::Compile::Schema::Specs;
-use XML::Compile::Schema::BuiltInStructs qw/builtin_structs/;
 use XML::Compile::Schema::Translate      ();
 use XML::Compile::Schema::Instance;
 use XML::Compile::Schema::NameSpaces;
@@ -168,5 +167,6 @@ sub elements()
           map {$nss->schemas($_)}
              $nss->list;
 }
+
 
 1;

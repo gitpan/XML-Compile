@@ -3,7 +3,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.08';
+$VERSION = '0.09';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;

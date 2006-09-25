@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.08';
+$VERSION = '0.09';
 
 use Carp;
 
@@ -527,8 +527,9 @@ sub attribute($$)
               : $self->error($path, "form must be (un)qualified, not $form");
     }
 
-    my $trans    = $qual ? 'tag_qualified' : 'tag_unqualified';
-    my $tag  = $self->make($trans => $path, $node, $name);
+    my $trans = $qual ? 'tag_qualified' : 'tag_unqualified';
+    my $tag   = $self->make($trans => $path, $node, $name);
+    my $ns    = $qual ? $self->{tns} : '';
 
     my $do;
     my $typeattr = $node->getAttribute('type')
@@ -552,7 +553,7 @@ sub attribute($$)
      : $self->error($path, "attribute use is required, optional or prohibited (not '$use')");
 
     my $value = defined $default ? $default : $fixed;
-    $name => $self->make($generate => $path, $tag, $st, $value);
+    $name => $self->make($generate => $path, $ns, $tag, $st, $value);
 }
 
 sub attribute_group($$);
@@ -772,5 +773,7 @@ sub rel2abs($$$)
 
      "{$url}$local";
 }
+
+
 
 1;
