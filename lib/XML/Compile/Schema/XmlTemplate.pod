@@ -1,21 +1,20 @@
 
 =head1 NAME
 
-XML::Compile::Schema::XmlWriter - bricks to translate HASH to XML
+XML::Compile::Schema::XmlTemplate - bricks to create an XML example
 
 
 
 =head1 SYNOPSIS
 
  my $schema = XML::Compile::Schema->new(...);
- my $code   = $schema->compile(WRITER => ...);
+ print $schema->template(XML => $type, ...);
 
 
 =head1 DESCRIPTION
 
 The translator understands schema's, but does not encode that into
-actions.  This module implements those actions to translate from
-a (nested) Perl HASH structure onto XML.
+actions. Given a type, this will produce an example XML output.
 
 
 

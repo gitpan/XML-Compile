@@ -62,10 +62,10 @@ between Perl datastructures and XML, based on a schema.  Before
 this method is called is the schema already translated into
 a table of types.
 
-S<< Option--Defined in     --Default >>
-S<< bricks                   <required> >>
-S<< err                      <required> >>
-S<< nss                      <required> >>
+ Option--Defined in     --Default
+ bricks                   <required>
+ err                      <required>
+ nss                      <required>
 
 . bricks CLASS
 
@@ -204,7 +204,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.09.
+Module version 0.10.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

@@ -1,14 +1,14 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         XML-Compile
-version:      0.09
+version:      0.10
 version_from: version
 installdirs:  site
 requires:
     Math::BigInt:                  1.77
     Test::Deep:                    0.095
     Test::More:                    0.54
-    XML::LibXML:                   1.6
+    XML::LibXML:                   1.61
 
 distribution_type: module
 generated_by: ExtUtils::MakeMaker version 6.17

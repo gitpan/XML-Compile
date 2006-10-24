@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.09';
+$VERSION = '0.10';
 use base 'XML::Compile';
 
 use Carp;
@@ -93,7 +93,7 @@ sub compile($$@)
        or $args{check_values} = 1;
 
     exists $args{check_occurs}
-       or $args{check_occurs} = 0;
+       or $args{check_occurs} = 1;
 
     $args{sloppy_integers}   ||= 0;
     unless($args{sloppy_integers})
@@ -121,7 +121,7 @@ sub compile($$@)
     my $bricks = 'XML::Compile::Schema::' .
      ( $action eq 'READER' ? 'XmlReader'
      : $action eq 'WRITER' ? 'XmlWriter'
-     : croak "ERROR: create only READER or WRITER, not '$action'."
+     : croak "ERROR: create only READER, WRITER, or XMLTEMPLATE, not '$action'."
      );
 
     eval "require $bricks";
@@ -133,6 +133,53 @@ sub compile($$@)
      , err    => $self->invalidsErrorHandler($args{invalid})
      , nss    => $self->namespaces
      );
+}
+
+
+sub template($@)
+{   my ($self, $action, $type, %args) = @_;
+
+    my $show = exists $args{show} ? $args{show} : 'ALL';
+    $show = 'struct,type,occur,facets' if $show eq 'ALL';
+    $show = '' if $show eq 'NONE';
+    my @comment = map { ("show_$_" => 1) } split m/\,/, $show;
+
+    my $nss = $self->namespaces;
+    my $top = $nss->findType($type) || $nss->findElement($type)
+       or croak "ERROR: type $type is not defined";
+
+    my $indent                  = $args{indent} || "  ";
+    $args{check_occurs}         = 1;
+    $args{include_namespaces} ||= 1;
+
+    my $bricks = 'XML::Compile::Schema::Template';
+    eval "require $bricks";
+    die $@ if $@;
+
+    my $compiled = XML::Compile::Schema::Translate->compileTree
+     ( $top->{full}
+     , bricks => $bricks
+     , nss    => $self->namespaces
+     , err    => $self->invalidsErrorHandler('IGNORE')
+     , %args
+     );
+
+    my $ast = $compiled->();
+# use Data::Dumper;
+# $Data::Dumper::Indent = 1;
+# warn Dumper $ast;
+
+    if($action eq 'XML')
+    {   my $doc    = XML::LibXML::Document->new('1.1', 'UTF-8');
+        # translate $ast into $doc
+        $doc->toString(1);
+    }
+    elsif($action eq 'PERL')
+    {   $bricks->toPerl($ast, @comment, indent => $indent);
+    }
+    else
+    {   die "ERROR: template output is either in XML or PERL layout, not '$action'\n";
+    }
 }
 
 

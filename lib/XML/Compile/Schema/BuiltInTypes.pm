@@ -3,7 +3,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.09';
+$VERSION = '0.10';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -36,105 +36,122 @@ sub bigfloat { $_[0] =~ s/\s+//g;
 
 
 $builtin_types{anySimpleType} =
-$builtin_types{anyType}       = { };
+$builtin_types{anyType}       =
+ { example => 'anything'
+ };
 
 
 $builtin_types{boolean} =
- { parse  => \&collapse
- , format => sub { $_[0] eq 'false' || $_[0] eq 'true' ? $_[0] : !!$_[0] }
- , check  => sub { $_[0] =~ m/^(false|true|0|1)$/ }
+ { parse   => \&collapse
+ , format  => sub { $_[0] eq 'false' || $_[0] eq 'true' ? $_[0] : !!$_[0] }
+ , check   => sub { $_[0] =~ m/^(false|true|0|1)$/ }
+ , example => 'true'
  };
 
 
 $builtin_types{integer} =
- { parse => \&bigint
- , check => sub { $_[0] =~ m/^\s*[-+]?\s*\d[\s\d]*$/ }
+ { parse   => \&bigint
+ , check   => sub { $_[0] =~ m/^\s*[-+]?\s*\d[\s\d]*$/ }
+ , example => 42
  };
 
 
 $builtin_types{negativeInteger} =
- { parse => \&bigint
- , check => sub { $_[0] =~ m/^\s*\-\s*\d[\s\d]*$/ }
+ { parse   => \&bigint
+ , check   => sub { $_[0] =~ m/^\s*\-\s*\d[\s\d]*$/ }
+ , example => '-1'
  };
 
 
 $builtin_types{nonNegativeInteger} =
- { parse => \&bigint
- , check => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ }
+ { parse   => \&bigint
+ , check   => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ }
+ , example => 0
  };
 
 
 $builtin_types{positiveInteger} =
- { parse => \&bigint
- , check => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ && m/[1-9]/ }
+ { parse   => \&bigint
+ , check   => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ && m/[1-9]/ }
+ , example => '+3'
  };
 
 
 $builtin_types{nonPositiveInteger} =
- { parse => \&bigint
- , check => sub { $_[0] =~ m/^\s*(?:\-\s*)?\d[\s\d]*$/
-               || $_[0] =~ m/^\s*(?:\+\s*)0[0\s]*$/ }
+ { parse   => \&bigint
+ , check   => sub { $_[0] =~ m/^\s*(?:\-\s*)?\d[\s\d]*$/
+                 || $_[0] =~ m/^\s*(?:\+\s*)0[0\s]*$/ }
+ , example => '-0'
  };
 
 
 $builtin_types{long} =
- { parse => \&bigint
- , check =>
+ { parse   => \&bigint
+ , check   =>
      sub { $_[0] =~ m/^\s*[-+]?\s*\d[\s\d]*$/ && ($_[0] =~ tr/0-9//) < 20 }
+ , example => '-100'
  };
 
 
 $builtin_types{unsignedLong} =
- { parse => \&bigint
- , check => sub {$_[0] =~ m/^\s*\+?\s*\d[\s\d]*$/ && ($_[0] =~ tr/0-9//) < 21}
+ { parse   => \&bigint
+ , check   => sub {$_[0] =~ m/^\s*\+?\s*\d[\s\d]*$/ && ($_[0] =~ tr/0-9//) < 21}
+ , example => '100'
  };
 
 
 $builtin_types{unsignedInt} =
- { parse => \&bigint
- , check => sub {$_[0] =~ m/^\s*\+?\s*\d[\s\d]*$/ && ($_[0] =~ tr/0-9//) < 10}
+ { parse   => \&bigint
+ , check   => sub {$_[0] =~ m/^\s*\+?\s*\d[\s\d]*$/ && ($_[0] =~ tr/0-9//) <10}
+ , example => '42'
  };
 
 # Used when 'sloppy_integers' was set: the size of the values
 # is illegally limited to the size of Perl's 32-bit signed integers.
 
 $builtin_types{non_pos_int} =
- { parse  => \&str2int
- , format => \&int2str
- , check  => sub {$_[0] =~ m/^\s*[+-]?\s*\d[\d\s]*$/ && $_[0] <= 0}
+ { parse   => \&str2int
+ , format  => \&int2str
+ , check   => sub {$_[0] =~ m/^\s*[+-]?\s*\d[\d\s]*$/ && $_[0] <= 0}
+ , example => '-12'
  };
 
 $builtin_types{positive_int} =
- { parse  => \&str2int
- , format => \&int2str
- , check  => sub {$_[0] =~ m/^\s*(?:\+\s*)?\d[\d\s]*$/ }
+ { parse   => \&str2int
+ , format  => \&int2str
+ , check   => sub {$_[0] =~ m/^\s*(?:\+\s*)?\d[\d\s]*$/ }
+ , example => '+42'
  };
 
 $builtin_types{negative_int} =
- { parse  => \&str2int
- , format => \&int2str
- , check  => sub {$_[0] =~ m/^\s*\-\s*\d[\d\s]*$/ }
+ { parse   => \&str2int
+ , format  => \&int2str
+ , check   => sub {$_[0] =~ m/^\s*\-\s*\d[\d\s]*$/ }
+ , example => '-12'
  };
 
 $builtin_types{unsigned_int} =
- { parse  => \&str2int
- , format => \&int2str
- , check  => sub {$_[0] =~ m/^\s*(?:\+\s*)?\d[\d\s]*$/ && $_[0] >= 0}
+ { parse   => \&str2int
+ , format  => \&int2str
+ , check   => sub {$_[0] =~ m/^\s*(?:\+\s*)?\d[\d\s]*$/ && $_[0] >= 0}
+ , example => '42'
  };
 
 
 $builtin_types{int} =
- { parse  => \&str2int
- , format => \&int2str
- , check  => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/}
+ { parse   => \&str2int
+ , format  => \&int2str
+ , check   => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/}
+ , example => '42'
  };
 
 
 $builtin_types{short} =
- { parse  => \&str2int
- , format => \&int2str
- , check  =>
+ { parse   => \&str2int
+ , format  => \&int2str
+ , check   =>
     sub { $_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= -32768 && $_[0] <= 32767 }
+ , example => '-7'
  };
 
 
@@ -143,20 +160,23 @@ $builtin_types{unsignedShort} =
  , format => \&int2str
  , check  =>
     sub { $_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= 0 && $_[0] <= 65535 }
+ , example => '7'
  };
 
 
 $builtin_types{byte} =
- { parse  => \&str2int
- , format => \&int2str
- , check  => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= -128 && $_[0] <=127}
+ { parse   => \&str2int
+ , format  => \&int2str
+ , check   => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= -128 && $_[0] <=127}
+ , example => '-2'
  };
 
 
 $builtin_types{unsignedByte} =
- { parse  => \&str2int
- , format => \&int2str
- , check  => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= 0 && $_[0] <=255}
+ { parse   => \&str2int
+ , format  => \&int2str
+ , check   => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= 0 && $_[0] <=255}
+ , example => '2'
  };
 
 
@@ -164,45 +184,51 @@ $builtin_types{precissionDecimal} = $builtin_types{int};
 
 
 $builtin_types{decimal} =
- { parse  => \&bigfloat
- , check  => sub { my $x = eval {$_[0] + 0.0}; !$@ }
+ { parse   => \&bigfloat
+ , check   => sub { my $x = eval {$_[0] + 0.0}; !$@ }
+ , example => '3.1415'
  };
 
 
 $builtin_types{float} =
 $builtin_types{double} =
- { parse  => \&str2num
- , format => \&num2str
- , check  => sub { my $val = eval {$_[0] + 0.0}; !$@ }
+ { parse   => \&str2num
+ , format  => \&num2str
+ , check   => sub { my $val = eval {$_[0] + 0.0}; !$@ }
+ , example => '3.1415'
  };
 
 
 $builtin_types{base64binary} =
- { parse  => sub { eval { decode_base64 $_[0] } }
- , format => sub { eval { encode_base64 $_[0] } }
- , check  => sub { !$@ }
+ { parse   => sub { eval { decode_base64 $_[0] } }
+ , format  => sub { eval { encode_base64 $_[0] } }
+ , check   => sub { !$@ }
+ , example => 'VGVzdA=='
  };
 
 
 # (Use of) an XS implementation would be nice
 $builtin_types{hexBinary} =
- { parse  =>
+ { parse   =>
      sub { $_[0] =~ s/\s+//g; $_[0] =~ s/([0-9a-fA-F]{2})/chr hex $1/ge; $_[0]}
- , format => sub { join '',map {sprintf "%02X", ord $_} unpack "C*", $_[0]}
- , check  =>
+ , format  =>
+     sub { join '',map {sprintf "%02X", ord $_} unpack "C*", $_[0]}
+ , check   =>
      sub { $_[0] !~ m/[^0-9a-fA-F\s]/ && (($_[0] =~ tr/0-9a-fA-F//) %2)==0}
+ , example => 'F00F'
  };
 
 
 $builtin_types{date} =
- { parse  => \&collapse
- , format => sub { $_[0] =~ /\D/ ? $_[0] : strftime("%Y-%m-%d", gmtime $_[0]) }
- , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
+ { parse   => \&collapse
+ , format  => sub { $_[0] =~ /\D/ ? $_[0] : strftime("%Y-%m-%d", gmtime $_[0])}
+ , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
   /^[12]\d{3}                # year
     \-(?:0?[1-9]|1[0-2])     # month
     \-(?:0?[1-9]|[12][0-9]|3[01]) # day
     (?:[+-]\d\d?\:\d\d)?     # time-zone
     $/x }
+ , example => '2006-10-06'
  };
 
 
@@ -221,49 +247,56 @@ $builtin_types{dateTime} =
     )?
     (?:[+-]\d\d?\:\d\d|Z)?   # time-zone
     $/x ? $1 : 0 }
+ , example => '2006-10-06T00:23:02'
  };
 
 
 $builtin_types{gDay} =
- { parse  => \&collapse
- , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
+ { parse   => \&collapse
+ , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
       m/^\-\-\-\d+(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
+ , example => '---12+9:00'
  };
 
 
 $builtin_types{gMonth} =
- { parse  => \&collapse
- , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
+ { parse   => \&collapse
+ , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
       m/^\-\-\d+(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
+ , example => '--9+7:00'
  };
 
 
 $builtin_types{gMonthDay} =
- { parse  => \&collapse
- , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
+ { parse   => \&collapse
+ , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
       m/^\-\-\d+\-\d+(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
+ , example => '--9-12+7:00'
  };
 
 
 $builtin_types{gYear} =
- { parse  => \&collapse
- , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
+ { parse   => \&collapse
+ , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
       m/^\d+(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
+ , example => '2006+7:00'
  };
 
 
 $builtin_types{gYearMonth} =
- { parse  => \&collapse
- , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
+ { parse   => \&collapse
+ , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
       m/^\d+\-(?:0?[1-9]|1[0-2])(?:[-+]\d+\:[0-5]\d)?$/ ? 1 : 0 }
+ , example => '2006-11+7:00'
  };
 
 
 $builtin_types{duration} =
- { parse  => \&collapse
- , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
+ { parse   => \&collapse
+ , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
      m/^\-?P(?:\d+Y)?(?:\d+M)?(?:\d+D)?
         (?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?)S)?$/x }
+ , example => 'P9M2DT3H5M'
  };
 
 
@@ -271,6 +304,7 @@ $builtin_types{dayTimeDuration} =
  { parse  => \&collapse
  , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
      m/^\-?P(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?)S)?$/ }
+ , example => 'P2DT3H5M10S'
  };
 
 
@@ -278,21 +312,26 @@ $builtin_types{yearMonthDuration} =
  { parse  => \&collapse
  , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
      m/^\-?P(?:\d+Y)?(?:\d+M)?$/ }
+ , example => 'P40Y5M'
  };
 
 
-$builtin_types{string} = {};
+$builtin_types{string} =
+ { example => 'example'
+ };
 
 
 $builtin_types{normalizedString} =
- { parse => \&preserve
+ { parse   => \&preserve
+ , example => 'example'
  };
 
 
 $builtin_types{language} =
- { parse => \&collapse
- , check => sub { my $v = $_[0]; $v =~ s/\s+//g; $v =~
+ { parse   => \&collapse
+ , check   => sub { my $v = $_[0]; $v =~ s/\s+//g; $v =~
        m/^[a-zA-Z]{1,8}(?:\-[a-zA-Z0-9]{1,8})*$/ }
+ , example => 'nl-NL'
  };
 
 
@@ -305,32 +344,41 @@ $builtin_types{ID} =
 $builtin_types{IDREF} =
 $builtin_types{NCName} =
 $builtin_types{ENTITY} =
- { parse  => \&collapse
- , check  => sub { $_[0] !~ m/\:/ }
+ { parse   => \&collapse
+ , check   => sub { $_[0] !~ m/\:/ }
+ , example => 'label'
  };
 
 $builtin_types{IDREFS} =
 $builtin_types{ENTITIES} =
- { parse  => \&preserve
- , check  => sub { $_[0] !~ m/\:/ }
+ { parse   => \&preserve
+ , check   => sub { $_[0] !~ m/\:/ }
+ , example => 'labels'
  };
 
 
 $builtin_types{Name} =
+ { parse   => \&collapse
+ , example => 'name'
+ };
+
 $builtin_types{token} =
 $builtin_types{NMTOKEN} =
- { parse  => \&collapse
+ { parse   => \&collapse
+ , example => 'token'
  };
 
 
 $builtin_types{NMTOKENS} =
- { parse  => \&preserve
+ { parse   => \&preserve
+ , example => 'tokens'
  };
 
 
 $builtin_types{anyURI} =
- { parse  => \&collapse
- , check  => sub { $_[0] =~ $RE{URI} }
+ { parse   => \&collapse
+ , check   => sub { $_[0] =~ $RE{URI} }
+ , example => 'http://example.com'
  };
 
 
@@ -342,7 +390,8 @@ sub _valid_qname($)
 }
 
 $builtin_types{QName} =
- { check  => \&_valid_qname
+ { check   => \&_valid_qname
+ , example => 'myns:name'
  };
 
 

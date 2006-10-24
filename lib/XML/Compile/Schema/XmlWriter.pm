@@ -1,6 +1,7 @@
+
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.09';
+$VERSION = '0.10';
 
 use strict;
 use warnings;
@@ -20,29 +21,29 @@ use List::Util    qw/first/;
 
 sub tag_qualified
 {   my ($path, $args, $node, $name) = @_;
-     my ($pref, $label)
-             = index($name, ':') >=0 ? split(/\:/, $name) : ('',$name);
+    my ($pref, $label)
+       = index($name, ':') >=0 ? split(/\:/, $name) : ('',$name);
 
-     my $ns  = length($pref)? $node->lookupNamespaceURI($pref) :$args->{tns};
+    my $ns  = length($pref)? $node->lookupNamespaceURI($pref) :$args->{tns};
 
-     my $out_ns = $args->{output_namespaces};
-     my $out = $out_ns->{$ns};
+    my $out_ns = $args->{output_namespaces};
+    my $out = $out_ns->{$ns};
 
-     unless($out)   # start new name-space
-     {   if(first {$pref eq $_->{prefix}} values %$out_ns)
-         {   # avoid name clashes
-             length($pref) or $pref = 'x';
-             my $trail = '0';
-             $trail++ while first {"$pref$trail" eq $_->{prefix}}
-                              values %$out_ns;
-             $pref .= $trail;
-         }
-         $out_ns->{$ns} = $out = {uri => $ns, prefix => $pref};
-     }
+    unless($out)   # start new name-space
+    {   if(first {$pref eq $_->{prefix}} values %$out_ns)
+        {   # avoid name clashes
+            length($pref) or $pref = 'x';
+            my $trail = '0';
+            $trail++ while first {"$pref$trail" eq $_->{prefix}}
+                             values %$out_ns;
+            $pref .= $trail;
+        }
+        $out_ns->{$ns} = $out = {uri => $ns, prefix => $pref};
+    }
 
-     $out->{used}++;
-     my $prefix = $out->{prefix};
-     length($prefix) ? "$prefix:$name" : $name;
+    $out->{used}++;
+    my $prefix = $out->{prefix};
+    length($prefix) ? "$prefix:$name" : $name;
 }
 
 sub tag_unqualified
@@ -163,10 +164,10 @@ sub create_complex_element
               if keys %$data;
 
           @childs or return ();
-          my $node  = $_[0]->createElement($tag);
+          my $node  = $doc->createElement($tag);
           $node->addChild
             ( ref $_ && $_->isa('XML::LibXML::Node') ? $_
-            : $_[0]->createTextNode(defined $_ ? $_ : ''))
+            : $doc->createTextNode(defined $_ ? $_ : ''))
                for @childs;
 
           $node;
@@ -202,10 +203,10 @@ sub create_tagged_element
               if keys %$data;
 
           @childs or return ();
-          my $node  = $_[0]->createElement($tag);
+          my $node  = $doc->createElement($tag);
           $node->addChild
             ( ref $_ && $_->isa('XML::LibXML::Node') ? $_
-            : $_[0]->createTextNode(defined $_ ? $_ : ''))
+            : $doc->createTextNode(defined $_ ? $_ : ''))
                for @childs;
           $node;
        };
@@ -217,11 +218,12 @@ sub create_tagged_element
 
 sub create_simple_element
 {   my ($path, $args, $tag, $st) = @_;
-    sub { my $value = $st->(@_);
-          my $node  = $_[0]->createElement($tag);
+    sub { my ($doc, $data) = @_;
+          my $value = $st->($doc, $data);
+          my $node  = $doc->createElement($tag);
           $node->addChild
             ( ref $value && $value->isa('XML::LibXML::Node') ? $value
-            : $_[0]->createTextNode(defined $value ? $value : ''));
+            : $doc->createTextNode(defined $value ? $value : ''));
           $node;
         };
 }
@@ -352,7 +354,7 @@ sub attribute_fixed
 
           $err->($path, $value, "attr value fixed to '$fixed'");
           $ret = $do->($doc, $fixed);
-          defined $ret ? $doc->createAttribute($tag, $ret) : ();
+          defined $ret ? $doc->createAttributeNS($ns, $tag, $ret) : ();
         };
 }
 

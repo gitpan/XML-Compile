@@ -76,8 +76,8 @@ If you have compiled/collected all the information you need,
 you may simply terminate the compiler object: that will clean-up
 (most of) the XML::LibXML objects.
 
-S<< Option     --Defined in--Default >>
-S<< schema_dirs              C<undef> >>
+ Option     --Defined in--Default
+ schema_dirs              undef
 
 . schema_dirs DIRECTORY|ARRAY-OF-DIRECTORIES
 
@@ -156,7 +156,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.09.
+Module version 0.10.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

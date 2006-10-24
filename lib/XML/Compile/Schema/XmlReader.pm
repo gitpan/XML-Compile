@@ -1,6 +1,6 @@
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.09';
+$VERSION = '0.10';
 
 use strict;
 use warnings;
@@ -43,7 +43,7 @@ sub wrapper_ns        # no namespaces in the HASH
 sub element_repeated
 {   my ($path, $args, $ns, $childname, $do, $min, $max) = @_;
     my $err  = $args->{err};
-    sub { my @nodes = $_[0]->getChildrenByTagName($childname);
+    sub { my @nodes = $_[0]->getChildrenByLocalName($childname);
           $err->($path,scalar @nodes,"too few values (need $min)")
              if @nodes < $min;
           $err->($path,scalar @nodes,"too many values (max $max)")
@@ -55,7 +55,7 @@ sub element_repeated
 
 sub element_array
 {   my ($path, $args, $ns, $childname, $do) = @_;
-    sub { my @r = map { $do->($_) } $_[0]->getChildrenByTagName($childname);
+    sub { my @r = map { $do->($_) } $_[0]->getChildrenByLocalName($childname);
           @r ? ($childname => \@r) : ();
         };
 }
@@ -65,8 +65,9 @@ sub element_obligatory
     my $err  = $args->{err};
     sub {
 # This should work with namespaces (but doesn't yet)
+# because the wrong namespace is passed in $ns
 # my @nodes = $_[0]->getElementsByTagNameNS($ns,$childname);
-          my @nodes = $_[0]->getChildrenByTagName($childname);
+          my @nodes = $_[0]->getChildrenByLocalName($childname);
           my $node
            = (@nodes==0 || !defined $nodes[0])
            ? $err->($path, undef, "one value required")
@@ -82,7 +83,7 @@ sub element_default
     my $err  = $args->{err};
     my $def  = $do->($default);
 
-    sub { my @nodes = $_[0]->getChildrenByTagName($childname);
+    sub { my @nodes = $_[0]->getChildrenByLocalName($childname);
           my $node = shift @nodes;
           $node = $err->($path, 'found '.@nodes, "only one value expected")
              if @nodes;
@@ -95,7 +96,7 @@ sub element_fixed
     my $err = $args->{err};
     my $def  = $do->($fixed);
 
-    sub { my @nodes = $_[0]->getChildrenByTagName($childname);
+    sub { my @nodes = $_[0]->getChildrenByLocalName($childname);
           my $node = shift @nodes;
           $node = $err->($path, 'found '.@nodes, "only one value expected")
               if @nodes;
@@ -109,7 +110,7 @@ sub element_fixed
 sub element_nillable
 {   my ($path, $args, $ns, $childname, $do) = @_;
     my $err  = $args->{err};
-    sub { my @nodes = $_[0]->getChildrenByTagName($childname);
+    sub { my @nodes = $_[0]->getChildrenByLocalName($childname);
           my $node
            = (@nodes==0 || !defined $nodes[0])
            ? $err->($path, undef, "one value required")
@@ -316,7 +317,7 @@ sub element_substgroup
 {   my ($path, $args, $name, $defs) = @_;
     my $err  = $args->{err};
     sub { foreach my $def (@$defs)
-          {   my $node = $_[0]->getChildrenByTagName($def->[1])
+          {   my $node = $_[0]->getChildrenByLocalName($def->[1])
                  or next;
               return $def->[2]->(@_);
           }

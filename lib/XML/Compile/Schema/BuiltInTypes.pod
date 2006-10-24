@@ -310,7 +310,7 @@ B<dayTimeDuration>
 
 =over 4
 
-Format C<-PDTnHnMnS>, where optional starting C<-> means negative.
+Format C<-PnDTnHnMnS>, where optional starting C<-> means negative.
 The C<P> is obligatory, and the C<T> indicates start of a time part.
 All other C<n[DHMS]> are optional.
 
@@ -436,7 +436,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.09.
+Module version 0.10.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 

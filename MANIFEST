@@ -25,8 +25,6 @@ lib/XML/Compile/Schema.pm
 lib/XML/Compile/Schema.pod
 lib/XML/Compile/Schema/BuiltInFacets.pm
 lib/XML/Compile/Schema/BuiltInFacets.pod
-lib/XML/Compile/Schema/BuiltInStructs.pm
-lib/XML/Compile/Schema/BuiltInStructs.pod
 lib/XML/Compile/Schema/BuiltInTypes.pm
 lib/XML/Compile/Schema/BuiltInTypes.pod
 lib/XML/Compile/Schema/Instance.pm
@@ -35,10 +33,14 @@ lib/XML/Compile/Schema/NameSpaces.pm
 lib/XML/Compile/Schema/NameSpaces.pod
 lib/XML/Compile/Schema/Specs.pm
 lib/XML/Compile/Schema/Specs.pod
+lib/XML/Compile/Schema/Template.pm
+lib/XML/Compile/Schema/Template.pod
 lib/XML/Compile/Schema/Translate.pm
 lib/XML/Compile/Schema/Translate.pod
 lib/XML/Compile/Schema/XmlReader.pm
 lib/XML/Compile/Schema/XmlReader.pod
+lib/XML/Compile/Schema/XmlTemplate.pm
+lib/XML/Compile/Schema/XmlTemplate.pod
 lib/XML/Compile/Schema/XmlWriter.pm
 lib/XML/Compile/Schema/XmlWriter.pod
 t/01use.t
@@ -62,6 +64,7 @@ t/50ns.t
 t/51ctsext.t
 t/52ctsres.t
 t/53subst.t
+t/70templ.t
 t/TestTools.pm
 version
 xsd/1998-namespace.xsd
