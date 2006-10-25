@@ -1,7 +1,7 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -296,6 +296,63 @@ sub perl_any($$)
     }
 
     @lines;
+}
+
+###
+### toXML
+###
+
+sub toXML($$%)
+{   my ($class, $doc, $ast, %args) = @_;
+    xml_any($doc, $ast, "\n", \%args);
+}
+
+sub xml_any($$$$);
+sub xml_any($$$$)
+{   my ($doc, $ast, $indent, $args) = @_;
+
+    my $node = $doc->createElement($ast->{tag});
+    my $nest = $indent . $args->{indent};
+
+    my @anno;
+    push @anno, $ast->{struct}      if $ast->{struct} && $args->{show_struct};
+    push @anno, $ast->{occur}       if $ast->{occur}  && $args->{show_occur};
+    push @anno, $ast->{facets}      if $ast->{facets} && $args->{show_facets};
+
+    if(@anno)
+    {   $node->appendText($nest);
+        my $anno = $node->addNewChild(undef, 'annotation');
+        $anno->appendText(join("$nest$args->{indent}", '', @anno).$nest);
+    }
+
+    my @childs;
+    push @childs, @{$ast->{attrs}} if $ast->{attrs};
+    push @childs, @{$ast->{elems}} if $ast->{elems};
+
+    foreach my $child (@childs)
+    {   my $sub = xml_any($doc, $child, $nest, $args);
+        $node->appendText($nest);
+        $node->addChild($sub);
+    }
+
+    my $example = $ast->{example};
+    if(@anno && defined $example)
+    {   $node->appendText("$nest$example$indent");
+    }
+    elsif(defined $example)
+    {   $node->appendText($example);
+    }
+    else
+    {   $node->appendText($indent);
+    }
+
+    if($ast->{type} && $args->{show_type})
+    {   my $full = $ast->{type};
+        my ($ns, $type) = $full =~ m/^\{([^}]*)\}(.*)/ ? ($1,$2) : ('',$full);
+        # Don't known how to encode the namespace (yet)
+        $node->setAttribute(type => $type);
+    }
+    $node;
 }
 
 1;

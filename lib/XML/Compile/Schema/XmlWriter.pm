@@ -1,7 +1,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 use strict;
 use warnings;

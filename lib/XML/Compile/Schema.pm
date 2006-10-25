@@ -4,7 +4,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.10';
+$VERSION = '0.11';
 use base 'XML::Compile';
 
 use Carp;
@@ -170,16 +170,16 @@ sub template($@)
 # warn Dumper $ast;
 
     if($action eq 'XML')
-    {   my $doc    = XML::LibXML::Document->new('1.1', 'UTF-8');
-        # translate $ast into $doc
-        $doc->toString(1);
+    {   my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
+        my $node = $bricks->toXML($doc,$ast, @comment, indent => $indent);
+        return $node->toString(1);
     }
-    elsif($action eq 'PERL')
-    {   $bricks->toPerl($ast, @comment, indent => $indent);
+
+    if($action eq 'PERL')
+    {   return $bricks->toPerl($ast, @comment, indent => $indent);
     }
-    else
-    {   die "ERROR: template output is either in XML or PERL layout, not '$action'\n";
-    }
+
+    die "ERROR: template output is either in XML or PERL layout, not '$action'\n";
 }
 
 

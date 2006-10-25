@@ -3,7 +3,7 @@ use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.10';
+$VERSION = '0.11';
 use base 'Exporter';
 
 use XML::LibXML;
@@ -115,7 +115,7 @@ sub templ_xml($$$@)
      , @opts
      );
 
-   is($output, $xml);
+   is($output."\n", $xml, "xml for $test");
 }
 
 sub templ_perl($$$@)

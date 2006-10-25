@@ -1,7 +1,7 @@
 
 =head1 NAME
 
-XML::Compile::Schema::Template - bricks to create an XML or HASH example
+XML::Compile::Schema::Template - bricks to create an XML or PERL example
 
 
 
@@ -9,13 +9,17 @@ XML::Compile::Schema::Template - bricks to create an XML or HASH example
 
  my $schema = XML::Compile::Schema->new(...);
  print $schema->template(XML  => $type, ...);
- print $schema->template(HASH => $type, ...);
+ print $schema->template(PERL => $type, ...);
 
 
 =head1 DESCRIPTION
 
 The translator understands schema's, but does not encode that into
-actions.
+actions.  This module interprets the parse results of the translator,
+and creates a kind of abstract syntax tree from it, which can be used
+for documentational purposes.  Then, it implements to ways to represent
+that knowledge: as an XML or a Perl example of the data-structure which
+the schema describes.
 
 
 
@@ -33,7 +37,7 @@ See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for mor
 
 =head1 COPYRIGHTS
 
-Module version 0.10.
+Module version 0.11.
 Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
 other contributors.
 
