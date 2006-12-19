@@ -1,14 +1,11 @@
-
 =head1 NAME
 
 XML::Compile::Schema - Compile a schema
-
 
 =head1 INHERITANCE
 
  XML::Compile::Schema
    is a XML::Compile
-
 
 =head1 SYNOPSIS
 
@@ -37,7 +34,6 @@ XML::Compile::Schema - Compile a schema
  # show result
  print $xml->toString;
 
-
 =head1 DESCRIPTION
 
 This module collects knowledge about one or more schemas.  The most
@@ -58,7 +54,6 @@ to the specs.
 
 I<Example:> create an XML reader
 
-
  my $msgin  = $rules->compile(READER => '{myns}mytype');
  my $xml    = $parser->parse("some-xml.xml");
  my $hash   = $msgin->($xml);
@@ -74,7 +69,6 @@ data encoding correct, you are required to pass a document in which the
 XML nodes may get a place later.
 
 I<Example:> create an XML writer
-
 
  my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
  my $write  = $schema->compile(WRITER => '{myns}mytype');
@@ -95,13 +89,9 @@ code.
 
 See chapter L</DETAILS> and learn how the data is processed.
 
-
-
 =head1 METHODS
 
-
 =head2 Constructors
-
 
 $obj-E<gt>B<new>(TOP, OPTIONS)
 
@@ -112,7 +102,6 @@ See L<XML::Compile/"Constructors">
 =back
 
 =head2 Accessors
-
 
 $obj-E<gt>B<addSchemaDirs>(DIRECTORIES)
 
@@ -167,7 +156,6 @@ See L<XML::Compile/"Accessors">
 
 =head2 Filters
 
-
 $obj-E<gt>B<walkTree>(NODE, CODE)
 
 =over 4
@@ -177,7 +165,6 @@ See L<XML::Compile/"Filters">
 =back
 
 =head2 Compilers
-
 
 $obj-E<gt>B<compile>(('READER'|'WRITER'), ELEMENT, OPTIONS)
 
@@ -428,12 +415,7 @@ List all types, defined by all schemas sorted alphabetically.
 
 =back
 
-
-
-
-
 =head1 DETAILS
-
 
 =head2 Addressing components
 
@@ -494,7 +476,6 @@ inside the number representing string.
 
 I<Example:> typical simpleType
 
-
 In XML, it looks like this:
 
  <test1>42</test1>
@@ -510,7 +491,6 @@ of attributes can be endless, and the value is only one.  This value
 has no name, and therefore gets a predefined name C<_>.
 
 I<Example:> typical simpleContent example
-
 
 In XML, this looks like this:
 
@@ -528,7 +508,6 @@ structures in the data-type definition.  This does not affect the
 XML data package itself.
 
 I<Example:> typical complexType element
-
 
 The XML could look like:
 
@@ -572,7 +551,6 @@ L<compile(check_occurs)|XML::Compile::Schema/"Compilers"> is C<false>.
 
 I<Example:> two values for C<a>
 
-
  <test4><a>12</a><a>13</a><b>14</b></test4>
 
 will become
@@ -581,13 +559,11 @@ will become
 
 I<Example:> always an array
 
-
 Even when there is only one element found, it will be returned as
 ARRAY (of one element).  Therefore, you can write
 
  my $data = $reader->($xml);
  foreach my $a ( @{$data->{a}} ) {...}
-
 
 =item use="optional" or minOccurs="0"
 
@@ -617,7 +593,6 @@ with a minOccurs or maxOccurs unequal 1.
 
 I<Example:> with a list of ints
 
-
   <test5>3 8 12</test5>
 
 as Perl structure:
@@ -634,7 +609,6 @@ should be extensions of the head element's type, but there is no way to
 check that.
 
 I<Example:> substitutionGroup
-
 
  <xs:element name="price"  type="xs:int" abstract="true" />
  <xs:element name="euro"   type="xs:int" substitutionGroup="price" />
@@ -666,22 +640,16 @@ The HASH repesentation is respectively
  product => {name => 'Ball', euro  => 12}
  product => {name => 'Ball', dollar => 6}
 
+=head1 SEE ALSO
 
+This module is part of XML-Compile distribution version 0.12,
+built on December 19, 2006. Website: F<http://perl.overmeer.net/xml-compile/>
 
+=head1 LICENSE
 
+Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
 
-=head1 REFERENCES
-
-See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for more details.
-
-=head1 COPYRIGHTS
-
-Module version 0.11.
-Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
-other contributors.
-
-Copyright (c) 2006 by the author(s). All rights reserved.  This program
-is free software; you can redistribute it and/or modify it under the
-same terms as Perl itself.
-
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
 

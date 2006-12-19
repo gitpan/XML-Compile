@@ -1,7 +1,10 @@
+# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# See the manual pages for details on the licensing terms.
+# Pod stripped from pm file by OODoc 0.12.
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 use strict;
 use warnings;
@@ -117,6 +120,20 @@ sub element_fixed
     sub { my ($doc, $value) = @_;
           my $ret = defined $value ? $do->($doc, $value) : undef;
           return $ret if defined $ret && $ret->textContent eq $fixed;
+
+          $err->($path, $value, "value fixed to '$fixed'");
+          $do->($doc, $fixed);
+        };
+}
+
+sub element_fixed_optional
+{   my ($path, $args, $ns, $childname, $do, $min, $max, $fixed) = @_;
+    my $err  = $args->{err};
+    $fixed   = $fixed->value;
+
+    sub { my ($doc, $value) = @_;
+          my $ret = defined $value ? $do->($doc, $value) : undef;
+          return $ret if !defined $ret || $ret->textContent eq $fixed;
 
           $err->($path, $value, "value fixed to '$fixed'");
           $do->($doc, $fixed);
@@ -349,6 +366,24 @@ sub attribute_fixed
 
     sub { my ($doc, $value) = @_;
           my $ret = defined $value ? $do->($doc, $value) : undef;
+          return $doc->createAttributeNS($ns, $tag, $ret)
+              if defined $ret && $ret eq $fixed;
+
+          $err->($path, $value, "attr value fixed to '$fixed'");
+          $ret = $do->($doc, $fixed);
+          defined $ret ? $doc->createAttributeNS($ns, $tag, $ret) : ();
+        };
+}
+
+sub attribute_fixed_optional
+{   my ($path, $args, $ns, $tag, $do, $fixed) = @_;
+    my $err  = $args->{err};
+    $fixed   = $fixed->value;
+
+    sub { my ($doc, $value) = @_;
+          defined $value or return ();
+
+          my $ret = $do->($doc, $value);
           return $doc->createAttributeNS($ns, $tag, $ret)
               if defined $ret && $ret eq $fixed;
 

@@ -1,9 +1,12 @@
+# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# See the manual pages for details on the licensing terms.
+# Pod stripped from pm file by OODoc 0.12.
 use warnings;
 use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.11';
+$VERSION = '0.12';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -246,7 +249,7 @@ $builtin_types{dateTime} =
        \:(?:[0-5]?[0-9])     # seconds
     )?
     (?:[+-]\d\d?\:\d\d|Z)?   # time-zone
-    $/x ? $1 : 0 }
+    $/x ? $_[0] : 0 }
  , example => '2006-10-06T00:23:02'
  };
 

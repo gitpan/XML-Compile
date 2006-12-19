@@ -1,15 +1,11 @@
-
 =head1 NAME
 
 XML::Compile::Schema::XmlReader - bricks to translate XML to HASH
-
-
 
 =head1 SYNOPSIS
 
  my $schema = XML::Compile::Schema->new(...);
  my $code   = $schema->compile(READER => ...);
-
 
 =head1 DESCRIPTION
 
@@ -17,28 +13,16 @@ The translator understands schema's, but does not encode that into
 actions.  This module implements those actions to translate from XML
 into a (nested) Perl HASH structure.
 
+=head1 SEE ALSO
 
+This module is part of XML-Compile distribution version 0.12,
+built on December 19, 2006. Website: F<http://perl.overmeer.net/xml-compile/>
 
+=head1 LICENSE
 
+Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
 
-
-
-
-
-
-
-=head1 REFERENCES
-
-See the XML::Compile website at L<http://perl.overmeer.net/xml-compile/> for more details.
-
-=head1 COPYRIGHTS
-
-Module version 0.11.
-Written by Mark Overmeer (mark@overmeer.net).  See the ChangeLog for
-other contributors.
-
-Copyright (c) 2006 by the author(s). All rights reserved.  This program
-is free software; you can redistribute it and/or modify it under the
-same terms as Perl itself.
-
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
 
