@@ -1,13 +1,14 @@
-# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# Copyrights 2006-2007 by Mark Overmeer.
+# For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.12.
+# Pod stripped from pm file by OODoc 0.99.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 use base 'XML::Compile';
 
 use Carp;
@@ -19,14 +20,6 @@ use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::Translate      ();
 use XML::Compile::Schema::Instance;
 use XML::Compile::Schema::NameSpaces;
-
-my %schemaLocation =
- ( 'http://www.w3.org/1999/XMLSchema'     => '1999-XMLSchema.xsd'
- , 'http://www.w3.org/1999/part2.xsd'     => '1999-XMLSchema-part2.xsd'
- , 'http://www.w3.org/2000/10/XMLSchema'  => '2000-XMLSchema.xsd'
- , 'http://www.w3.org/2001/XMLSchema'     => '2001-XMLSchema.xsd'
- , 'http://www.w3.org/XML/1998/namespace' => '1998-namespace.xsd'
- );
 
 
 sub init($)
@@ -76,16 +69,8 @@ sub addSchemas($$)
 
 sub importSchema($)
 {   my ($self, $thing) = @_;
-
-    my $filename = $schemaLocation{$thing} || $thing;
-
-    my $path = $self->findSchemaFile($filename)
-        or croak "ERROR: cannot find $filename for $thing";
-
-    my $tree = $self->parseFile($path)
-        or croak "ERROR: cannot parse XML from $path";
-
-    $self->addSchema($tree);
+    my $tree = $self->dataToXML($thing);
+    $self->addSchemas($tree);
 }
 
 

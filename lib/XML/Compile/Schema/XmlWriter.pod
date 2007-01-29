@@ -13,14 +13,38 @@ The translator understands schema's, but does not encode that into
 actions.  This module implements those actions to translate from
 a (nested) Perl HASH structure onto XML.
 
+=head1 DETAILS
+
+=head2 Processing Wildcards
+
+Complex elements can define C<any> (element) and C<anyAttribute> components,
+with unpredictable content.  In this case, you are quite on your own in
+processing those constructs.  The use of both schema components should
+be avoided: please specify your data-structures explicit by clean type
+extensions.
+
+The procedure for the XmlWriter is simple: add key-value pairs to your
+hash, in which the valie is a fully prepared XML::LibXML::Attr
+or XML::LibXML::Element.  The keys have the form C<{namespace}type>.
+The I<namespace> component is important, because only spec confirmant
+namespaces will be used.  The type is ignored.  The elements and
+attributes are added in random order.
+
+I<Example:> specify anyAttribute
+
+ my $attr = $doc->createAttributeNS($somens, $sometype, 42);
+ my $h = { a => 12     # normal element or attribute
+         , "{$somens}$sometype" => $attr # anyAttribute
+         };
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.12,
-built on December 19, 2006. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.13,
+built on January 29, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

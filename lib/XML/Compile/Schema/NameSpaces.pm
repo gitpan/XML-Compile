@@ -1,13 +1,14 @@
-# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# Copyrights 2006-2007 by Mark Overmeer.
+# For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.12.
+# Pod stripped from pm file by OODoc 0.99.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use Carp;
 

@@ -1,13 +1,16 @@
-# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# Copyrights 2006-2007 by Mark Overmeer.
+# For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.12.
+# Pod stripped from pm file by OODoc 0.99.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use strict;
 use warnings;
 no warnings 'once';
+
+use List::Util  qw/first/;
 
 
 # Each action implementation returns a code reference, which will be
@@ -27,9 +30,10 @@ sub tag_unqualified
 
 sub wrapper
 {   my $processor = shift;
-    sub { my $xml = ref $_[0] && $_[0]->isa('XML::LibXML::Node')
-                  ? $_[0]
-                  : XML::Compile->parse(\$_[0]);
+    sub { my $xml = XML::Compile->dataToXML($_[0]);
+ #ref $_[0] && $_[0]->isa('XML::LibXML::Node')
+                  #? $_[0]
+                  #: XML::Compile->parse(\$_[0]);
           defined $xml or return ();
           $xml = $xml->documentElement if $xml->isa('XML::LibXML::Document');
           $processor->($xml);
@@ -160,9 +164,13 @@ sub element_optional
 #
 
 sub create_complex_element
-{   my ($path, $args, $tag, @childs) = @_;
+{   my ($path, $args, $tag, $childs, $any_elem, $any_attr) = @_;
+
+    my @childs = @$childs;
     my @do;
     while(@childs) {shift @childs; push @do, shift @childs}
+    push @do, @$any_elem if $any_elem;
+    push @do, @$any_attr if $any_attr;
 
     sub { my @pairs = map {$_->(@_)} @do;
           @pairs ? {@pairs} : ();
@@ -358,6 +366,43 @@ sub element_substgroup
           $err->($path, $name, "none of the substitution alternatives found.");
         };
 }
+
+# anyAttribute
+
+sub anyAttribute
+{   my ($path, $args, $handler, $yes, $no, $process) = @_;
+    return () unless defined $handler;
+
+    my %yes = map { ($_ => 1) } @{$yes || []};
+    my %no  = map { ($_ => 1) } @{$no  || []};
+
+    # Takes all, before filtering
+    my $all =
+    sub { my @result;
+          foreach my $attr ($_[0]->attributes)
+          {   $attr->isa('XML::LibXML::Attr') or next;
+              my $ns = $attr->namespaceURI || $_[0]->namespaceURI;
+              next if keys %yes && !$yes{$ns};
+              next if keys %no  &&   $no{$ns};
+              my $local = $attr->localName;
+              push @result, "{$ns}$local" => $attr;
+          }
+          @result;
+        };
+
+    # Create filter if requested
+    $handler eq 'TAKE_ALL' ? $all
+    : sub { my @attrs = $all->(@_);
+            my @result;
+            while(@attrs)
+            {   my ($type, $data) = (shift @attrs, shift @attrs);
+                my ($label, $out) = $handler->($type, $data, $path, $args);
+                push @result, $label, $out if defined $label;
+            }
+            @result;
+          };
+}
+
 
 1;
 

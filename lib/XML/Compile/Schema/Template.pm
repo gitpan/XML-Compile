@@ -1,10 +1,11 @@
-# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# Copyrights 2006-2007 by Mark Overmeer.
+# For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.12.
+# Pod stripped from pm file by OODoc 0.99.
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -93,13 +94,19 @@ sub element_optional
 #
 
 sub create_complex_element
-{   my ($path, $args, $tag, @do) = @_;
+{   my ($path, $args, $tag, $childs, $any_elem, $any_attr) = @_;
+
+    my @childs = @$childs;
+    my @do;
+    while(@childs) {shift @childs; push @do, shift @childs}
+    push @do, @$any_elem if $any_elem;
+    push @do, @$any_attr if $any_attr;
+
     sub { my @parts = @do;
           my (@attrs, @elems);
 
           while(@parts)
-          {   my $childname = shift @parts;
-              my $child     = (shift @parts)->();
+          {   my $child     = (shift @parts)->();
               if($child->{attr})
               {   push @attrs, $child;
               }
@@ -246,6 +253,19 @@ sub attribute_fixed
            , tag     => $tag
            , occurs  => "attribute $tag is fixed"
            , example => $fixed
+           };
+        };
+}
+
+
+# anyAttribute
+
+sub anyAttribute
+{   my ($path, $args, $handler, $yes, $no, $process) = @_;
+    my $occurs = @$yes ? "in @$yes" : @$no ? "not in @$no" : 'any type';
+
+    sub { +{ kind    => 'attr'
+           , struct  => "anyAttribute $occurs"
            };
         };
 }

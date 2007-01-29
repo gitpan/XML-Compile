@@ -1,13 +1,14 @@
-# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# Copyrights 2006-2007 by Mark Overmeer.
+# For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.12.
+# Pod stripped from pm file by OODoc 0.99.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use Carp;
 
@@ -42,8 +43,8 @@ sub compileTree($@)
         $element  = $def->{full};
     }
 
-    my $make   = $self->element_by_name($path, $element);
-    my $produce= $self->make(wrapper => $make);
+    my $make    = $self->element_by_name($path, $element);
+    my $produce = $self->make(wrapper => $make);
 
       $self->{include_namespaces}
     ? $self->make(wrapper_ns => $path, $produce, $self->{output_namespaces})
@@ -61,13 +62,14 @@ sub assert_type($$$$)
     $self->error($path, "Field $field contains '$value' which is not a valid $type.");
 }
 
+my $skip_tags = qr/^(?:notation|annotation|key|unique|keyref|selector|field)$/;
 sub childs($)   # returns only elements in same name-space
 {   my $self = shift;
     my $node = shift;
     my $ns   = $node->namespaceURI;
     grep {   $_->isa('XML::LibXML::Element')
           && $_->namespaceURI eq $ns
-          && $_->localName !~ m/^(?:an)notation$/
+          && $_->localName !~ $skip_tags
          } $node->childNodes;
 }
 
@@ -186,8 +188,7 @@ sub simpleType($$$)
     : $self->error($path
         , "simpleType contains $local, must be restriction, list, or union\n");
 
-    delete $type->{attrs};
-
+    delete @$type{ qw/attrs attrs_any/ };
     $type;
 }
 
@@ -304,10 +305,10 @@ sub simple_restriction($$$)
     defined $base
        or $self->error($path, "simple-restriction requires either base or simpleType");
 
-    my @attrs = $self->attribute_list($path, @attr_nodes);
+    my @attrs_def = $self->attribute_list($path, @attr_nodes);
 
     my $st = $base->{st};
-    return { st => $st, attrs => \@attrs }
+    return { st => $st, @attrs_def }
         if $self->{ignore_facets} || !keys %facets;
 
     #
@@ -338,7 +339,7 @@ sub simple_restriction($$$)
            ? $self->make(facets_list => $path, $st, \@early, \@late)
            : $self->make(facets => $path, $st, @early, @late);
 
-   {st => $do, attrs => \@attrs};
+   {st => $do, @attrs_def};
 }
 
 sub substitutionGroupElements($$)
@@ -386,7 +387,7 @@ sub element_by_node($$)
     my $type;
     if(my $isa = $node->getAttribute('type'))
     {   @childs
-            and $self->error($path, "no childs expected with type");
+            and $self->error($path, "no childs expected for type");
 
         my $typename = $self->rel2abs($path, $node, $isa);
         $type = $self->type_by_name($path, $typename);
@@ -409,18 +410,20 @@ sub element_by_node($$)
     }
 
     my $attrs = $type->{attrs};
-    if(my $elems = $type->{elems})
+    if(my $elems = $type->{elems})  # complex complex
     {   my @do = @$elems;
         push @do, @$attrs if $attrs;
 
-        return $self->make(create_complex_element => $path, $tag, @do);
+        return $self->make(create_complex_element => $path, $tag, \@do,
+            $type->{elems_any}, $type->{attrs_any});
     }
 
-    if(defined $attrs)
+    if(defined $attrs)              # simple complex
     {   return $self->make(create_tagged_element =>
            $path, $tag, $type->{st}, $attrs);
     }
 
+                                    # simple
     $self->make(create_simple_element => $path, $tag, $type->{st});
 }
 
@@ -563,7 +566,6 @@ sub attribute($$)
     $name => $self->make($generate => $path, $ns, $tag, $st, $value);
 }
 
-sub attribute_group($$);
 sub attribute_group($$)
 {   my ($self, $path, $node) = @_;
 
@@ -577,27 +579,78 @@ sub attribute_group($$)
     my $def  = $self->reference($path, $typename, 'attributeGroup');
     defined $def or return ();
 
-    my @attrs;
-    my $dest = $def->{node};
-    foreach my $child ( $self->childs($dest))
-    {   my $local = $child->localname;
+    $self->attribute_list($path, $self->childs($def->{node}));
+}
+
+sub attribute_list($@)
+{   my ($self, $path) = (shift, shift);
+    my (@attrs, @any);
+
+    foreach my $attr (@_)
+    {   my $local = $attr->localName;
         if($local eq 'attribute')
-        {   push @attrs, $self->attribute($path, $child) }
-        elsif($local eq 'attributeGroup')
-        {   push @attrs, $self->attribute_group($path, $child) }
-        else
-        {   $self->error($path, "unexpected $local in attributeGroup");
+        {   push @attrs, $self->attribute($path, $attr);
+            next;
         }
+
+        my %attrs
+         = $local eq 'attributeGroup' ? $self->attribute_group($path, $attr)
+         : $local eq 'anyAttribute'   ? $self->any_attribute($path, $attr)
+         : $self->error($path
+             , "expected is attribute(Group) not $local. Forgot <sequence>?");
+
+        push    @attrs, @{$attrs{attrs}     || []};
+        unshift @any,   @{$attrs{attrs_any} || []};
     }
 
-    @attrs;
+    (attrs => \@attrs, attrs_any => \@any);
+}
+
+# Don't known how to handle notQName
+sub any_attribute($$)
+{   my ($self, $path, $node) = @_;
+    my $handler   = $self->{anyAttribute};
+    my $namespace = $node->getAttribute('namespace')       || '##any';
+    my $not_ns    = $node->getAttribute('notNamespace');
+    my $process   = $node->getAttribute('processContents') || 'strict';
+
+    my ($yes, $no) = $self->translate_ns_limits($namespace, $not_ns);
+    my $do = $self->make(anyAttribute => $path, $handler, $yes, $no, $process);
+    defined $do ? (attrs_any => [$do]) : ();
+}
+
+# namespace    = (##any|##other) | List of (anyURI|##targetNamespace|##local)
+# notNamespace = List of (anyURI |##targetNamespace|##local)
+# handling of ##local ignored: only full namespaces are supported
+sub translate_ns_limits($$)
+{   my ($self, $include, $exclude) = @_;
+
+    my $tns       = $self->{tns};
+    return (undef, [])     if $include eq '##any';
+    return (undef, [$tns]) if $include eq '##other';
+
+    my @return;
+    foreach my $list ($include, $exclude)
+    {   my @list;
+        if(defined $list && length $list)
+        {   foreach my $url (split " ", $list)
+            {   push @list
+                 , $url eq '##targetNamespace' ? $tns
+                 : $url eq '##local'           ? ()
+                 : $url;
+            }
+        }
+        push @return, @list ? \@list : undef;
+    }
+
+    @return;
 }
 
 sub complexType($$)
 {   my ($self, $path, $node) = @_;
 
     my @childs = $self->childs($node);
-    @childs or $self->error($path, "empty contentType");
+    @childs or $self->error($path, "empty complexType");
 
     my $first  = shift @childs;
     my $local  = $first->localName;
@@ -635,30 +688,8 @@ sub complex_body($$)
     {   @elems = $self->particle($path, $first, 1, 1);
         shift @childs;
     }
-    my @attrs = $self->attribute_list($path, @childs);
 
-    {elems => \@elems, attrs => \@attrs};
-}
-
-sub attribute_list($@)
-{   my ($self, $path) = (shift, shift);
-    my @attrs;
-
-    foreach my $attr (@_)
-    {   my $local = $attr->localName;
-        if($local eq 'attribute')
-        {   push @attrs, $self->attribute($path, $attr);
-        }
-        elsif($local eq 'attributeGroup')
-        {   push @attrs, $self->attribute_group($path, $attr);
-        }
-        else
-        {   $self->error($path
-             , "expected is attribute(Group) not $local. Forgot <sequence>?");
-        }
-    }
-
-    @attrs;
+    {elems => \@elems, $self->attribute_list($path, @childs) };
 }
 
 sub simpleContent($$)
@@ -694,15 +725,15 @@ sub simpleContent_ext($$)
     my $st = $basetype->{st}
         or $self->error($path, "base of simpleContent not simple");
  
-    my %type     = (st => $st);
-    my @attrs    = defined $basetype->{attrs} ? @{$basetype->{attrs}} : ();
+    my @attrs    = @{$basetype->{attrs}     || []};
+    my @attrs_any= @{$basetype->{attrs_any} || []};
     my @childs   = $self->childs($node);
 
-    push @attrs, $self->attribute_list($path, @childs)
-        if @childs;
-
-    $type{attrs} = \@attrs;
-    \%type;
+    my %additional = $self->attribute_list($path, @childs);
+    push @attrs,        @{$additional{attrs}};
+    unshift @attrs_any, @{$additional{attrs_any}};
+    
+    {st => $st, attrs => \@attrs, attrs_any => \@attrs_any};
 }
 
 sub simpleContent_res($$)
@@ -751,12 +782,13 @@ sub complexContent_ext($$)
         $typedef->{type} eq 'complexType'
             or $self->error($path, "base $base not complexType");
 
-        $type = $self->complex_body($path, $typedef->{node});
+        $type = $self->complexType($path, $typedef->{node});
     }
 
     my $own = $self->complex_body($path, $node);
     push @{$type->{elems}}, @{$own->{elems}} if $own->{elems};
-    push @{$type->{attrs}}, @{$own->{attrs}} if $own->{attrs};
+    push    @{$type->{attrs}},     @{$own->{attrs}}     if $own->{attrs};
+    unshift @{$type->{attrs_any}}, @{$own->{attrs_any}} if $own->{attrs_any};
     $type;
 }
 
@@ -787,7 +819,6 @@ sub anyType($)
     my $ns = $node->namespaceURI;
     "{$ns}anyType";
 }
-
 
 
 1;

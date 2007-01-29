@@ -127,13 +127,22 @@ See L<XML::Compile/"Accessors">
 
 =back
 
-$obj-E<gt>B<importSchema>(FILENAME|NAMESPACE)
+$obj-E<gt>B<importSchema>(XMLDATA)
 
 =over 4
 
-Import (parse) the XML found in the specified file.  Some NAMESPACES
-are linked to predefined filenames, especially the schema defining files.
-The FILENAME can be relative, see L<findSchemaFile()|XML::Compile/"Accessors">.
+Import (include) the schema information included in the XMLDATA.  The
+XMLDATA must be acceptable for M<dataToXML().
+
+=back
+
+$obj-E<gt>B<knownNamespace>(NAMESPACE)
+
+XML::Compile::Schema-E<gt>B<knownNamespace>(NAMESPACE)
+
+=over 4
+
+See L<XML::Compile/"Accessors">
 
 =back
 
@@ -151,6 +160,32 @@ $obj-E<gt>B<top>
 =over 4
 
 See L<XML::Compile/"Accessors">
+
+=back
+
+=head2 Read XML
+
+$obj-E<gt>B<dataToXML>(NODE|REF-XML|XML|FILENAME|KNOWN)
+
+=over 4
+
+See L<XML::Compile/"Read XML">
+
+=back
+
+$obj-E<gt>B<parse>(STRING)
+
+=over 4
+
+See L<XML::Compile/"Read XML">
+
+=back
+
+$obj-E<gt>B<parseFile>(FILENAME)
+
+=over 4
+
+See L<XML::Compile/"Read XML">
 
 =back
 
@@ -192,6 +227,8 @@ Most options below are explained in more detailed in the manual-page
 L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
 
  Option              --Defined in     --Default
+ anyAttribute                           undef
+ anyElement                             undef
  attributes_qualified                   <undef>
  check_occurs                           <false>
  check_values                           <true>
@@ -203,6 +240,28 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
  output_namespaces                      {}
  path                                   <expanded name of type>
  sloppy_integers                        <false>
+
+. anyAttribute CODE
+
+=over 4
+
+In general, C<anyAttribute> schema components cannot be handled
+automatically.  If  you need to create or process anyAttribute
+information, then read about wildcards in the DETAILS chapter of the
+manual-page for the specific back-end.
+
+=back
+
+. anyElement CODE
+
+=over 4
+
+In general, C<any> schema components cannot be handled automatically.
+If  you need to create or process any information, then read about
+wildcards in the DETAILS chapter of the manual-page for the specific
+back-end.
+
+=back
 
 . attributes_qualified BOOLEAN
 
@@ -436,12 +495,6 @@ refers to the built-in C<int> data-type.  You may also start with
 
 as long as this ID refers to an element.
 
-Wildcard elements C<any> and C<anyAttribute> elements frustrate our
-attempt for simplification.  Where we normally know which name-space
-we are dealing with, these wildcard elements can use any name-space.
-Therefore, in the HASH, these elements will use keys like C<{url}name>,
-in stead of simply the name.
-
 =head2 Representing data-structures
 
 The code will do its best to produce a correct translation. For
@@ -640,14 +693,46 @@ The HASH repesentation is respectively
  product => {name => 'Ball', euro  => 12}
  product => {name => 'Ball', dollar => 6}
 
+=head2 Wildcards
+
+The C<any> and C<anyAttribute> elements are referred to as C<wildcards>:
+they specify groups of elements and attributes which can be used, in
+stead of being explicit.
+
+The author of this module advices B<against the use of wildcards>
+in schema's, because the purpose of schema's is to be explicit and that
+basic idea is simply thrown away by these wildcards.  Let people cleanly
+extend the schema with inheritance!  If you use a standard schema
+which facilitates these wildcards, then please do not use them!
+
+Because wildcards are not explicit about the types to expect, the
+C<XML::Compile> module can not prepare for them automatically.
+However, as user of the schema you probably know better about the possible
+contents of these fields.  Therefore, you can translate that
+knowledge into code explicitly.  Read about the processing of wildcards
+in the manual page for each of the back-ends, because it is different
+in each case.
+
+=head1 DIAGNOSTICS
+
+I<Error:> cannot find pre-installed name-space files
+
+Use $ENV{SCHEMA_LOCATION} or L<new(schema_dirs)|XML::Compile/"Constructors"> to express location
+of installed name-space files, which came with the L<XML::Compile|XML::Compile>
+distribution package.
+
+I<Error:> don't known how to interpret XML data
+
+I<Error:> no XML data specified
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.12,
-built on December 19, 2006. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.13,
+built on January 29, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

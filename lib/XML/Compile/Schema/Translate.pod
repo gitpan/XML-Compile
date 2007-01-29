@@ -23,22 +23,32 @@ one CODE reference which can be used in the main user program.
 =head2 Unsupported features
 
 This implementation is work in progress, but most structures in
-W3C schema's are implemented.  A few nuts are still to crack:
- schema schemaLocation
+W3C schema's are implemented.
+
+Non-namespace schema elements are not implemented, because you shouldn't
+want that!  Therefore, missing are
  schema noNamespaceSchemaLocation
+ any ##local
+ anyAttribute ##local
+
+Some things do not work in schema's anyway:
+ automatic import
+ include
+
+Used for indexing XML, not for our need:
+ unique, keyref, selector, field
+
+A few nuts are still to crack:
+ any* processContents always interpreted as lax
  schema version
  element mixed
  facets on dates
- limited understanding of patterns
- include
- auto-import
- anyAttribute
+ full understanding of patterns (now limited)
  final
- unique, keyref, selector, field, include, notation
+ notation, annotation
  explicit ordering within choice and all
 
-Of course, these are all fixed in next release ;-)
-
+Of course, the latter list is all fixed in next release ;-)
 See chapter L</DETAILS> for more on how the tune the translator.
 
 =head1 METHODS
@@ -70,7 +80,9 @@ a table of types.
 
 =head1 DETAILS
 
-=head2 Performance optimization
+=head2 Translator options
+
+=head3 performance optimization
 
 The L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers"> method (and wrappers) defines
 a set options to improve performance or usability.  These options
@@ -117,7 +129,7 @@ extra security.
 
 =back
 
-=head2 Qualified XML
+=head3 qualified XML
 
 The produced XML may not use the name-spaces as defined by the schema's,
 just to simplify the input and output.  The structural definition of
@@ -136,7 +148,7 @@ C<elements_qualified> and C<attributes_qualified>.  May people and
 applications do not understand name-spaces sufficiently, and these
 options may make your day!
 
-=head2 Name-spaces
+=head3 Name-spaces
 
 The translator does respect name-spaces, but not all senders and
 receivers of XML are name-space capable.  Therefore, you have some
@@ -182,14 +194,37 @@ the counts on all defined name-spaces.
 
 =back
 
+=head3 Wildcards handlers
+
+Wildcards are a serious complication: the C<any> and C<anyAttribute>
+entities do not describe exactly what can be found, which seriously
+hinders the quality of validation and the preparation of L<XML::Compile|XML::Compile>.
+Therefore, if you use them then you need to process that parts of
+XML yourself.  See the various backends on how to create or process
+these elements.
+
+=over 4
+
+=item anyElement CODE
+
+This will be called when the type definition contains an C<any>
+definition, after processing the other element components.  By
+default, all C<any> specifications will be ignored.
+
+=item anyAttribute CODE|'TAKE_ALL'
+
+This will be called when the type definitions contains an
+C<anyAttribute> definition, after processing the other attributes.
+By default, all C<anyAttribute> specifications will be ignored.
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.12,
-built on December 19, 2006. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.13,
+built on January 29, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -1,13 +1,14 @@
-# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# Copyrights 2006-2007 by Mark Overmeer.
+# For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.12.
+# Pod stripped from pm file by OODoc 0.99.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use Carp;
 
@@ -62,7 +63,14 @@ sub substitutionGroupMembers($)
 }
 
 
-my %as_element = map { ($_ => 1) } qw/element group attributeGroup/;
+my %as_element = map { ($_ => 1) }
+   qw/element group attributeGroup/;
+
+my %as_type    = map { ($_ => 1) }
+   qw/complexType simpleType attribute attributeGroup group/;
+
+my %skip_toplevel = map { ($_ => 1) }
+   qw/annotation import notation include redefine/;
 
 sub _collectTypes($)
 {   my ($self, $schema) = @_;
@@ -91,8 +99,7 @@ sub _collectTypes($)
     {   next unless $node->isa('XML::LibXML::Element');
         my $local = $node->localname;
 
-        next if $local eq 'annotation';
-        next if $local eq 'import';
+        next if $skip_toplevel{$local};
 
         my $tag   = $node->getAttribute('name');
         my $ref;
@@ -126,7 +133,15 @@ sub _collectTypes($)
              $sg = "{$sgns}$sgname";
         }
 
-        my $class = $as_element{$local} ? 'elements' : 'types';
+        my $class
+           = $as_element{$local} ? 'elements'
+           : $as_type{$local}    ? 'types'
+           :                       undef;
+
+        unless(defined $class)
+        {   warn "WARNING: skipping unknown top-level component `$local'\n";
+            next;
+        }
 
         my $info  = $self->{$class}{$label}
           = { type => $local, id => $id,   node => $node, full => "{$ns}$name"

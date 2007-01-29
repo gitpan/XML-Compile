@@ -1,10 +1,11 @@
-# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# Copyrights 2006-2007 by Mark Overmeer.
+# For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.12.
+# Pod stripped from pm file by OODoc 0.99.
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use strict;
 use warnings;
@@ -162,7 +163,8 @@ sub element_default
 #
 
 sub create_complex_element
-{   my ($path, $args, $tag, @do) = @_;
+{   my ($path, $args, $tag, $childs, $any_elem, $any_attr) = @_;
+    my @do = @$childs;
     my $err = $args->{err};
     sub { my ($doc, $data) = @_;
           unless(UNIVERSAL::isa($data, 'HASH'))
@@ -177,6 +179,34 @@ sub create_complex_element
               push @childs, (shift @elems)
                   ->($doc, delete $data->{$childname});
           }
+
+       ANY:
+          foreach my $tag (sort keys %$data)
+          {   next unless $tag =~ m/^\{([^}]*)\}(.*)$/;
+              my ($ns, $type) = ($1, $2);
+              my $value = delete $data->{$tag};
+              my $any
+               = !ref $value                         ? undef
+               : $value->isa('XML::LibXML::Attr')    ? $any_attr
+               : $value->isa('XML::LibXML::Element') ? $any_elem
+               : undef;
+
+              unless($any)
+              {   $err->($path, ref $value
+                , "requires XML::LibXML::Attr or ::Element as value for $tag");
+                  next ANY;
+              }
+
+              foreach my $try (@$any)
+              {   my $v = $try->($doc, $tag, $ns, $type, $value);
+                  defined $v or next;
+                  push @childs, $v;
+                  next ANY;
+              }
+
+              $err->($path, ref $value, "value for $tag not used");
+          }
+
           $err->($path, join(' ', sort keys %$data), 'unused data')
               if keys %$data;
 
@@ -392,6 +422,25 @@ sub attribute_fixed_optional
           defined $ret ? $doc->createAttributeNS($ns, $tag, $ret) : ();
         };
 }
+
+# anyAttribute
+
+sub anyAttribute
+{   my ($path, $args, $handler, $yes, $no, $process) = @_;
+    my %yes = map { ($_ => 1) } @{$yes || []};
+    my %no  = map { ($_ => 1) } @{$no  || []};
+    my $err = $args->{err};
+
+    sub { my ($doc, $key, $ns, $type, $value) = @_;
+          my $vns = $value->namespaceURI;
+          $vns eq $ns or $err->($path, $vns, "value name-space must be $ns");
+          # type can best be made explicit, but cannot be checked.
+          return $yes{$ns} ? $value : undef  if keys %yes;
+          return $no{$ns}  ? undef  : $value if keys %no;
+          $value;
+        };
+}
+
 
 1;
 

@@ -1,12 +1,13 @@
-# Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+# Copyrights 2006-2007 by Mark Overmeer.
+# For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.12.
+# Pod stripped from pm file by OODoc 0.99.
 use warnings;
 use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 use base 'Exporter';
 
 use XML::LibXML;
@@ -19,6 +20,9 @@ our @EXPORT = qw/
  $TestNS
  $SchemaNS
  @run_opts
+ reader
+ writer
+ compare_xml
  test_rw
  templ_xml
  templ_perl
@@ -28,14 +32,11 @@ our $TestNS   = 'http://test-types';
 our $SchemaNS = 'http://www.w3.org/2001/XMLSchema';
 our @run_opts = ();
 
-sub test_rw($$$$;$$)
-{   my ($schema, $test, $xml, $hash, $expect, $h2) = @_;
-
-    # Read testing
-    my $abs = $test =~ m/\{/ ? $test : "{$TestNS}$test";
+sub reader($$$$)
+{   my ($schema, $test, $type, $xml) = @_;
 
     my $read_t = $schema->compile
-     ( READER             => $abs
+     ( READER             => $type
      , check_values       => 1
      , include_namespaces => 0
      , @run_opts
@@ -44,7 +45,38 @@ sub test_rw($$$$;$$)
     ok(defined $read_t, "reader element $test");
     cmp_ok(ref($read_t), 'eq', 'CODE');
 
-    my $h = $read_t->($xml);
+    $read_t->($xml);
+}
+
+sub writer($$$$$)
+{   my ($schema, $doc, $test, $type, $data) = @_;
+
+    my $write_t = $schema->compile
+     ( WRITER             => $type
+     , check_values       => 1
+     , include_namespaces => 0
+     , @run_opts
+     );
+
+    ok(defined $write_t, "writer element $test");
+    defined $write_t or next;
+
+    cmp_ok(ref($write_t), 'eq', 'CODE');
+
+    my $tree = $write_t->($doc, $data);
+    ok(defined $tree);
+    defined $tree or return;
+
+    isa_ok($tree, 'XML::LibXML::Node');
+    $tree;
+}
+
+sub test_rw($$$$;$$)
+{   my ($schema, $test, $xml, $hash, $expect, $h2) = @_;
+
+    my $type = $test =~ m/\{/ ? $test : "{$TestNS}$test";
+
+    my $h = reader($schema, $test, $type, $xml);
 
 #use Data::Dumper;
 #warn Dumper $h;
@@ -64,29 +96,15 @@ sub test_rw($$$$;$$)
 
     # Write testing
 
-    my $write_t = $schema->compile
-     ( WRITER             => $abs
-     , check_values       => 1
-     , include_namespaces => 0
-     , @run_opts
-     );
-
-    ok(defined $write_t, "writer element $test");
-    defined $write_t or next;
-
-    cmp_ok(ref($write_t), 'eq', 'CODE');
-
     my $doc = XML::LibXML->createDocument('test doc', 'utf-8');
     isa_ok($doc, 'XML::LibXML::Document');
 
-    $h = $h2 if defined $h2;
+    my $tree = writer($schema, $doc, $test, $type, defined $h2 ? $h2 : $h);
+    compare_xml($tree, $expect || $xml);
+}
 
-    my $tree = $write_t->($doc, $h);
-    ok(defined $tree);
-    defined $tree or return;
-
-    isa_ok($tree, 'XML::LibXML::Node');
-    $expect ||= $xml;
+sub compare_xml($$)
+{   my ($tree, $expect) = @_;
     my $dump = $tree->toString;
 
     if($dump =~ m/\n|\s\s/)

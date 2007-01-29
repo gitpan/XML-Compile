@@ -13,14 +13,122 @@ The translator understands schema's, but does not encode that into
 actions.  This module implements those actions to translate from XML
 into a (nested) Perl HASH structure.
 
+=head1 DETAILS
+
+=head2 Processing Wildcards
+
+If you want to collect information from the XML structure, which is
+permitted by C<any> and C<anyAttribute> specifications in the schema,
+you have to implement that yourself.  The problem is C<XML::Compile>
+has less knowledge than you about the possible data.
+
+=head3 anyAttribute
+
+By default, the C<anyAttribute> specification is ignored.  When C<TAKE_ALL>
+is given, all attributes which are fulfilling the name-space requirement
+added to the returned data-structure.  As key, the absolute element name
+will be used, with as value the related unparsed XML element.
+
+In the current implementation, if an explicit attribute is also
+covered by the name-spaces permitted by the anyAttribute definition,
+then it will also appear in that list (and hence the handler will
+be called as well).
+
+Use L<XML::Compile::Schema::compile(anyAttribute)|XML::Compile::Schema/"Compilers"> to write your
+own handler, to influence the behavior.  The handler will be called for
+each attribute, and you must return list of pairs of derived information.
+When the returned is empty, the attribute data is lost.  The value may
+be a complex structure.
+
+I<Example:> anyAttribute in XmlReader
+
+Say your schema looks like this:
+
+ <schema targetNamespace="http://mine"
+    xmlns:me="http://mine" ...>
+   <element name="el">
+     <complexType>
+       <attribute name="a" type="xs:int" />
+       <anyAttribute namespace="##targetNamespace"
+          processContents="lax">
+     </complexType>
+   </element>
+   <simpleType name="non-empty">
+     <restriction base="xs:NCName" />
+   </simpleType>
+ </schema>
+
+Then, in an application, you write:
+
+ my $r = $schema->compile(READER => '{http://mine}el'
+  , anyAttribute => 'ALL'
+  );
+
+ my $h = $r->( <<'__XML' );
+   <el xmlns:me="http://mine">
+     <a>42</a>
+     <b type="me:non-empty">
+        everything
+     </b>
+   </el>
+ __XML
+
+ use Data::Dumper 'Dumper';
+ print Dumper $h;
+ __XML__
+
+The output is something like
+
+ $VAR1 =
+  { a => 42
+  , '{http://mine}a' => ... # XML::LibXML::Node with <a>42</a>
+  , '{http://mine}b' => ... # XML::LibXML::Node with <b>everything</b>
+  };
+
+You can improve the reader with a callback.  When you know that the
+extra attribute is always of type C<non-empty>, then you can do
+
+ my $read = $schema->compile
+  ( READER => '{http://mine}el'
+  , anyAttribute => \&filter
+  );
+
+ my $anyAttRead = $schema->compile
+  ( READER => '{http://mine}non-empty'
+  );
+
+ sub filter($$$$)
+ {   my ($fqn, $xml, $path, $translator) = @_;
+     return () if $fqn ne '{http://mine}b';
+     (b => $anyAttRead->($xml));
+ }
+
+ my $h = $r->( see above );
+ print Dumper $h;
+
+Which will result in
+
+ $VAR1 =
+  { a => 42
+  , b => 'everything'
+  };
+
+The filter will be called twice, but return nothing in the first
+case.  You can implement any kind of complex processing in the filter.
+
+=head3 any element
+
+By default, the C<any> definition in a schema will ignore all elements
+from the container which are not used.
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.12,
-built on December 19, 2006. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.13,
+built on January 29, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

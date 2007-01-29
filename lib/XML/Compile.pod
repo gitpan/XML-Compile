@@ -61,11 +61,9 @@ $obj-E<gt>B<new>(TOP, OPTIONS)
 
 =over 4
 
-The TOP is a XML::LibXML::Document (a direct result from parsing
-activities) or a XML::LibXML::Node (a sub-tree).  It may also be a
-text which represents one or more schema's, as long as it is one node.
+The TOP is the source of XML. See L<dataToXML()|XML::Compile/"Read XML"> for valid options.
 
-If you have compiled/collected all the information you need,
+If you have compiled/collected all readers and writers you need,
 you may simply terminate the compiler object: that will clean-up
 (most of) the XML::LibXML objects.
 
@@ -113,11 +111,62 @@ the file is returned to the caller.
 
 =back
 
+$obj-E<gt>B<knownNamespace>(NAMESPACE)
+
+XML::Compile-E<gt>B<knownNamespace>(NAMESPACE)
+
+=over 4
+
+Returns the file which contains the definition of a NAMESPACE, if it
+is one of the set which is distributed with the L<XML::Compile|XML::Compile>
+module.
+
+=back
+
 $obj-E<gt>B<top>
 
 =over 4
 
 Returns the XML::LibXML object tree which needs to be compiled.
+
+=back
+
+=head2 Read XML
+
+$obj-E<gt>B<dataToXML>(NODE|REF-XML|XML|FILENAME|KNOWN)
+
+=over 4
+
+Collect XML data.  Either a preparsed NODE is provided, which
+is returned unchanged.  A ref of SCALAR is interpreted as reference
+to XML as plain text (XML texts can be large, hence you can improve
+performance by passing it around as reference in stead of copy).
+Any value which starts with blanks followed by a "E<lt>" is interpreted
+as XML text.
+
+You may also specify a pre-defined (KNOWN) name-space.  A set of definition
+files is included in the distribution, and installed somewhere when the
+modules got installed.  Either define an environmen variable SCHEMA_LOCATION
+or use L<new(schema_dirs)|XML::Compile/"Constructors"> to inform the library where to find these
+files.
+
+=back
+
+$obj-E<gt>B<parse>(STRING)
+
+=over 4
+
+Extract document element tree from the STRING, which represents XML.
+This is a wrapper around XML::LibXML method C<parse_string()>.
+
+=back
+
+$obj-E<gt>B<parseFile>(FILENAME)
+
+=over 4
+
+Extract document element tree from a file, specified by FILENAME.
+This is a wrapper around XML::LibXML method C<parse_file()>.
 
 =back
 
@@ -133,14 +182,26 @@ nodes will be skipped.
 
 =back
 
+=head1 DIAGNOSTICS
+
+I<Error:> cannot find pre-installed name-space files
+
+Use $ENV{SCHEMA_LOCATION} or L<new(schema_dirs)|XML::Compile/"Constructors"> to express location
+of installed name-space files, which came with the L<XML::Compile|XML::Compile>
+distribution package.
+
+I<Error:> don't known how to interpret XML data
+
+I<Error:> no XML data specified
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.12,
-built on December 19, 2006. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.13,
+built on January 29, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006 by Mark Overmeer. For contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
