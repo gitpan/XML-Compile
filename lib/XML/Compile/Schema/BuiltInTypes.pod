@@ -394,7 +394,11 @@ B<QName>
 
 =over 4
 
-A qualified type name: a type name with optional prefix.
+A qualified type name: a type name with optional prefix.  The prefix notation
+C<prefix:type> will be translated into the C<{$ns}type> notation.
+
+This conversion currently only works for the reader, but should be
+implemented for the writer as well.
 
 =back
 
@@ -410,8 +414,8 @@ be translated into an URI object: it may not be used that way.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.13,
-built on January 29, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.14,
+built on January 30, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

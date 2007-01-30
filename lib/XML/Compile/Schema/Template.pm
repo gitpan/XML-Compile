@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -162,7 +162,7 @@ sub create_simple_element
 }
 
 sub builtin_checked
-{   my ($path, $args, $type, $def) = @_;
+{   my ($path, $args, $node, $type, $def) = @_;
     my $example = $def->{example};
     sub { ( type    => $type
           , example => $example

@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
 use Carp;
@@ -121,8 +121,8 @@ sub predefinedSchemas() { keys %schemas }
 sub predefinedSchema($) { defined $_[1] ? $schemas{$_[1]} : () }
 
 
-sub builtInType($;$@)
-{   my ($class, $ns) = (shift, shift);
+sub builtInType($$;$@)
+{   my ($class, $node, $ns) = (shift, shift, shift);
     my $name = @_ % 1 ? shift : undef;
     unless(defined $name)
     {   if($ns =~ m/^\s*\{(.*)\}(.*)/ ) { ($ns, $name) = ($1, $2) }
