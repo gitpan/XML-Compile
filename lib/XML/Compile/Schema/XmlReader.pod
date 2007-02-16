@@ -126,10 +126,45 @@ The C<minOccurs> and C<maxOccurs> of C<any> are ignored: the amount of
 elements is always unbounded.  Therefore, you will get an array of
 elements back per type. 
 
+=head2 Schema hooks
+
+=head3 hooks executed before the XML is being processed
+
+The C<before> hooks receives an XML::LibXML::Node object and
+the path string.  It must return a new (or same) XML node which
+will be used from then on.  You probably can best modify a node
+clone, not the original as provided by the user.  When C<undef>
+is returned, the whole node will disappear.
+
+This hook offers a predefined C<PRINT_PATH>.
+
+I<Example:> to trace the paths
+
+ $schema->addHook(path => qr/./, before => 'PRINT_PATH');
+
+=head3 hooks executed as replacement
+
+Your C<replace> hook should return a list of key-value pairs. To
+produce it, it will get the XML::LibXML::Node and the path.
+
+This hook has a predefined C<SKIP>.
+
+=head3 hooks for post-processing, after the data is collected
+
+The data is collect, and passed as second argument after the XML
+node.  The third argument is the path.  Be careful that the
+collected data might be a SCALAR (for simpleType).
+
+This hook also offers a predefined C<PRINT_PATH>.  Besides, it
+has C<XML_NODE>, C<ELEMENT_ORDER>, and C<ATTRIBUTE_ORDER>, which will
+result in additional fields in the HASH, respectively containing the
+CODE which was processed, the element names and the attribute names.
+The keys start with an underscore C<_>.
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.14,
-built on January 30, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.15,
+built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

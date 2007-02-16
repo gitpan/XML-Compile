@@ -17,10 +17,21 @@ for documentational purposes.  Then, it implements to ways to represent
 that knowledge: as an XML or a Perl example of the data-structure which
 the schema describes.
 
+=head1 DETAILS
+
+=head2 Processing Wildcards
+
+Wildcards are not (yet) supported.
+
+=head2 Schema hooks
+
+The C<before> and C<after> hooks are ignored.  The C<replace> hook will
+produce an error.
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.14,
-built on January 30, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.15,
+built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

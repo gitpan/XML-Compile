@@ -69,11 +69,14 @@ a table of types.
  Option--Defined in     --Default
  bricks                   <required>
  err                      <required>
+ hooks                    <required>
  nss                      <required>
 
 . bricks CLASS
 
 . err CODE
+
+. hooks ARRAY
 
 . nss L<XML::Compile::Schema::NameSpaces>
 
@@ -220,8 +223,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.14,
-built on January 30, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.15,
+built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

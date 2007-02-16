@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -30,6 +30,7 @@ use Carp             qw/croak/;
 sub identity { $_[0] };
 sub str2int  { use warnings FATAL => 'all'; eval {$_[0] + 0} };
 sub int2str  { use warnings FATAL => 'all'; eval {sprintf "%ld", $_[0]} };
+sub str2num  { use warnings FATAL => 'all'; eval {$_[0] + 0.0} };
 sub num2str  { use warnings FATAL => 'all'; eval {sprintf "%lf", $_[0]} };
 sub str      { "$_[0]" };
 sub collapse { $_[0] =~ s/\s+//g; $_[0]}

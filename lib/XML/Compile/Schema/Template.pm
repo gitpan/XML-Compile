@@ -5,13 +5,15 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 use XML::Compile::Schema::XmlWriter;
 
 use strict;
 use warnings;
 no warnings 'once';
+
+use Carp;
 
 
 BEGIN {
@@ -257,6 +259,12 @@ sub attribute_fixed
         };
 }
 
+sub create_hook($$$$$)
+{   my ($path, $args, $r, $before, $produce, $after) = @_;
+    return $r if $r;
+
+    croak "ERROR: replace hook doesn't work with templates";
+}
 
 # anyAttribute
 
@@ -377,5 +385,6 @@ sub xml_any($$$$)
     }
     $node;
 }
+
 
 1;

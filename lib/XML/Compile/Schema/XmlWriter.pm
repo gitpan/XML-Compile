@@ -5,13 +5,14 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 use strict;
 use warnings;
 no warnings 'once';
 
 use List::Util    qw/first/;
+use Carp;
 
 
 
@@ -172,19 +173,20 @@ sub create_complex_element
               $err->($path, $data, 'expected hash of input data');
               return ();
           }
+          my %data  = %$data;  # do not destroy caller's hash
           my @elems = @do;
           my @childs;
           while(@elems)
           {   my $childname = shift @elems;
               push @childs, (shift @elems)
-                  ->($doc, delete $data->{$childname});
+                  ->($doc, delete $data{$childname});
           }
 
        ANY:
-          foreach my $tag (sort keys %$data)
+          foreach my $tag (sort keys %data)
           {   next unless $tag =~ m/^\{([^}]*)\}(.*)$/;
               my ($ns, $type) = ($1, $2);
-              my $value = delete $data->{$tag};
+              my $value = delete $data{$tag};
               defined $value or next;
 
               my $any
@@ -209,8 +211,8 @@ sub create_complex_element
               $err->($path, ref $value, "value for $tag not used");
           }
 
-          $err->($path, join(' ', sort keys %$data), 'unused data')
-              if keys %$data;
+          $err->($path, join(' ', sort keys %data), 'unused data')
+              if keys %data;
 
           @childs or return ();
           my $node  = $doc->createElement($tag);
@@ -237,7 +239,8 @@ sub create_tagged_element
               $err->($path, $data, 'expected hash of input data');
               return ();
           }
-          my $content = $st->($doc, delete $data->{_});
+          my %data    = %$data;
+          my $content = $st->($doc, delete $data{_});
           my @childs;
           push @childs, $doc->createTextNode($content)
              if defined $content;
@@ -246,10 +249,10 @@ sub create_tagged_element
           while(@attrs)
           {   my $childname = shift @attrs;
               push @childs,
-                (shift @attrs)->($doc, delete $data->{$childname});
+                (shift @attrs)->($doc, delete $data{$childname});
           }
-          $err->($path, join(' ', sort keys %$data), 'unused data')
-              if keys %$data;
+          $err->($path, join(' ', sort keys %data), 'unused data')
+              if keys %data;
 
           @childs or return ();
           my $node  = $doc->createElement($tag);
@@ -462,6 +465,62 @@ sub anyElement
           }
           @values;
         };
+}
+
+sub create_hook($$$$$)
+{   my ($path, $args, $r, $before, $replace, $after) = @_;
+    return $r unless $before || $replace || $after;
+
+    croak "ERROR: writer only supports one production (replace) hook"
+        if $replace && @$replace > 1;
+
+    return sub {()} if $replace && grep {$_ eq 'SKIP'} @$replace;
+
+    my @replace = $replace ? map {_decode_replace($path,$_)} @$replace : ();
+    my @before  = $before  ? map {_decode_before($path,$_) } @$before  : ();
+    my @after   = $after   ? map {_decode_after($path,$_)  } @$after   : ();
+
+    sub
+     { my ($doc, $val) = @_;
+       foreach (@before)
+       {   $val = $_->($doc, $val, $path);
+           defined $val or return ();
+       }
+
+       my $xml = @replace ? $replace[0]->($doc, $val, $path) : $r->($doc, $val);
+       defined $xml or return ();
+
+       foreach (@after)
+       {   $xml = $_->($doc, $xml, $path);
+           defined $xml or return ();
+       }
+
+       $xml;
+     }
+}
+
+sub _decode_before($$)
+{   my ($path, $call) = @_;
+    return $call if ref $call eq 'CODE';
+
+      $call eq 'PRINT_PATH' ? sub { print "$_[2]\n"; $_[1] }
+    : croak "ERROR: labeled hook '$call' undefined.";
+}
+
+sub _decode_replace($$)
+{   my ($path, $call) = @_;
+    return $call if ref $call eq 'CODE';
+
+    # SKIP already handled
+    croak "ERROR: labeled hook '$call' undefined.";
+}
+
+sub _decode_after($$)
+{   my ($path, $call) = @_;
+    return $call if ref $call eq 'CODE';
+
+      $call eq 'PRINT_PATH' ? sub { print "$_[2]\n"; $_[1] }
+    : croak "ERROR: labeled hook '$call' undefined.";
 }
 
 

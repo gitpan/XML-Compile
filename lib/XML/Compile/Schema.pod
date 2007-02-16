@@ -17,6 +17,9 @@ XML::Compile::Schema - Compile a schema
  # get schema from string
  my $schema = XML::Compile::Schema->new($xml_string);
 
+ # get schema from file
+ my $schema = XML::Compile::Schema->new($filename);
+
  # adding schemas
  $schema->addSchemas($tree);
  $schema->importSchema('http://www.w3.org/2001/XMLSchema');
@@ -52,6 +55,9 @@ XML string.  Those represent the input data.  The values are checked.
 An error produced when a value or the data-structure is not according
 to the specs.
 
+The CODE reference which is returned can be called with anything
+accepted by XML::Compile::Schema subroutine dataFromXML.
+
 I<Example:> create an XML reader
 
  my $msgin  = $rules->compile(READER => '{myns}mytype');
@@ -60,7 +66,9 @@ I<Example:> create an XML reader
 
 or
 
+ my $hash   = $msgin->('some-xml.xml');
  my $hash   = $msgin->($xml_string);
+ my $hash   = $msgin->($xml_node);
 
 =item WRITER (translate HASH to XML)
 
@@ -93,15 +101,55 @@ See chapter L</DETAILS> and learn how the data is processed.
 
 =head2 Constructors
 
-$obj-E<gt>B<new>(TOP, OPTIONS)
+$obj-E<gt>B<new>(OPTIONS)
 
 =over 4
 
-See L<XML::Compile/"Constructors">
+ Option     --Defined in     --Default
+ hook                          undef
+ hooks                         []
+ schema_dirs  XML::Compile     undef
+
+. hook ARRAY-WITH-HOOKDATA | HOOK
+
+=over 4
+
+See L<addHook()|XML::Compile::Schema/"Accessors">.  Adds one HOOK (HASH).
+
+=back
+
+. hooks ARRAY-OF-HOOK
+
+=over 4
+
+See L<addHooks()|XML::Compile::Schema/"Accessors">.
+
+=back
+
+. schema_dirs DIRECTORY|ARRAY-OF-DIRECTORIES
 
 =back
 
 =head2 Accessors
+
+$obj-E<gt>B<addHook>(HOOKDATA|HOOK|undef)
+
+=over 4
+
+HOOKDATA is a LIST of options as key-value pairs, HOOK is a HASH with
+the same data.  C<undef> is ignored. See L<addHooks()|XML::Compile::Schema/"Accessors"> and
+L</Schema hooks> below.
+
+=back
+
+$obj-E<gt>B<addHooks>(HOOK, [HOOK, ...])
+
+=over 4
+
+Add multiple hooks at once.  These all must be HASHes. See L</Schema hooks>
+and L<addHook()|XML::Compile::Schema/"Accessors">. C<undef> values are ignored.
+
+=back
 
 $obj-E<gt>B<addSchemaDirs>(DIRECTORIES)
 
@@ -111,11 +159,12 @@ See L<XML::Compile/"Accessors">
 
 =back
 
-$obj-E<gt>B<addSchemas>(NODE|TEXT)
+$obj-E<gt>B<addSchemas>(XML)
 
 =over 4
 
-Collect all the schemas defined below the NODE.
+Collect all the schemas defined in the XML data, which is something
+accepted by L<dataToXML()|XML::Compile/"Read XML">.
 
 =back
 
@@ -127,12 +176,20 @@ See L<XML::Compile/"Accessors">
 
 =back
 
+$obj-E<gt>B<hooks>
+
+=over 4
+
+Returns the LIST of defined hooks (HASHes).
+
+=back
+
 $obj-E<gt>B<importSchema>(XMLDATA)
 
 =over 4
 
 Import (include) the schema information included in the XMLDATA.  The
-XMLDATA must be acceptable for M<dataToXML().
+XMLDATA must be acceptable for L<dataToXML()|XML::Compile/"Read XML">.
 
 =back
 
@@ -152,14 +209,6 @@ $obj-E<gt>B<namespaces>
 
 Returns the L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces> object which is used
 to collect schemas.
-
-=back
-
-$obj-E<gt>B<top>
-
-=over 4
-
-See L<XML::Compile/"Accessors">
 
 =back
 
@@ -233,6 +282,8 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
  check_occurs                           <false>
  check_values                           <true>
  elements_qualified                     <undef>
+ hook                                   undef
+ hooks                                  undef
  ignore_facets                          <false>
  include_namespaces                     <true>
  invalid                                DIE
@@ -304,6 +355,26 @@ data from external sources.
 When defined, this will overrule the C<elementFormDefault> flags in
 all schema's.  When not qualified, the xml will not produce or
 process prefixes on the elements.
+
+=back
+
+. hook HOOK|ARRAY-OF-HOOKS
+
+=over 4
+
+Define one or more processing hooks.  See L</Schema hooks> below.
+These hooks are only active for this compiled entity, where L<addHook()|XML::Compile::Schema/"Accessors">
+and L<addHooks()|XML::Compile::Schema/"Accessors"> can be used to define hooks which are used for all
+results of L<compile()|XML::Compile::Schema/"Compilers">.  The hooks specified with the C<hook> or C<hooks>
+option are run before the global definitions.
+
+=back
+
+. hooks HOOK|ARRAY-OF-HOOKS
+
+=over 4
+
+Alternative for option C<hook>.
 
 =back
 
@@ -713,6 +784,132 @@ knowledge into code explicitly.  Read about the processing of wildcards
 in the manual page for each of the back-ends, because it is different
 in each case.
 
+=head2 Schema hooks
+
+You can use hooks, for instance, to block processing parts of the message,
+to create work-arounds for schema bugs, or to extract more information
+during the process than done by default.
+
+=head3 defining hooks
+
+Multiple hooks can active during the compilation process of a type,
+when C<compile()> is called.  During Schema translation, each of the
+hooks is checked for all types which are processed.  When multiple
+hooks select the object to get a modified behavior, then all are
+evaluated in order of definition.
+
+Defining a B<global> hook (where HOOKDATA is the LIST of PAIRS with
+hook parameters, and HOOK a HASH with such HOOKDATA):
+
+ my $schema = XML::Compile::Schema->new
+  ( ...
+  , hook  => HOOK
+  , hooks => [ HOOK, HOOK ]
+  );
+
+ $schema->addHook(HOOKDATA | HOOK);
+ $schema->addHooks(HOOK, HOOK, ...);
+
+ my $wsdl   = XML::Compile::WSDL->new(...);
+ $wsdl->schemas->addHook(HOOKDATA | HOOK);
+
+B<local> hooks are only used for one reader or writer.  They are
+evaluated before the global hooks.
+
+ my $reader = $schema->compile(READER => $type
+  , hook => HOOK, hooks => [ HOOK, HOOK, ...]);
+
+ # syntax may still change
+ $wsdl->call(GetPrice => $params, hook => HOOK, ...);
+ $wsdl->prepare('GetPrice', hook => HOOK, ...);
+ $wsdl->server(hook => HOOK, ...);
+
+I<Example:> of HOOKs:
+
+ my $hook = { type    => '{my_ns}my_type'
+            , before  => sub { ... }
+            };
+
+ my $hook = { path    => qr/\(volume\)/
+            , replace => 'SKIP'
+            };
+
+ my $hook = { path    => qr/\(volume\)/
+            , id      => [ 'aap', 'noot' ]
+            , before  => [ sub {...}, sub { ... } ]
+            , after   => sub { ... }
+            };
+
+=head3 general syntax
+
+Each hook has two kinds of parameters: selectors and processors.
+Selectors define the schema component of which the processing is modified.
+When one of the selectors matches, the processing information for the hook
+is used.  Available selectors (see below for details on each of them):
+
+=over 4
+
+=item . type
+
+=item . id
+
+=item . path
+
+=back
+
+As argument, you can specify one element as STRING, a regular expression
+to select multiple elements, or an ARRAY of STRINGs and REGEXes.
+
+Next to where the hook is placed, we need to known what to do in
+the case: the hook contains processing information.  When more than
+one hook matches, then all of these processors are called in order
+of hook definition.  However, first the compile hooks are taken,
+and then the global hooks.
+
+How the processing works exactly depends on the compiler back-end.  There
+are major differences.  Each of those manual-pages lists the specifics.
+The label tells us when the processing is initiated.  Available labels are
+C<before>, C<replace>, and C<after>.
+
+=head3 hooks on matching types
+
+The C<type> selector specifies a complexType of simpleType by name.
+Best is to base the selection on the full name, like C<{ns}type>,
+which will avoid all kinds of name-space conflicts in the future.
+However, you may also specify only the C<type> (in any name-space).
+Any REGEX will be matched to the full type name. Be careful with the
+pattern archors.
+
+I<Example:> use of the type selector
+
+ type => 'int'
+ type => '{http://www.w3.org/2000/10/XMLSchema}int'
+ type => qr/\}xml_/   # type start with xml_
+ type => [ qw/int float/ ];
+
+=head3 hooks on matching ids
+
+Matching based on IDs can reach more schema elements: some types are
+anonymous but still have an ID.  Best is to base selection on the full
+ID name, like C<ns#id>, to avoid all kinds of name-space conflicts in
+the future.
+
+I<Example:> use of the ID selector
+
+ # default schema types have id's with same name
+ id => 'int'
+ id => 'http://www.w3.org/2000/10/XMLSchema#int'
+ id => qr/\#xml_/   # id which start with xml_
+ id => [ qw/int float/ ];
+
+=head3 hooks on matching paths
+
+When you see error messages, you always see some representation of
+the path where the problem was discovered.  You can use this path
+as selector, when you know what it is... BE WARNED, that the current
+structure of the path is not really consequent hence will be 
+improved in one of the future releases, breaking backwards compatibility.
+
 =head1 DIAGNOSTICS
 
 I<Error:> cannot find pre-installed name-space files
@@ -723,12 +920,10 @@ distribution package.
 
 I<Error:> don't known how to interpret XML data
 
-I<Error:> no XML data specified
-
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.14,
-built on January 30, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.15,
+built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

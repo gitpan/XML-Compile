@@ -1,0 +1,189 @@
+=head1 NAME
+
+XML::Compile::SOAP::Operation - defines a possible SOAP interaction
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head1 METHODS
+
+=head2 Constructors
+
+$obj-E<gt>B<new>(OPTIONS)
+
+=over 4
+
+The OPTIONS are all collected from the WSDL description by
+L<XML::Compile::WSDL::operation()|XML::Compile::WSDL/"Extension">.  End-users should not attempt to
+initiate this object directly.
+
+ Option       --Defined in     --Default
+ bindOperation                   undef
+ binding                         <required>
+ port                            <required>
+ portOperation                   <required>
+ portType                        <required>
+ protocol                        'HTTP'
+ schemas                         <required>
+ service                         <required>
+ soapStyle                       'document'
+
+. bindOperation HASH
+
+. binding HASH
+
+. port HASH
+
+. portOperation HASH
+
+. portType HASH
+
+. protocol URI|'HTTP'
+
+=over 4
+
+C<HTTP> is short for C<http://schemas.xmlsoap.org/soap/http>, which
+is a constant to indicate that transport should use the HyperText
+Transfer Protocol.
+
+=back
+
+. schemas M<XML::Compile::Schema> object
+
+. service HASH
+
+. soapStyle 'document'|'rpc'
+
+=back
+
+=head2 Accessors
+
+$obj-E<gt>B<bindOperation>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<bindings>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<port>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<portOperation>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<portType>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<schemas>
+
+=over 4
+
+=back
+
+$obj-E<gt>B<service>
+
+=over 4
+
+=back
+
+=head2 Use
+
+$obj-E<gt>B<action>
+
+=over 4
+
+Returns the C<soapAction> and C<style> attributes, when available.
+
+=back
+
+$obj-E<gt>B<canTransport>(PROTOCOL, STYLE)
+
+=over 4
+
+Returns a true value when the pair with URI of the PROTOCOL and
+processing style (either C<document> (default) or C<rpc>) is
+provided as soap binding.
+
+=back
+
+$obj-E<gt>B<endPointAddresses>
+
+=over 4
+
+Returns the list of alternative URLs for the end-point, which should
+be defined within the service's port declaration.
+
+=back
+
+$obj-E<gt>B<kind>
+
+=over 4
+
+This returns the type of operation this is.  There are four kinds, which
+are returned as strings C<one-way>, C<request-response>, C<sollicit-response>,
+and C<notification>.  The latter two are initiated by a server, the former
+two by a client.
+
+=back
+
+$obj-E<gt>B<prepare>(OPTIONS)
+
+=over 4
+
+Returns one CODE reference which handles the processing for this
+operation.
+
+You pass that CODE reference an input message of the correct
+type, as pure Perl HASH structure.  An 'request-response' operation
+will return then answer, or C<undef> in case of failure.  An 'one-way'
+operation with return C<undef> in case of failure, and a true value
+when successfull.
+
+ Option--Defined in--Default
+ role                'CLIENT'
+
+. role 'CLIENT'|'SERVER'
+
+=over 4
+
+Of course, when you interact between two systems, then you need to
+define whether you are the sender or receiver of the data.
+
+=back
+
+=back
+
+$obj-E<gt>B<soapNamespace>
+
+=over 4
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of XML-Compile distribution version 0.15,
+built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+
+=head1 LICENSE
+
+Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

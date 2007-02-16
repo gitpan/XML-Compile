@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 use XML::LibXML;
 use Carp;
@@ -28,7 +28,7 @@ my %namespace_defs =
  );
 
 
-sub new(@)
+sub new($@)
 {   my ($class, $top) = (shift, shift);
 
     croak "ERROR: you should instantiate a sub-class, $class is base only"
@@ -39,18 +39,10 @@ sub new(@)
 
 sub init($)
 {   my ($self, $args) = @_;
-
-    my $top = $args->{top}
-       or croak "ERROR: no XML data specified\n";
-
     $self->addSchemaDirs($ENV{SCHEMA_DIRECTORIES});
     $self->addSchemaDirs($args->{schema_dirs});
-    $self->{XC_top} = $self->dataToXML($top);
     $self;
 }
-
-
-sub top() {shift->{XC_top}}
 
 
 sub addSchemaDirs(@)
@@ -88,7 +80,7 @@ sub dataToXML($)
 {   my ($self, $thing) = @_;
 
     return $thing
-       if ref $thing && $thing->isa('XML::LibXML::Node');
+       if ref $thing && UNIVERSAL::isa($thing, 'XML::LibXML::Node');
 
     return $self->parse($thing)
        if ref $thing eq 'SCALAR'; # XML string as ref

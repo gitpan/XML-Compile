@@ -37,10 +37,122 @@ I<Example:> specify anyAttribute
          , "{$somens}$sometype" => $attr # anyAttribute
          };
 
+=head2 Schema hooks
+
+All writer hooks behave differently.  Be warned that the user values
+can be a SCALAR or a HASH, dependent on the type.  You can intervene
+on higher data-structure levels, to repair lower levels, if you want
+to.
+
+=head3 hooks executed before normal processing
+
+The C<before> hook gives you the opportunity to fix the user
+supplied data structure.  The XML generator will complain about
+missing, superfluous, and erroneous values which you probably
+want to avoid.
+
+The C<before> hook returns new values.  Just must not interfere
+with the user provided data.  When C<undef> is returned, the whole
+node will be cancelled.
+
+On the moment, the only predefined C<before> hook is C<PRINT_PATH>.
+
+I<Example:> before hook on user-provided HASH.
+
+ sub before_on_complex($$$)
+ {   my ($doc, $values, $path) = @_;
+
+     my %copy = %$values;
+     $copy{extra} = 42;
+     delete $copy{superfluous};
+     $copy{count} =~ s/\D//g;    # only digits
+     \%copy;
+ }
+
+I<Example:> before hook on simpleType data
+
+ sub before_on_simple($$$)
+ {   my ($doc, $value, $path) = @_;
+     $value *= 100;    # convert euro to euro-cents
+ }
+
+I<Example:> before hook with object for complexType
+
+ sub before_on_object($$$)
+ {   my ($doc, $obj, $path) = @_;
+
+     +{ name     => $obj->name
+      , price    => $obj->euro
+      , currency => 'EUR'
+      };
+ }
+
+=head3 hooks replacing the usual XML node generation
+
+Only one C<replace> hook can be defined.  It must return a
+XML::LibXML::Node or C<undef>.  The hook must use the
+C<XML::LibXML::Document> node (which is provided as first
+argument) to create a node.
+
+On the moment, the only predefined C<replace> hook is C<SKIP>.
+
+I<Example:> replace hook
+
+ sub replace($$$)
+ {  my ($doc, $values, $path) = @_
+    $doc->createAttributeNS($myns, $name, 12);
+ }
+
+=head3 hooks executed after the node was created
+
+The C<after> hooks, will each get a chance to modify the
+produced XML node, for instance to encapsulate it.  Each time,
+the new XML node has to be returned.
+
+On the moment, the only predefined C<after> hook is C<PRINT_PATH>.
+
+I<Example:> add an extra sibbling after the usual process
+
+ sub after($$$$)
+ {   my ($doc, $node, $path) = @_;
+     my $child = $doc->createAttributeNS($myns, earth => 42);
+     $node->addChild($child);
+     $node;
+ }
+
+=head3 fixing bad schema's
+
+When a schema makes a mess out of things, we can fix that with hooks.
+Also, when you need things that XML::Compile does not support (yet).
+
+I<Example:> creating nodes with text
+
+ {  my $text;
+
+    sub before($$$)
+    {   my ($doc, $values, $path) = @_;
+        my %copy = %$values;
+        $text = delete $copy{text};
+        \%copy;
+    }
+
+    sub after($$$)
+    {   my ($doc, $node, $path) = @_;
+        $node->addChild($doc->createTextNode($text));
+        $node;
+    }
+
+    $schema->addHook
+     ( type   => 'mixed'
+     , before => \&before
+     , after  => \&after
+     );
+ }
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.14,
-built on January 30, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.15,
+built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

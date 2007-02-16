@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 use base 'XML::Compile';
 
 use Carp;
@@ -27,10 +27,16 @@ sub init($)
     $self->{namespaces} = XML::Compile::Schema::NameSpaces->new;
     $self->SUPER::init($args);
 
-    if(my $top = $self->top)
-    {   $self->addSchemas($top);
-    }
+    $self->addSchemas($args->{top});
 
+    $self->{hooks} = [];
+    if(my $h1 = $args->{hook})
+    {   $self->addHook(ref $h1 eq 'ARRAY' ? @$h1 : $h1);
+    }
+    if(my $h2 = $args->{hooks})
+    {   $self->addHooks(ref $h2 eq 'ARRAY' ? @$h2 : $h2);
+    }
+ 
     $self;
 }
 
@@ -38,12 +44,11 @@ sub init($)
 sub namespaces() { shift->{namespaces} }
 
 
-sub addSchemas($$)
+sub addSchemas($)
 {   my ($self, $top) = @_;
+    defined $top or return;
 
-    my $node = ref $top && $top->isa('XML::LibXML::Node') ? $top
-      : $self->parse(\$top);
-
+    my $node = $self->dataToXML($top);
     $node    = $node->documentElement
        if $node->isa('XML::LibXML::Document');
 
@@ -69,9 +74,26 @@ sub addSchemas($$)
 
 sub importSchema($)
 {   my ($self, $thing) = @_;
-    my $tree = $self->dataToXML($thing);
+    my $tree = $self->dataToXML($thing) or return;
     $self->addSchemas($tree);
 }
+
+
+sub addHook(@)
+{   my $self = shift;
+    push @{$self->{hooks}}, @_>=1 ? {@_} : defined $_[0] ? shift : ();
+    $self;
+}
+
+
+sub addHooks(@)
+{   my $self = shift;
+    push @{$self->{hooks}}, grep {defined} @_;
+    $self;
+}
+
+
+sub hooks() { @{shift->{hooks}} }
 
 
 sub compile($$@)
@@ -104,12 +126,17 @@ sub compile($$@)
     my $top   = $nss->findType($type) || $nss->findElement($type)
        or croak "ERROR: type $type is not defined";
 
+    my ($h1, $h2) = (delete $args{hook}, delete $args{hooks});
+    my @hooks = $self->hooks;
+    push @hooks, ref $h1 eq 'ARRAY' ? @$h1 : $h1 if $h1;
+    push @hooks, ref $h2 eq 'ARRAY' ? @$h2 : $h2 if $h2;
+
     $args{path} ||= $top->{full};
 
     my $bricks = 'XML::Compile::Schema::' .
      ( $action eq 'READER' ? 'XmlReader'
      : $action eq 'WRITER' ? 'XmlWriter'
-     : croak "ERROR: create only READER, WRITER, or XMLTEMPLATE, not '$action'."
+     : croak "ERROR: create only READER, WRITER, not '$action'."
      );
 
     eval "require $bricks";
@@ -120,6 +147,7 @@ sub compile($$@)
      , bricks => $bricks
      , err    => $self->invalidsErrorHandler($args{invalid})
      , nss    => $self->namespaces
+     , hooks  => \@hooks
      );
 }
 
@@ -149,6 +177,7 @@ sub template($@)
      , bricks => $bricks
      , nss    => $self->namespaces
      , err    => $self->invalidsErrorHandler('IGNORE')
+     , hooks  => []
      , %args
      );
 

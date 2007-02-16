@@ -4,13 +4,14 @@
 # Pod stripped from pm file by OODoc 0.99.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 use strict;
 use warnings;
 no warnings 'once';
 
 use List::Util  qw/first/;
+use Carp        qw/croak/;
 
 
 # Each action implementation returns a code reference, which will be
@@ -423,6 +424,80 @@ sub anyElement
           }
           %result;
         };
+}
+
+# any kind of hook
+
+sub create_hook($$$$$)
+{   my ($path, $args, $r, $before, $replace, $after) = @_;
+    return $r unless $before || $replace || $after;
+
+    return sub {()} if $replace && grep {$_ eq 'SKIP'} @$replace;
+
+    my @replace = $replace ? map {_decode_replace($path,$_)} @$replace : ();
+    my @before  = $before  ? map {_decode_before($path,$_) } @$before  : ();
+    my @after   = $after   ? map {_decode_after($path,$_)  } @$after   : ();
+
+    sub
+     { my $xml = shift;
+       foreach (@before)
+       {   $xml = $_->($xml, $path);
+           defined $xml or return ();
+       }
+       my @h = @replace ? map {$_->($xml, $args, $path)} @replace : $r->($xml);
+       @h or return ();
+       my $h = @h > 1 ? {@h} : $h[0];  # detect simpleType
+       foreach (@after)
+       {   $h = $_->($xml, $h, $path);
+           defined $h or return ();
+       }
+       $h;
+     }
+}
+
+sub _decode_before($$)
+{   my ($path, $call) = @_;
+    return $call if ref $call eq 'CODE';
+
+      $call eq 'PRINT_PATH' ? sub {print "$_[1]\n"; $_[0] }
+    : croak "ERROR: labeled hook '$call' undefined.";
+}
+
+sub _decode_replace($$)
+{   my ($path, $call) = @_;
+    return $call if ref $call eq 'CODE';
+
+    croak "ERROR: labeled hook '$call' undefined.";
+}
+
+sub _decode_after($$)
+{   my ($path, $call) = @_;
+    return $call if ref $call eq 'CODE';
+
+      $call eq 'PRINT_PATH' ? sub {print "$_[2]\n"; $_[1] }
+    : $call eq 'XML_NODE'  ?
+      sub { my $values = $_[1];
+            $values = { _ => $values } if ref $values ne 'HASH';
+            $values->{_XML_NODE} = $_[0];
+            $values;
+          }
+    : $call eq 'ELEMENT_ORDER' ?
+      sub { my ($xml, $values) = @_;
+            $values = { _ => $values } if ref $values ne 'HASH';
+            my @order = map {$_->nodeName}
+                grep {$_->isa('XML::LibXML::Element')}
+                   $xml->childNodes;
+            $values->{_ELEMENT_ORDER} = \@order;
+            $values;
+          }
+    : $call eq 'ATTRIBUTE_ORDER' ?
+      sub { my ($xml, $values) = @_;
+            $values = { _ => $values } if ref $values ne 'HASH';
+            my @order = map {$_->nodeName} $xml->attributes;
+            $values->{_ATTRIBUTE_ORDER} = \@order;
+            $values;
+          }
+    : croak "ERROR: labeled hook '$call' undefined.";
 }
 
 

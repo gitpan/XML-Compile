@@ -7,7 +7,7 @@ use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 use base 'Exporter';
 
 use XML::LibXML;
@@ -32,14 +32,15 @@ our $TestNS   = 'http://test-types';
 our $SchemaNS = 'http://www.w3.org/2001/XMLSchema';
 our @run_opts = ();
 
-sub reader($$$$)
-{   my ($schema, $test, $type, $xml) = @_;
+sub reader($$$$@)
+{   my ($schema, $test, $type, $xml) = splice @_, 0, 4;
 
     my $read_t = $schema->compile
      ( READER             => $type
      , check_values       => 1
      , include_namespaces => 0
      , @run_opts
+     , @_
      );
 
     ok(defined $read_t, "reader element $test");
@@ -48,14 +49,15 @@ sub reader($$$$)
     $read_t->($xml);
 }
 
-sub writer($$$$$)
-{   my ($schema, $doc, $test, $type, $data) = @_;
+sub writer($$$$$@)
+{   my ($schema, $doc, $test, $type, $data) = splice @_, 0, 5;
 
     my $write_t = $schema->compile
      ( WRITER             => $type
      , check_values       => 1
      , include_namespaces => 0
      , @run_opts
+     , @_
      );
 
     ok(defined $write_t, "writer element $test");

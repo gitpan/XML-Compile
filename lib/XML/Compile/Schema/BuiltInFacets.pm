@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 use base 'Exporter';
 
 our @EXPORT = qw/builtin_facet/;
