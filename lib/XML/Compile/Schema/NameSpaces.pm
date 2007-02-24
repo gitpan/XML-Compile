@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.15';
+$VERSION = '0.16';
 
 use Carp;
 
@@ -38,7 +38,7 @@ sub namespace($)
 sub add($)
 {   my ($self, $schema) = @_;
     my $tns = $schema->targetNamespace;
-    push @{$self->{tns}{$tns}}, $schema;
+    unshift @{$self->{tns}{$tns}}, $schema;
     $schema;
 }
 

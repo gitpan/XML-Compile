@@ -57,7 +57,7 @@ follow the specs closely.
 These constructors are base class methods to be extended,
 and therefore should not be accessed directly.
 
-$obj-E<gt>B<new>(TOP, OPTIONS)
+XML::Compile-E<gt>B<new>(TOP, OPTIONS)
 
 =over 4
 
@@ -188,8 +188,8 @@ I<Error:> no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.15,
-built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.16,
+built on February 25, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

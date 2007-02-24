@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.15';
+$VERSION = '0.16';
 use base 'XML::Compile';
 
 use Carp;
@@ -72,7 +72,7 @@ sub addSchemas($)
 }
 
 
-sub importSchema($)
+sub importData($)
 {   my ($self, $thing) = @_;
     my $tree = $self->dataToXML($thing) or return;
     $self->addSchemas($tree);

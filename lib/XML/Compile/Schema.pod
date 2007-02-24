@@ -22,8 +22,8 @@ XML::Compile::Schema - Compile a schema
 
  # adding schemas
  $schema->addSchemas($tree);
- $schema->importSchema('http://www.w3.org/2001/XMLSchema');
- $schema->importSchema('2001-XMLSchema.xsd');
+ $schema->importData('http://www.w3.org/2001/XMLSchema');
+ $schema->importData('2001-XMLSchema.xsd');
 
  # create and use a reader
  my $read   = $schema->compile(READER => '{myns}mytype');
@@ -56,7 +56,7 @@ An error produced when a value or the data-structure is not according
 to the specs.
 
 The CODE reference which is returned can be called with anything
-accepted by XML::Compile::Schema subroutine dataFromXML.
+accepted by L<dataToXML()|XML::Compile/"Read XML">.
 
 I<Example:> create an XML reader
 
@@ -101,7 +101,7 @@ See chapter L</DETAILS> and learn how the data is processed.
 
 =head2 Constructors
 
-$obj-E<gt>B<new>(OPTIONS)
+XML::Compile::Schema-E<gt>B<new>(OPTIONS)
 
 =over 4
 
@@ -184,7 +184,7 @@ Returns the LIST of defined hooks (HASHes).
 
 =back
 
-$obj-E<gt>B<importSchema>(XMLDATA)
+$obj-E<gt>B<importData>(XMLDATA)
 
 =over 4
 
@@ -598,6 +598,10 @@ be checked by default.  Types may also have some white-space behavior,
 for instance blanks are stripped from integers: before, after, but also
 inside the number representing string.
 
+Note that some of the reader hooks will alter the single value of these
+elements into a HASH like used for the complexType/simpleContent (next
+paragraph), to be able to return some extra collected information.
+
 I<Example:> typical simpleType
 
 In XML, it looks like this:
@@ -608,6 +612,12 @@ In the HASH structure, the data will be represented as
 
  test1 => 42
 
+With reader hook C<after => 'XML_NODE'> hook applied, it will become
+
+ test1 => { _ => 42
+          , _XML_NODE => $obj
+          }
+ 
 =item complexType/simpleContent
 
 In this case, the single value container may have attributes.  The number
@@ -622,7 +632,9 @@ In XML, this looks like this:
 
 As a HASH, this looks like
 
- test2 => { _ => 42, question => 'everything' }
+ test2 => { _ => 42
+          , question => 'everything'
+          }
 
 =item complexType and complexType/complexContent
 
@@ -642,8 +654,11 @@ The XML could look like:
 
 Represented as HASH, this looks like
 
- test3 => { question => 'everything', by => 'mouse'
-          , answer => 42, when => '5 billion BC' }
+ test3 => { question => 'everything'
+          , by       => 'mouse'
+          , answer   => 42
+          , when     => '5 billion BC'
+          }
 
 =back
 
@@ -922,8 +937,8 @@ I<Error:> don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.15,
-built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.16,
+built on February 25, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

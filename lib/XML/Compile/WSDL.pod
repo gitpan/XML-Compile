@@ -43,6 +43,8 @@ XML::Compile::WSDL-E<gt>B<new>(XML, OPTIONS)
 =over 4
 
 The XML is the WSDL file, which is anything accepted by L<dataToXML()|XML::Compile/"Read XML">.
+All options are also passed to create an internal L<XML::Compile::Schema|XML::Compile::Schema>
+object.  See L<XML::Compile::Schema::new()|XML::Compile::Schema/"Constructors">
 
  Option        --Defined in     --Default
  schema_dirs     XML::Compile     undef
@@ -277,8 +279,8 @@ I<Error:> don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.15,
-built on February 16, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.16,
+built on February 25, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

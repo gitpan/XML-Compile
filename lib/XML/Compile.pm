@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.15';
+$VERSION = '0.16';
 
 use XML::LibXML;
 use Carp;
@@ -25,6 +25,9 @@ my %namespace_defs =
  , 'http://schemas.xmlsoap.org/wsdl/mime/' => 'wsdl-mime.xsd'
  , 'http://schemas.xmlsoap.org/soap/encoding/' => 'soap-encoding.xsd'
  , 'http://schemas.xmlsoap.org/soap/envelope/' => 'soap-envelope.xsd'
+
+ # bug-fixes/mis-features/work-arounds
+ , 'http://schemas.xmlsoap.org/wsdl/#patch'=> 'wsdl-patch.xsd'
  );
 
 

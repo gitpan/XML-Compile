@@ -7,14 +7,13 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.15';
+$VERSION = '0.16';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
 
 our %builtin_types;
 
-use Regexp::Common   qw/URI/;
 use MIME::Base64;
 use POSIX            qw/strftime/;
 use Carp             qw/croak/;
@@ -381,9 +380,13 @@ $builtin_types{NMTOKENS} =
  };
 
 
+# relative uri's are also correct, so even empty strings...  it
+# cannot be checked without context.
+#    use Regexp::Common   qw/URI/;
+#    check   => sub { $_[0] =~ $RE{URI} }
+
 $builtin_types{anyURI} =
  { parse   => \&collapse
- , check   => sub { $_[0] =~ $RE{URI} }
  , example => 'http://example.com'
  };
 

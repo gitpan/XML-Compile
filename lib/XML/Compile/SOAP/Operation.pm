@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::SOAP::Operation;
 use vars '$VERSION';
-$VERSION = '0.15';
+$VERSION = '0.16';
 
 use Carp;
 use List::Util  'first';
@@ -29,18 +29,26 @@ sub init()
       = exists $self->port->{ "{$soap1}address" } ? $soap1
       : croak "ERROR: soap namespace not supported";
 
-    $self->schemas->importSchema($soapns);
+    $self->schemas->importData($soapns);
 
     # This should be detected while parsing the WSDL because the order of
     # input and output is significant (and lost), but WSDL 1.1 simplifies
     # our life by saying that only 2 out-of 4 predefined types can actually
     # be used at present.
-    $self->{kind} = exists $self->portOperation->{output}
-       ? 'request-response' : 'one-way';
+    my @order    = @{$self->portOperation->{_ELEMENT_ORDER}};
+    my ($first_in, $first_out);
+    for(my $i = 0; $i<@order; $i++)
+    {   $first_in  = $i if !defined $first_in  && $order[$i] eq 'input';
+        $first_out = $i if !defined $first_out && $order[$i] eq 'output';
+    }
 
-    my $proto = $self->{protocol} || 'HTTP';
-    $self->{protocol} = $http1 if $proto eq 'HTTP';
+    $self->{kind}
+      = !defined $first_in     ? 'notification-operation'
+      : !defined $first_out    ? 'one-way'
+      : $first_in < $first_out ? 'request-response'
+      :                          'solicit-response';
 
+    $self->{protocol}  ||= 'HTTP';
     $self->{soapStyle} ||= 'document';
     $self;
 }
@@ -175,22 +183,25 @@ sub prepare(@)
            @po_fault;
     }
     else
-    {    croak "ERROR: WSDL role must be CLIENT or SERVER, not '$role'"; 
+    {   croak "ERROR: WSDL role must be CLIENT or SERVER, not '$role'"; 
     }
 
     my $soapns  = $self->soapNamespace;
     my $addrs   = $self->endPointAddresses;
 
-    my $proto   = $self->{protocol};
-    my $style   = $self->{soapStyle};
+    my $proto   = $args{protocol}  || $self->{protocol}  || 'HTTP';
+    $proto = $http1 if $proto eq 'HTTP';
+
+    my $style   = $args{soapStyle} || $self->{soapStyle} || 'document';
+
     $self->canTransport($proto, $style)
-        or croak "ERROR: transport $proto/$style not described in WSDL";
+        or croak "ERROR: transport $proto as $style not defined in WSDL";
 
     $proto eq $http1
-        or croak "ERROR: only transport of HTTP ($proto) implemented.";
+        or die "SORRY: only transport of HTTP ($proto) implemented\n";
 
     $style eq 'document'
-        or croak "ERROR: only transport style document implemented.";
+        or die "SORRY: only transport style 'document' implemented\n";
 
     # http requires soapAction
     my ($action, undef) = $self->soapAction;

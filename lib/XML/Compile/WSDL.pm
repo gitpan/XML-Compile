@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSDL;
 use vars '$VERSION';
-$VERSION = '0.15';
+$VERSION = '0.16';
 use base 'XML::Compile';
 
 use Carp;
@@ -58,15 +58,19 @@ sub addWSDL($)
         if $corens ne $wsdlns;
 
     my $schemas = $self->schemas;
-    $schemas->importSchema($wsdlns);   # to understand WSDL
+    $schemas->importData($wsdlns);      # to understand WSDL
+    $schemas->importData("$wsdlns#patch");
 
     croak "ERROR: don't known how to handle $wsdlns WSDL files"
         if $wsdlns ne $wsdl1;
+
+    my %hook_kind = (type => "{$wsdlns}tOperation", after => 'ELEMENT_ORDER');
 
     my $reader  = $schemas->compile     # to parse the WSDL
      ( READER => "{$wsdlns}definitions"
      , anyElement   => 'TAKE_ALL'
      , anyAttribute => 'TAKE_ALL'
+     , hook         => \%hook_kind
      );
 
     my $spec = $reader->($node);
