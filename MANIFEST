@@ -21,6 +21,8 @@ html/other/methods/index.html
 html/other/xml.css
 lib/XML/Compile.pm
 lib/XML/Compile.pod
+lib/XML/Compile/Dumper.pm
+lib/XML/Compile/Dumper.pod
 lib/XML/Compile/SOAP/Operation.pm
 lib/XML/Compile/SOAP/Operation.pod
 lib/XML/Compile/Schema.pm
@@ -47,6 +49,7 @@ lib/XML/Compile/WSDL.pm
 lib/XML/Compile/WSDL.pod
 t/01use.t
 t/20types.t
+t/21dump.t
 t/30builtin.t
 t/31elem.t
 t/32seq.t

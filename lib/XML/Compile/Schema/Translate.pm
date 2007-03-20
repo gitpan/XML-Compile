@@ -12,7 +12,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.16';
+$VERSION = '0.17';
 
 use List::Util  'first';
 use Carp;

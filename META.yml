@@ -1,10 +1,11 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         XML-Compile
-version:      0.16
+version:      0.17
 version_from: 
 installdirs:  site
 requires:
+    Data::Dump::Streamer:          2.03
     Math::BigInt:                  1.77
     Test::Deep:                    0.095
     Test::More:                    0.54

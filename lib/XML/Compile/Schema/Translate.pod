@@ -66,11 +66,11 @@ between Perl datastructures and XML, based on a schema.  Before
 this method is called is the schema already translated into
 a table of types.
 
- Option--Defined in     --Default
- bricks                   <required>
- err                      <required>
- hooks                    <required>
- nss                      <required>
+ Option--Default
+ bricks  <required>
+ err     <required>
+ hooks   <required>
+ nss     <required>
 
 . bricks CLASS
 
@@ -223,8 +223,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.16,
-built on February 25, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.17,
+built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

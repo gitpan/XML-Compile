@@ -275,22 +275,22 @@ to be called with a HASH, and returns a XML::LibXML::Node.
 Most options below are explained in more detailed in the manual-page
 L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
 
- Option              --Defined in     --Default
- anyAttribute                           undef
- anyElement                             undef
- attributes_qualified                   <undef>
- check_occurs                           <false>
- check_values                           <true>
- elements_qualified                     <undef>
- hook                                   undef
- hooks                                  undef
- ignore_facets                          <false>
- include_namespaces                     <true>
- invalid                                DIE
- namespace_reset                        <false>
- output_namespaces                      {}
- path                                   <expanded name of type>
- sloppy_integers                        <false>
+ Option              --Default
+ anyAttribute          undef
+ anyElement            undef
+ attributes_qualified  <undef>
+ check_occurs          <false>
+ check_values          <true>
+ elements_qualified    <undef>
+ hook                  undef
+ hooks                 undef
+ ignore_facets         <false>
+ include_namespaces    <true>
+ invalid               DIE
+ namespace_reset       <false>
+ output_namespaces     {}
+ path                  <expanded name of type>
+ sloppy_integers       <false>
 
 . anyAttribute CODE
 
@@ -502,12 +502,12 @@ the specified TYPE as XML or Perl is organized in practice.
 Some OPTIONS are explained in L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
 There are some extra OPTIONS defined for the final output process.
 
- Option              --Defined in     --Default
- attributes_qualified                   <undef>
- elements_qualified                     <undef>
- include_namespaces                     <true>
- indent                                 " "
- show                                   ALL
+ Option              --Default
+ attributes_qualified  <undef>
+ elements_qualified    <undef>
+ include_namespaces    <true>
+ indent                " "
+ show                  ALL
 
 . attributes_qualified BOOLEAN
 
@@ -937,8 +937,8 @@ I<Error:> don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.16,
-built on February 25, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.17,
+built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

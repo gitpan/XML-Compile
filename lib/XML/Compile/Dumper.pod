@@ -1,0 +1,159 @@
+=head1 NAME
+
+XML::Compile::Dumper - Translate Schema or WSDL to code
+
+=head1 SYNOPSIS
+
+ # create readers and writers or soap things
+ my $reader = $schema->compile(READER => '{myns}mytype');
+ my $writer = $schema->compile(WRITER => ...);
+
+ # then dump them into a package
+ my $dumper = XML::Compile::Dumper->new
+   (package => 'My::Package', filename => 'My/Package.pm');
+ $dumper->freeze(foo => $reader, bar => $writer);
+ $dumper->close;
+
+ # later, they can get recalled using
+ use My::Package;
+ my $hash = foo($xml);
+ my $doc  = bar($doc, $xml);
+
+=head1 DESCRIPTION
+
+This module simplifies the task of saving and loading pre-compiled
+translators.  Schema's can get huge, and when you are not creating a
+daemon to do the XML communication, you may end-up compiling and
+interpreting these large schema's often, just to be able to process
+simple data-structures.
+
+Based on the excellent module Data::Dump::Streamer, this module
+helps you create standard Perl packages which contain the reader
+and writer code references.
+
+WARNING: this feature was introduced in release 0.17.  Using perl
+5.8.8, libxml 2.6.26, XML::LibXML 2.60, and Data::Dump::Streamer
+2.03, Perl complains about C<"PmmREFCNT_dec: REFCNT decremented below
+0! during global destruction."> when the tests are run.  This bug
+can be anywhere. Therefore, these tests are disabled by default in
+t/TestTools.pm.  If you have time, could you please run the tests with
+C<$skip_dumper = 0;> and report the results to the author?
+
+=head1 METHODS
+
+=head2 Constructors
+
+$obj-E<gt>B<close>
+
+=over 4
+
+Finalize the produced file.  This will be called automatically
+if the objects goes out-of-scope.
+
+=back
+
+XML::Compile::Dumper-E<gt>B<new>(OPTIONS)
+
+=over 4
+
+Create an object which will collect the information for the output
+file.  You have to specify either a C<filehandle> or a C<filename>.
+A filehandle will be closed after processing.
+
+ Option    --Default
+ filehandle  undef
+ filename    undef
+ package     <required>
+
+. filehandle M<IO::Handle>
+
+. filename FILENAME
+
+=over 4
+
+The file will be written using utf8 encoding, using IO::File.  If
+you want something else, open your filehandle first, and provide that
+as argument.
+
+=back
+
+. package PACKAGE
+
+=over 4
+
+The name-space which will be used: it will produce a C<package>
+line in the output.
+
+=back
+
+=back
+
+=head2 Accessors
+
+$obj-E<gt>B<file>
+
+=over 4
+
+Returns the output file-handle, which you may use to add extensions to
+the module.
+
+=back
+
+=head2 Producers
+
+$obj-E<gt>B<footer>(FILEHANDLE)
+
+=over 4
+
+=back
+
+$obj-E<gt>B<freeze>(PAIRS|HASH)
+
+=over 4
+
+Produce the dump for a group of code references, which will be
+made available under a normal subroutine name.  This method
+can only be called once.
+
+=back
+
+$obj-E<gt>B<header>(FILEHANDLE, PACKAGE)
+
+=over 4
+
+Prints the header text to the file.
+
+=back
+
+=head1 DIAGNOSTICS
+
+I<Error:> either filename or filehandle required
+
+I<Error:> freeze can only be called once
+
+The various closures may have related variables, and therefore
+need to be dumped in one go.
+
+I<Error:> freeze needs PAIRS or a HASH
+
+I<Error:> package name required
+
+The perl module which is produced is cleanly encapsulating the
+produced program text in a perl package name-space.  The name
+has to be provided.
+
+I<Error:> value with $name is not a code reference
+
+=head1 SEE ALSO
+
+This module is part of XML-Compile distribution version 0.17,
+built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+
+=head1 LICENSE
+
+Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

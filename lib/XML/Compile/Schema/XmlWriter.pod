@@ -151,8 +151,8 @@ I<Example:> creating nodes with text
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.16,
-built on February 25, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.17,
+built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

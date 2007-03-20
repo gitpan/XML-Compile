@@ -18,16 +18,16 @@ The OPTIONS are all collected from the WSDL description by
 L<XML::Compile::WSDL::operation()|XML::Compile::WSDL/"Extension">.  End-users should not attempt to
 initiate this object directly.
 
- Option       --Defined in     --Default
- bindOperation                   undef
- binding                         <required>
- port                            <required>
- portOperation                   <required>
- portType                        <required>
- protocol                        'HTTP'
- schemas                         <required>
- service                         <required>
- soapStyle                       'document'
+ Option       --Default
+ bindOperation  undef
+ binding        <required>
+ port           <required>
+ portOperation  <required>
+ portType       <required>
+ protocol       'HTTP'
+ schemas        <required>
+ service        <required>
+ soapStyle      'document'
 
 . bindOperation HASH
 
@@ -154,10 +154,10 @@ will return then answer, or C<undef> in case of failure.  An 'one-way'
 operation with return C<undef> in case of failure, and a true value
 when successfull.
 
- Option   --Defined in     --Default
- protocol                    new(protocol)
- role                        'CLIENT'
- soapStyle                   new(soapStyle)
+ Option   --Default
+ protocol   new(protocol)
+ role       'CLIENT'
+ soapStyle  new(soapStyle)
 
 . protocol URI|'HTTP'
 
@@ -182,8 +182,8 @@ $obj-E<gt>B<soapNamespace>
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.16,
-built on February 25, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.17,
+built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
