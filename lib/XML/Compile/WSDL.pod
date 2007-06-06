@@ -50,9 +50,9 @@ object.  See L<XML::Compile::Schema::new()|XML::Compile::Schema/"Constructors">
  schema_dirs     XML::Compile     undef
  wsdl_namespace                   undef
 
-. schema_dirs DIRECTORY|ARRAY-OF-DIRECTORIES
+. schema_dirs => DIRECTORY|ARRAY-OF-DIRECTORIES
 
-. wsdl_namespace IRI
+. wsdl_namespace => IRI
 
 =over 4
 
@@ -113,7 +113,7 @@ document root element is defined.
 
 =head2 Read XML
 
-$obj-E<gt>B<dataToXML>(NODE|REF-XML|XML|FILENAME|KNOWN)
+$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|KNOWN)
 
 =over 4
 
@@ -149,22 +149,22 @@ See L<XML::Compile/"Filters">
 
 =head2 Extension
 
-$obj-E<gt>B<addSchemas>(XML)
+$obj-E<gt>B<addWSDL>(XMLDATA)
 
 =over 4
 
-Adds type-definitions to the knowledge of the WSDL environment.  Only
-use this method when the schema's are defined out-side the WSDL document.
+Some XMLDATA, accepted by L<dataToXML()|XML::Compile/"Read XML"> is provided, which should represent
+the top-level of a (partial) WSDL document.  The specification can be
+spread over multiple files, which each have a C<definition> root element.
 
 =back
 
-$obj-E<gt>B<addWSDL>(XML)
+$obj-E<gt>B<importDefinitions>(XMLDATA, OPTIONS)
 
 =over 4
 
-Some XML, accepted by L<dataToXML()|XML::Compile/"Read XML"> is provided, which should represent
-the top-level of a (partial) WSDL document.  The specification can be
-spread over multiple files, which each have a C<definition> root element.
+Add schema information to the WSDL interface knowledge.  This should
+not be needed, because WSDL definitions must be self-contained.
 
 =back
 
@@ -199,7 +199,7 @@ some flexibility is required.
  port       <required>
  service    <required>
 
-. operation NAME
+. operation => NAME
 
 =over 4
 
@@ -209,7 +209,7 @@ one operation defined within the portType.
 
 =back
 
-. port NAME
+. port => NAME
 
 =over 4
 
@@ -217,7 +217,7 @@ Optional when the selected service has only one port.
 
 =back
 
-. service QNAME
+. service => QNAME
 
 =over 4
 
@@ -279,12 +279,12 @@ I<Error:> don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.17,
-built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.18,
+built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

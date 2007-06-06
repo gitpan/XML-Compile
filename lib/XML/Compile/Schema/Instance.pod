@@ -27,6 +27,30 @@ The tree is parsed: the information collected.
 
 =head2 Accessors
 
+$obj-E<gt>B<attributeGroups>
+
+=over 4
+
+Returns a list of all defined attribute groups.
+
+=back
+
+$obj-E<gt>B<attributes>
+
+=over 4
+
+Returns a lost of all globally defined attribute names.
+
+=back
+
+$obj-E<gt>B<complexTypes>
+
+=over 4
+
+Returns a list with all complexType names.
+
+=back
+
 $obj-E<gt>B<element>(URI)
 
 =over 4
@@ -40,6 +64,14 @@ $obj-E<gt>B<elements>
 =over 4
 
 Returns a list of all globally defined element names.
+
+=back
+
+$obj-E<gt>B<groups>
+
+=over 4
+
+Returns a list of all defined model groups.
 
 =back
 
@@ -60,6 +92,14 @@ $obj-E<gt>B<schemaInstance>
 $obj-E<gt>B<schemaNamespace>
 
 =over 4
+
+=back
+
+$obj-E<gt>B<simpleTypes>
+
+=over 4
+
+Returns a list with all simpleType names.
 
 =back
 
@@ -98,11 +138,23 @@ $obj-E<gt>B<types>
 
 =over 4
 
-Returns a list of all used names.
+Returns a list of all simpleTypes and complexTypes
 
 =back
 
 =head2 Index
+
+$obj-E<gt>B<find>(KIND, LOCALNAME)
+
+=over 4
+
+Returns the definition for the object of KIND, with LOCALNAME.
+
+I<Example:> of find
+
+ my $attr = $instance->find(attribute => 'myns#my_global_attr');
+
+=back
 
 $obj-E<gt>B<printIndex>([FILEHANDLE])
 
@@ -115,12 +167,12 @@ selected FILEHANDLE.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.17,
-built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.18,
+built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

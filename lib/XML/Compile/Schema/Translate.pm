@@ -1,7 +1,7 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 
 # The code is this module is messy: sorry.  It needs a good rewrite.
 # Gladly, a large number of tests guarentees at least most of the
@@ -12,7 +12,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 use List::Util  'first';
 use Carp;
@@ -46,12 +46,12 @@ sub compileTree($@)
     if(my $def = $self->namespaces->findID($element))
     {   my $node  = $def->{node};
         my $local = $node->localName;
-        $local eq 'element'
-            or $self->error($path, "$element is not an element");
+        $local eq 'element' or $local eq 'attribute'
+            or $self->error($path, "$element is not an element or attribute");
         $element  = $def->{full};
     }
 
-    my $make    = $self->element_by_name($path, $element);
+    my $make    = $self->toplevel_by_name($path, $element);
     my $produce = $self->make(wrapper => $make);
 
       $self->{include_namespaces}
@@ -90,23 +90,43 @@ sub make($@)
     "$self->{bricks}::$component"->($path, $self, @args);
 }
 
-sub element_by_name($$)
-{   my ($self, $path, $element) = @_;
+sub toplevel_by_name($$)
+{   my ($self, $path, $fullname) = @_;
     my $nss    = $self->namespaces;
-#warn "$element";
-    my $top    = $nss->findElement($element)
-       or $self->error($path, "cannot find element $element");
+#warn "$fullname";
+    my $top    = $nss->find(element   => $fullname)
+              || $nss->find(attribute => $fullname)
+       or $self->error($path, "cannot find element or attribute $fullname");
 
     my $node   = $top->{node};
     my $local  = $node->localName;
-    $local eq 'element'
-       or $self->error($path, "$element is not an element");
 
-    local $self->{elems_qual} = exists $self->{elements_qualified}
-     ? $self->{elements_qualified} : $top->{efd} eq 'qualified';
+    my $elems_qual = $top->{efd} eq 'qualified';
+    if(exists $self->{elements_qualified})
+    {   my $qual = $self->{elements_qualified} || 0;
+           if($qual eq 'ALL')  { $elems_qual = 1 }
+        elsif($qual eq 'NONE') { $elems_qual = 0 }
+        elsif($qual eq 'TOP')
+        {   # explitly overrule the name-space qualification of the
+            # top-level element, which is dirty but people shouldn't
+            # use unqualified schemas anyway!!!
+            $node->removeAttribute('form');   # when in schema
+            $node->setAttribute(form => 'qualified');
+        }
+        else                   { $elems_qual = $qual }
+    }
+
+    local $self->{elems_qual} = $elems_qual;
     local $self->{tns}        = $top->{ns};
 
-    $self->element_by_node($path, $top->{node});
+    return $self->element($path, $top->{node})
+        if $local eq 'element';
+
+    return $self->attribute($path, $top->{node})
+        if $local eq 'attribute';
+
+    $self->error($path
+       , "toplevel $fullname is not an element or attribute but $local");
 }
 
 sub type_by_name($$$)
@@ -132,7 +152,8 @@ sub type_by_name($$$)
     # Then try own schema's
     #
 
-    my $top    = $self->namespaces->findType($typename)
+    my $top    = $self->namespaces->find(complexType => $typename)
+              || $self->namespaces->find(simpleType => $typename)
        or $self->error($path, "cannot find type $typename");
 
     $self->type_by_top($path, $top);
@@ -162,21 +183,6 @@ sub type_by_top($$)
       $local eq 'simpleType'  ? $self->simpleType ($path, $node)
     : $local eq 'complexType' ? $self->complexType($path, $node)
     : $self->error($path, "expecting simpleType or complexType, not '$local'");
-}
-
-sub reference($$$)
-{   my ($self, $path, $typename, $kind) = @_;
-
-    my $nss    = $self->namespaces;
-    my $top    = $nss->findElement($typename)
-       or $self->error($path, "cannot find ref-type $typename for");
-
-    my $node   = $top->{node};
-    my $local  = $node->localname;
-    $local eq $kind
-       or $self->error($path, "$typename should refer to a $kind, not $local");
-
-    $top;
 }
 
 sub simpleType($$$)
@@ -257,7 +263,7 @@ sub simple_union($$)
         }
     }
 
-    foreach my $child ( $self->childs($node))
+    foreach my $child ($self->childs($node))
     {   my $local = $child->localName;
 
         $local eq 'simpleType'
@@ -371,7 +377,7 @@ sub substitutionGroupElements($$)
     map { $_->{node} } @subgrps;
 }
 
-sub element_by_node($$)
+sub element($$)
 {   my ($self, $path, $node) = @_;
 #warn "element: $path\n";
 
@@ -445,7 +451,7 @@ sub element_by_node($$)
 
     return $r unless $before || $replace || $after;
 
-    $self->make(create_hook => $path, $r, $before, $replace, $after);
+    $self->make(create_hook => $path, $r, $tag, $before, $replace, $after);
 }
 
 sub particles($$$$)
@@ -486,7 +492,10 @@ sub particle($$$$)
         my $typename = $self->rel2abs($path, $node, $ref);
 #warn $typename;
 
-        my $dest   = $self->reference("$path/gr", $typename, 'group');
+        my $dest    = $self->namespaces->find(group => $typename)
+            or $self->error($path, "cannot find group $typename");
+
+#       my $dest   = $self->reference("$path/gr", $typename, 'group');
         return $self->particles($path, $dest->{node}, $min, $max);
     }
 
@@ -504,7 +513,10 @@ sub particle($$$$)
 
     if(my $ref =  $node->getAttribute('ref'))
     {   my $refname = $self->rel2abs($path, $node, $ref);
-        my $def     = $self->reference($path, $refname, 'element');
+        my $def     = $self->namespaces->find(element => $refname)
+            or $self->error($path, "cannot find element $refname");
+
+#       my $def     = $self->reference($path, $refname, 'element');
         $node       = $def->{node};
 
         my $abstract = $node->getAttribute('abstract') || 'false';
@@ -524,7 +536,7 @@ sub particle($$$$)
         or $self->error($path, "missing name for element");
 #warn "    is element $name";
 
-    my $do   = $self->element_by_node($path, $node);
+    my $do   = $self->element($path, $node);
 
     my $nillable = 0;
     if(my $nil = $node->getAttribute('nillable'))
@@ -564,7 +576,10 @@ sub attribute($$)
     my($ref, $name, $form, $typeattr);
     if(my $refattr =  $node->getAttribute('ref'))
     {   my $refname = $self->rel2abs($path, $node, $refattr);
-        my $def     = $self->reference($path, $refname, 'attribute');
+        my $def     = $self->namespaces->find(attribute => $refname)
+            or $self->error($path, "cannot find attribute $refname");
+
+#       my $def     = $self->reference($path, $refname, 'attribute');
         $ref        = $def->{node};
 
         $name       = $ref->getAttribute('name')
@@ -633,8 +648,10 @@ sub attribute_group($$)
     my $typename = $self->rel2abs($path, $node, $ref);
 #warn $typename;
 
-    my $def  = $self->reference($path, $typename, 'attributeGroup');
-    defined $def or return ();
+    my $def  = $self->namespaces->find(attributeGroup => $typename)
+        or $self->error($path, "cannot find attributeGroup $typename");
+#   my $def  = $self->reference($path, $typename, 'attributeGroup');
+#   defined $def or return ();
 
     $self->attribute_list($path, $self->childs($def->{node}));
 }
@@ -846,11 +863,8 @@ sub complexContent_ext($$)
 
     if($base ne 'anyType')
     {   my $typename = $self->rel2abs($path, $node, $base);
-        my $typedef  = $self->namespaces->findType($typename)
-            or $self->error($path, "cannot base on unknown $base");
-
-        $typedef->{type} eq 'complexType'
-            or $self->error($path, "base $base not complexType");
+        my $typedef  = $self->namespaces->find(complexType => $typename)
+            or $self->error($path, "cannot base on unknown complexType $base");
 
         $type = $self->complexType($path, $typedef->{node});
     }
@@ -898,6 +912,10 @@ sub findHooks($$$)
     my %hooks;
     foreach my $hook (@{$self->{hooks}})
     {   my $match;
+
+        $match++
+            if !$hook->{path} && !$hook->{id} && !$hook->{type};
+
         if(my $p = $hook->{path})
         {   $match++
                if first {ref $_ eq 'Regexp' ? $path =~ $_ : $path eq $_}

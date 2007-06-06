@@ -1,13 +1,13 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 use warnings;
 use strict;
 
 package XML::Compile::SOAP::Operation;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 use Carp;
 use List::Util  'first';
@@ -29,7 +29,7 @@ sub init()
       = exists $self->port->{ "{$soap1}address" } ? $soap1
       : croak "ERROR: soap namespace not supported";
 
-    $self->schemas->importData($soapns);
+    $self->schemas->importDefinitions($soapns);
 
     # This should be detected while parsing the WSDL because the order of
     # input and output is significant (and lost), but WSDL 1.1 simplifies

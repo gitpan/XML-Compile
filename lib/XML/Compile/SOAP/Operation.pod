@@ -29,17 +29,17 @@ initiate this object directly.
  service        <required>
  soapStyle      'document'
 
-. bindOperation HASH
+. bindOperation => HASH
 
-. binding HASH
+. binding => HASH
 
-. port HASH
+. port => HASH
 
-. portOperation HASH
+. portOperation => HASH
 
-. portType HASH
+. portType => HASH
 
-. protocol URI|'HTTP'
+. protocol => URI|'HTTP'
 
 =over 4
 
@@ -49,11 +49,11 @@ Transfer Protocol.
 
 =back
 
-. schemas M<XML::Compile::Schema> object
+. schemas => M<XML::Compile::Schema> object
 
-. service HASH
+. service => HASH
 
-. soapStyle 'document'|'rpc'
+. soapStyle => 'document'|'rpc'
 
 =back
 
@@ -159,9 +159,9 @@ when successfull.
  role       'CLIENT'
  soapStyle  new(soapStyle)
 
-. protocol URI|'HTTP'
+. protocol => URI|'HTTP'
 
-. role 'CLIENT'|'SERVER'
+. role => 'CLIENT'|'SERVER'
 
 =over 4
 
@@ -170,7 +170,7 @@ define whether you are the sender or receiver of the data.
 
 =back
 
-. soapStyle 'document'||'rpc'
+. soapStyle => 'document'||'rpc'
 
 =back
 
@@ -182,12 +182,12 @@ $obj-E<gt>B<soapNamespace>
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.17,
-built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.18,
+built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -1,14 +1,14 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 use base 'XML::Compile';
 
 use Carp;
@@ -27,7 +27,7 @@ sub init($)
     $self->{namespaces} = XML::Compile::Schema::NameSpaces->new;
     $self->SUPER::init($args);
 
-    $self->addSchemas($args->{top});
+    $self->importDefinitions($args->{top});
 
     $self->{hooks} = [];
     if(my $h1 = $args->{hook})
@@ -45,12 +45,14 @@ sub namespaces() { shift->{namespaces} }
 
 
 sub addSchemas($)
-{   my ($self, $top) = @_;
-    defined $top or return;
+{   my $self = shift;
+    my $node = shift or return ();
 
-    my $node = $self->dataToXML($top);
-    $node    = $node->documentElement
-       if $node->isa('XML::LibXML::Document');
+    ref $node && $node->isa('XML::LibXML::Node')
+        or croak "ERROR: required is a XML::LibXML::Node\n";
+
+    $node = $node->documentElement
+        if $node->isa('XML::LibXML::Document');
 
     my $nss = $self->namespaces;
 
@@ -72,10 +74,10 @@ sub addSchemas($)
 }
 
 
-sub importData($)
-{   my ($self, $thing) = @_;
+sub importDefinitions($@)
+{   my ($self, $thing) = (shift, shift);
     my $tree = $self->dataToXML($thing) or return;
-    $self->addSchemas($tree);
+    $self->addSchemas($tree, @_);
 }
 
 
@@ -98,6 +100,7 @@ sub hooks() { @{shift->{hooks}} }
 
 sub compile($$@)
 {   my ($self, $action, $type, %args) = @_;
+    defined $type or return ();
 
     exists $args{check_values}
        or $args{check_values} = 1;
@@ -116,22 +119,20 @@ sub compile($$@)
             if $@;
     }
 
-    $args{include_namespaces} ||= 1;
+    $args{include_namespaces} = 1
+        unless defined $args{include_namespaces};
+
     $args{output_namespaces}  ||= {};
 
     do { $_->{used} = 0 for values %{$args{output_namespaces}} }
-       if $args{namespace_reset};
+        if $args{namespace_reset};
 
     my $nss   = $self->namespaces;
-    my $top   = $nss->findType($type) || $nss->findElement($type)
-       or croak "ERROR: type $type is not defined";
 
     my ($h1, $h2) = (delete $args{hook}, delete $args{hooks});
     my @hooks = $self->hooks;
     push @hooks, ref $h1 eq 'ARRAY' ? @$h1 : $h1 if $h1;
     push @hooks, ref $h2 eq 'ARRAY' ? @$h2 : $h2 if $h2;
-
-    $args{path} ||= $top->{full};
 
     my $bricks = 'XML::Compile::Schema::' .
      ( $action eq 'READER' ? 'XmlReader'
@@ -143,7 +144,7 @@ sub compile($$@)
     die $@ if $@;
 
     XML::Compile::Schema::Translate->compileTree
-     ( $top->{full}, %args
+     ( $type, %args
      , bricks => $bricks
      , err    => $self->invalidsErrorHandler($args{invalid})
      , nss    => $self->namespaces
@@ -161,8 +162,6 @@ sub template($@)
     my @comment = map { ("show_$_" => 1) } split m/\,/, $show;
 
     my $nss = $self->namespaces;
-    my $top = $nss->findType($type) || $nss->findElement($type)
-       or croak "ERROR: type $type is not defined";
 
     my $indent                  = $args{indent} || "  ";
     $args{check_occurs}         = 1;
@@ -173,7 +172,7 @@ sub template($@)
     die $@ if $@;
 
     my $compiled = XML::Compile::Schema::Translate->compileTree
-     ( $top->{full}
+     ( $type
      , bricks => $bricks
      , nss    => $self->namespaces
      , err    => $self->invalidsErrorHandler('IGNORE')

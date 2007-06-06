@@ -1,0 +1,156 @@
+=head1 NAME
+
+XML::Compile::SOAP::SOAP11 - implementation of SOAP1.1
+
+=head1 INHERITANCE
+
+ XML::Compile::SOAP::SOAP11
+   is a XML::Compile::SOAP
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+**WARNING** Implementation not finished: not usable!!
+
+This module handles the SOAP protocol version 1.1.
+See F<http://www.w3.org/TR/2000/NOTE-SOAP-20000508/>).
+The implementation tries to behave like described in
+F<http://www.ws-i.org/Profiles/BasicProfile-1.0.html>
+
+=head2 Limitations
+
+=head1 METHODS
+
+=head2 Constructors
+
+$obj-E<gt>B<compile>(('CLIENT'|'SERVER'),('INPUT'|'OUTPUT'), OPTIONS)
+
+=over 4
+
+ Option        --Defined in     --Default
+ body            XML::Compile::SOAP  undef
+ destination     XML::Compile::SOAP  []
+ fault           XML::Compile::SOAP  []
+ header          XML::Compile::SOAP  undef
+ headerfault                      []
+ mustUnderstand  XML::Compile::SOAP  []
+ role            XML::Compile::SOAP  ULTIMATE
+ roles           XML::Compile::SOAP  []
+
+. body => ENTRIES
+
+. destination => ARRAY
+
+. fault => ENTRIES
+
+. header => ENTRIES
+
+. headerfault => ENTRIES
+
+=over 4
+
+ARRAY of simple name with element references, for all expected
+faults.  There can be unexpected faults, which will not get
+decoded automatically.
+
+=back
+
+. mustUnderstand => STRING|ARRAY-OF-STRING
+
+. role => URI|ARRAY-OF-URI
+
+. roles => ARRAY-OF-URI
+
+=back
+
+$obj-E<gt>B<new>(OPTIONS)
+
+=over 4
+
+To simplify the URIs of the actors, as specified with the C<destination>
+option, you may use the STRING C<NEXT>.  It will be replaced by the
+right URI.
+
+ Option     --Defined in     --Default
+ encoding_ns  XML::Compile::SOAP  http://schemas.xmlsoap.org/soap/encoding/
+ envelope_ns  XML::Compile::SOAP  http://schemas.xmlsoap.org/soap/envelope/
+ media_type   XML::Compile::SOAP  application/soap+xml
+ schemas      XML::Compile::SOAP  created internally
+
+. encoding_ns => URI
+
+. envelope_ns => URI
+
+. media_type => MIMETYPE
+
+. schemas => M<XML::Compile::Schema> object
+
+=back
+
+$obj-E<gt>B<roleAbbreviation>(STRING)
+
+=over 4
+
+Translates actor abbreviations into URIs.  The only one defined for
+SOAP1.1 is C<NEXT>.  Returns the unmodified STRING in all other cases.
+
+=back
+
+=head2 Accessors
+
+$obj-E<gt>B<encodingNS>
+
+=over 4
+
+See L<XML::Compile::SOAP/"Accessors">
+
+=back
+
+$obj-E<gt>B<envelopeNS>
+
+=over 4
+
+See L<XML::Compile::SOAP/"Accessors">
+
+=back
+
+$obj-E<gt>B<schemas>
+
+=over 4
+
+See L<XML::Compile::SOAP/"Accessors">
+
+=back
+
+=head2 SOAPAction
+
+$obj-E<gt>B<direction>(ROLE, INOUT)
+
+=over 4
+
+See L<XML::Compile::SOAP/"SOAPAction">
+
+=back
+
+=head1 DETAILS
+
+=head1 DIAGNOSTICS
+
+I<Error:> message is INPUT or OUTPUT, not $inout
+
+I<Error:> role must be CLIENT or SERVER, not $role
+
+=head1 SEE ALSO
+
+This module is part of XML-Compile distribution version 0.18,
+built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+
+=head1 LICENSE
+
+Copyrights 2006-2007 by Mark Overmeer. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

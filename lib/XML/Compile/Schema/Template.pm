@@ -1,11 +1,11 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -144,7 +144,7 @@ sub create_tagged_element
            , struct  => "$tag is simple value with attributes"
            , tag     => $tag
            , attrs   => \@attrs
-           , example => $st->()
+           , example => ($st->() || '')
            };
        };
 }
@@ -249,12 +249,24 @@ sub attribute_optional
 
 sub attribute_fixed
 {   my ($path, $args, $ns, $tag, $do, $fixed) = @_;
-    $fixed   = $fixed->example ;
+    my $value = $fixed->value;
 
     sub { +{ kind    => 'attr'
            , tag     => $tag
            , occurs  => "attribute $tag is fixed"
-           , example => $fixed
+           , example => $value
+           };
+        };
+}
+
+sub attribute_fixed_optional
+{   my ($path, $args, $ns, $tag, $do, $fixed) = @_;
+    my $value = $fixed->value;
+
+    sub { +{ kind    => 'attr'
+           , tag     => $tag
+           , occurs  => "attribute $tag is fixed optional"
+           , example => $value
            };
         };
 }

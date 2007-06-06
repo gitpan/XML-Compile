@@ -1,14 +1,14 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 use Carp;
 
@@ -55,37 +55,20 @@ sub allSchemas()
 }
 
 
-sub findElement($;$)
-{   my ($self, $ns, $name) = @_;
+sub find($$;$)
+{   my ($self, $kind, $ns, $name) = @_;
     my $label  = $ns;
     if(defined $name) { $label = "{$ns}$name" }
     elsif($label =~ m/^\s*\{(.*)\}(.*)/) { ($ns, $name) = ($1, $2) }
     else { return undef  } 
 
     foreach my $schema ($self->schemas($ns))
-    {   my $def = $schema->element($label);
+    {   my $def = $schema->find($kind, $label);
         return $def if defined $def;
     }
 
     undef;
 }
-
-
-sub findType($;$)
-{   my ($self, $ns, $name) = @_;
-    my $label  = $ns;
-    if(defined $name) { $label = "{$ns}$name" }
-    elsif($label =~ m/^\s*\{(.*)\}(.*)/) { ($ns, $name) = ($1, $2) }
-    else { return undef  } 
-
-    foreach my $schema ($self->schemas($ns))
-    {   my $def = $schema->type($label);
-        return $def if defined $def;
-    }
-
-    undef;
-}
-
 
 
 sub findSgMembers($;$)

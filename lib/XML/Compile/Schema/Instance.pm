@@ -1,20 +1,24 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 use Carp;
 
 use XML::Compile::Schema::Specs;
 
 use Scalar::Util   qw/weaken/;
+
+my @defkinds = qw/element attribute simpleType complexType
+                  attributeGroup group/;
+my %defkinds = map { ($_ => 1) } @defkinds;
 
 
 sub new($@)
@@ -28,6 +32,8 @@ sub init($)
     defined $top && $top->isa('XML::LibXML::Node')
        or croak "ERROR: instance based on XML node.";
 
+    $self->{$_} = {} for @defkinds, 'sgs';
+
     $self->_collectTypes($top);
     $self;
 }
@@ -38,19 +44,22 @@ sub schemaNamespace { shift->{xsd} }
 sub schemaInstance  { shift->{xsi} }
 
 
-sub ids() {keys %{shift->{ids}}}
-
-
-sub types() { keys %{shift->{types}} }
-
-
 sub type($) { $_[0]->{types}{$_[1]} }
 
 
-sub elements() { keys %{shift->{elements}} }
-
-
 sub element($) { $_[0]->{elements}{$_[1]} }
+
+
+sub ids()             { keys %{shift->{ids}} }
+sub elements()        { keys %{shift->{element}} }
+sub attributes()      { keys %{shift->{attributes}} }
+sub attributeGroups() { keys %{shift->{attributeGroup}} }
+sub groups()          { keys %{shift->{group}} }
+sub simpleTypes()     { keys %{shift->{simpleType}} }
+sub complexTypes()    { keys %{shift->{complexType}} }
+
+
+sub types()           { ($_[0]->simpleTypes, $_[0]->complexTypes) }
 
 
 sub substitutionGroups() { keys %{shift->{sgs}} }
@@ -62,12 +71,6 @@ sub substitutionGroupMembers($)
     @$sg;
 }
 
-
-my %as_element = map { ($_ => 1) }
-   qw/element group attributeGroup attribute/;
-
-my %as_type    = map { ($_ => 1) }
-   qw/complexType simpleType attributeGroup group/;
 
 my %skip_toplevel = map { ($_ => 1) }
    qw/annotation import notation include redefine/;
@@ -133,17 +136,12 @@ sub _collectTypes($)
              $sg = "{$sgns}$sgname";
         }
 
-        my $class
-           = $as_element{$local} ? 'elements'
-           : $as_type{$local}    ? 'types'
-           :                       undef;
-
-        unless(defined $class)
-        {   warn "WARNING: skipping unknown top-level component `$local'\n";
+        unless($defkinds{$local})
+        {   carp "ignoring unknown definition-type $local";
             next;
         }
 
-        my $info  = $self->{$class}{$label}
+        my $info  = $self->{$local}{$label}
           = { type => $local, id => $id,   node => $node, full => "{$ns}$name"
             , ns   => $ns,  name => $name, prefix => $prefix
             , afd  => $afd, efd  => $efd,  schema => $self
@@ -169,9 +167,17 @@ sub printIndex(;$)
     my $fh    = shift || select;
 
     $fh->print("namespace: ", $self->targetNamespace, "\n");
-    $fh->printf("  %11s %s\n", $_->{type}, $_->{name})
-      for sort {$a->{name} cmp $b->{name}}
-             values %{$self->{types}}, values %{$self->{elements}}
+    foreach my $kind (@defkinds)
+    {   my $table = $self->{$kind};
+        keys %$table or next;
+        $fh->print("  definitions of $kind objects:\n");
+        $fh->print("    ", $_->{name}, "\n")
+            for sort {$a->{name} cmp $b->{name}}
+                  values %$table;
+    }
 }
+
+
+sub find($$) { $_[0]->{$_[1]}{$_[2]} }
 
 1;

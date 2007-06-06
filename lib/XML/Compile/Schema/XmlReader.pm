@@ -1,10 +1,10 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 use strict;
 use warnings;
@@ -428,8 +428,8 @@ sub anyElement
 
 # any kind of hook
 
-sub create_hook($$$$$)
-{   my ($path, $args, $r, $before, $replace, $after) = @_;
+sub create_hook($$$$$$)
+{   my ($path, $args, $r, $tag, $before, $replace, $after) = @_;
     return $r unless $before || $replace || $after;
 
     return sub {()} if $replace && grep {$_ eq 'SKIP'} @$replace;
@@ -444,7 +444,9 @@ sub create_hook($$$$$)
        {   $xml = $_->($xml, $path);
            defined $xml or return ();
        }
-       my @h = @replace ? map {$_->($xml, $args, $path)} @replace : $r->($xml);
+       my @h = @replace
+             ? map {$_->($xml,$args,$path,$tag)} @replace
+             : $r->($xml);
        @h or return ();
        my $h = @h > 1 ? {@h} : $h[0];  # detect simpleType
        foreach (@after)

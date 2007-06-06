@@ -1,11 +1,11 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 use strict;
 use warnings;
@@ -68,10 +68,16 @@ sub wrapper
 
 sub wrapper_ns
 {   my ($path, $args, $processor, $index) = @_;
-    my @entries = map { $_->{used} ? [ $_->{uri}, $_->{prefix} ] : () }
-        values %$index;
+    my @entries;
+    foreach my $entry (values %$index)
+    {   $entry->{used} or next;
+        push @entries, [ $entry->{uri}, $entry->{prefix} ];
+        $entry->{used} = 0;
+    }
 
-    sub { my $node = $processor->(@_);
+    @entries or return $processor;
+
+    sub { my $node = $processor->(@_) or return ();
           $node->setNamespace(@$_, 0) foreach @entries;
           $node;
         };
@@ -467,8 +473,8 @@ sub anyElement
         };
 }
 
-sub create_hook($$$$$)
-{   my ($path, $args, $r, $before, $replace, $after) = @_;
+sub create_hook($$$$$$)
+{   my ($path, $args, $r, $tag, $before, $replace, $after) = @_;
     return $r unless $before || $replace || $after;
 
     croak "ERROR: writer only supports one production (replace) hook"
@@ -487,7 +493,9 @@ sub create_hook($$$$$)
            defined $val or return ();
        }
 
-       my $xml = @replace ? $replace[0]->($doc, $val, $path) : $r->($doc, $val);
+       my $xml = @replace
+               ? $replace[0]->($doc, $val, $path, $tag)
+               : $r->($doc, $val);
        defined $xml or return ();
 
        foreach (@after)

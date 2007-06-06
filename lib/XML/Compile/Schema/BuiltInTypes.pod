@@ -255,7 +255,7 @@ B<gDay>
 
 =over 4
 
-Format C<---12> or C<---12+9:00> (12 days, optional time-zone)
+Format C<---12> or C<---12+09:00> (12 days, optional time-zone)
 
 =back
 
@@ -263,7 +263,7 @@ B<gMonth>
 
 =over 4
 
-Format C<--9> or C<--9+7:00> (9 months, optional time-zone)
+Format C<--09> or C<--09+07:00> (9 months, optional time-zone)
 
 =back
 
@@ -271,7 +271,7 @@ B<gMonthDay>
 
 =over 4
 
-Format C<--9-12> or C<--9-12+7:00> (9 months 12 days, optional time-zone)
+Format C<--09-12> or C<--09-12+07:00> (9 months 12 days, optional time-zone)
 
 =back
 
@@ -279,7 +279,7 @@ B<gYear>
 
 =over 4
 
-Format C<2006> or C<2006+7:00> (year 2006, optional time-zone)
+Format C<2006> or C<2006+07:00> (year 2006, optional time-zone)
 
 =back
 
@@ -287,7 +287,7 @@ B<gYearMonth>
 
 =over 4
 
-Format C<2006-11> or C<2006-11+7:00> (november 2006, optional time-zone)
+Format C<2006-11> or C<2006-11+07:00> (november 2006, optional time-zone)
 
 =back
 
@@ -414,12 +414,12 @@ be translated into an URI object: it may not be used that way.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.17,
-built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.18,
+built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

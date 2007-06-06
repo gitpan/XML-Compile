@@ -1,13 +1,13 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 use warnings;
 use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 use base 'Exporter';
 
 use XML::LibXML;
@@ -211,7 +211,7 @@ sub test_rw($$$$;$$)
 
 sub compare_xml($$)
 {   my ($tree, $expect) = @_;
-    my $dump = $tree->toString;
+    my $dump = ref $tree ? $tree->toString : $tree;
 
     if($dump =~ m/\n|\s\s/)
     {   # output expects superfluous blanks

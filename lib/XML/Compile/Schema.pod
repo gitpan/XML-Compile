@@ -22,8 +22,8 @@ XML::Compile::Schema - Compile a schema
 
  # adding schemas
  $schema->addSchemas($tree);
- $schema->importData('http://www.w3.org/2001/XMLSchema');
- $schema->importData('2001-XMLSchema.xsd');
+ $schema->importDefinitions('http://www.w3.org/2001/XMLSchema');
+ $schema->importDefinitions('2001-XMLSchema.xsd');
 
  # create and use a reader
  my $read   = $schema->compile(READER => '{myns}mytype');
@@ -110,7 +110,7 @@ XML::Compile::Schema-E<gt>B<new>(OPTIONS)
  hooks                         []
  schema_dirs  XML::Compile     undef
 
-. hook ARRAY-WITH-HOOKDATA | HOOK
+. hook => ARRAY-WITH-HOOKDATA | HOOK
 
 =over 4
 
@@ -118,7 +118,7 @@ See L<addHook()|XML::Compile::Schema/"Accessors">.  Adds one HOOK (HASH).
 
 =back
 
-. hooks ARRAY-OF-HOOK
+. hooks => ARRAY-OF-HOOK
 
 =over 4
 
@@ -126,7 +126,7 @@ See L<addHooks()|XML::Compile::Schema/"Accessors">.
 
 =back
 
-. schema_dirs DIRECTORY|ARRAY-OF-DIRECTORIES
+. schema_dirs => DIRECTORY|ARRAY-OF-DIRECTORIES
 
 =back
 
@@ -159,12 +159,11 @@ See L<XML::Compile/"Accessors">
 
 =back
 
-$obj-E<gt>B<addSchemas>(XML)
+$obj-E<gt>B<addSchemas>(XML, OPTIONS)
 
 =over 4
 
-Collect all the schemas defined in the XML data, which is something
-accepted by L<dataToXML()|XML::Compile/"Read XML">.
+Collect all the schemas defined in the XML data.
 
 =back
 
@@ -184,12 +183,13 @@ Returns the LIST of defined hooks (HASHes).
 
 =back
 
-$obj-E<gt>B<importData>(XMLDATA)
+$obj-E<gt>B<importDefinitions>(XMLDATA, OPTIONS)
 
 =over 4
 
 Import (include) the schema information included in the XMLDATA.  The
-XMLDATA must be acceptable for L<dataToXML()|XML::Compile/"Read XML">.
+XMLDATA must be acceptable for L<dataToXML()|XML::Compile/"Read XML">.  The OPTIONS are passed
+to L<addSchemas()|XML::Compile::Schema/"Accessors">.
 
 =back
 
@@ -214,7 +214,7 @@ to collect schemas.
 
 =head2 Read XML
 
-$obj-E<gt>B<dataToXML>(NODE|REF-XML|XML|FILENAME|KNOWN)
+$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|KNOWN)
 
 =over 4
 
@@ -255,7 +255,8 @@ $obj-E<gt>B<compile>(('READER'|'WRITER'), ELEMENT, OPTIONS)
 =over 4
 
 Translate the specified ELEMENT into a CODE reference which is able to
-translate between XML-text and a HASH.
+translate between XML-text and a HASH.  When the ELEMENT is C<undef>,
+then an empty LIST is returned.
 
 The ELEMENT is the starting-point for processing in the data-structure.
 It can either be a global element, or a global type.  The NAME
@@ -292,7 +293,7 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
  path                  <expanded name of type>
  sloppy_integers       <false>
 
-. anyAttribute CODE
+. anyAttribute => CODE
 
 =over 4
 
@@ -303,7 +304,7 @@ manual-page for the specific back-end.
 
 =back
 
-. anyElement CODE
+. anyElement => CODE
 
 =over 4
 
@@ -314,7 +315,7 @@ back-end.
 
 =back
 
-. attributes_qualified BOOLEAN
+. attributes_qualified => BOOLEAN
 
 =over 4
 
@@ -324,7 +325,7 @@ process prefixes on attributes.
 
 =back
 
-. check_occurs BOOLEAN
+. check_occurs => BOOLEAN
 
 =over 4
 
@@ -335,7 +336,7 @@ be represented by an ARRAY.
 
 =back
 
-. check_values BOOLEAN
+. check_values => BOOLEAN
 
 =over 4
 
@@ -348,17 +349,23 @@ data from external sources.
 
 =back
 
-. elements_qualified BOOLEAN
+. elements_qualified => C<TOP>|C<ALL>|C<NONE>|BOOLEAN
 
 =over 4
 
 When defined, this will overrule the C<elementFormDefault> flags in
-all schema's.  When not qualified, the xml will not produce or
-process prefixes on the elements.
+all schema's.  When C<TOP> is specified, at least the top-element will
+be name-space qualified.  When C<ALL> or a true value is given, then all
+elements will be used qualified.  When C<NONE> or a false value is given,
+the XML will not produce or process prefixes on the elements.
+
+The C<form> attributes will be respected, except on the top element when
+C<TOP> is specified.  Use hooks when you need to fix name-space use in
+more subtile ways.
 
 =back
 
-. hook HOOK|ARRAY-OF-HOOKS
+. hook => HOOK|ARRAY-OF-HOOKS
 
 =over 4
 
@@ -370,7 +377,7 @@ option are run before the global definitions.
 
 =back
 
-. hooks HOOK|ARRAY-OF-HOOKS
+. hooks => HOOK|ARRAY-OF-HOOKS
 
 =over 4
 
@@ -378,7 +385,7 @@ Alternative for option C<hook>.
 
 =back
 
-. ignore_facets BOOLEAN
+. ignore_facets => BOOLEAN
 
 =over 4
 
@@ -388,7 +395,7 @@ set for a simpleType.
 
 =back
 
-. include_namespaces BOOLEAN
+. include_namespaces => BOOLEAN
 
 =over 4
 
@@ -399,7 +406,7 @@ XML components into one, and add the namespaces later.
 
 =back
 
-. invalid 'IGNORE','WARN','DIE',CODE
+. invalid => 'IGNORE','WARN','DIE',CODE
 
 =over 4
 
@@ -408,7 +415,7 @@ L<invalidsErrorHandler()|XML::Compile::Schema/"Compilers"> who initiates this ha
 
 =back
 
-. namespace_reset BOOLEAN
+. namespace_reset => BOOLEAN
 
 =over 4
 
@@ -417,7 +424,7 @@ piece, but reset the counts to zero first.
 
 =back
 
-. output_namespaces HASH
+. output_namespaces => HASH
 
 =over 4
 
@@ -429,7 +436,7 @@ to a private hash to catch this index.
 
 =back
 
-. path STRING
+. path => STRING
 
 =over 4
 
@@ -438,7 +445,7 @@ error in the XML-Scheme tree.
 
 =back
 
-. sloppy_integers BOOLEAN
+. sloppy_integers => BOOLEAN
 
 =over 4
 
@@ -509,13 +516,13 @@ There are some extra OPTIONS defined for the final output process.
  indent                " "
  show                  ALL
 
-. attributes_qualified BOOLEAN
+. attributes_qualified => BOOLEAN
 
-. elements_qualified BOOLEAN
+. elements_qualified => C<ALL>|C<TOP>|C<NONE>|BOOLEAN
 
-. include_namespaces BOOLEAN
+. include_namespaces => BOOLEAN
 
-. indent STRING
+. indent => STRING
 
 =over 4
 
@@ -524,7 +531,7 @@ blank.
 
 =back
 
-. show STRING|'ALL'|'NONE'
+. show => STRING|'ALL'|'NONE'
 
 =over 4
 
@@ -849,6 +856,7 @@ I<Example:> of HOOKs:
             , replace => 'SKIP'
             };
 
+ # path contains "(volume)" or id is 'aap' or id is 'noot'
  my $hook = { path    => qr/\(volume\)/
             , id      => [ 'aap', 'noot' ]
             , before  => [ sub {...}, sub { ... } ]
@@ -860,7 +868,8 @@ I<Example:> of HOOKs:
 Each hook has two kinds of parameters: selectors and processors.
 Selectors define the schema component of which the processing is modified.
 When one of the selectors matches, the processing information for the hook
-is used.  Available selectors (see below for details on each of them):
+is used.  When no selector is specified, then the hook will be used on all
+elements.  Available selectors (see below for details on each of them):
 
 =over 4
 
@@ -935,14 +944,19 @@ distribution package.
 
 I<Error:> don't known how to interpret XML data
 
+I<Error:> required is a XML::LibXML::Node
+
+Use L<importDefinitions()|XML::Compile::Schema/"Accessors"> to specify schema's in any (other) form, like
+as string.
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.17,
-built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.18,
+built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

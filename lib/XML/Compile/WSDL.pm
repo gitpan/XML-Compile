@@ -1,13 +1,13 @@
 # Copyrights 2006-2007 by Mark Overmeer.
-# For other contributors see ChangeLog.
+#  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 0.99.
+# Pod stripped from pm file by OODoc 1.00.
 use warnings;
 use strict;
 
 package XML::Compile::WSDL;
 use vars '$VERSION';
-$VERSION = '0.17';
+$VERSION = '0.18';
 use base 'XML::Compile';
 
 use Carp;
@@ -44,7 +44,8 @@ sub wsdlNamespace(;$)
 sub addWSDL($)
 {   my ($self, $data) = @_;
     defined $data or return;
-    my $node = $self->dataToXML($data);
+    my $node = $self->dataToXML($data)
+        or return $self;
 
     $node    = $node->documentElement
         if $node->isa('XML::LibXML::Document');
@@ -58,8 +59,8 @@ sub addWSDL($)
         if $corens ne $wsdlns;
 
     my $schemas = $self->schemas;
-    $schemas->importData($wsdlns);      # to understand WSDL
-    $schemas->importData("$wsdlns#patch");
+    $schemas->importDefinitions($wsdlns);      # to understand WSDL
+    $schemas->importDefinitions("$wsdlns#patch");
 
     croak "ERROR: don't known how to handle $wsdlns WSDL files"
         if $wsdlns ne $wsdl1;
@@ -81,7 +82,7 @@ sub addWSDL($)
     foreach my $type ( @{$spec->{types} || []} )
     {   foreach my $k (keys %$type)
         {   next unless $k =~ m/^\{[^}]*\}schema$/;
-            $schemas->addSchemas(@{$type->{$k}});
+            $schemas->importDefinitions(@{$type->{$k}});
         }
     }
 
@@ -103,7 +104,7 @@ sub addWSDL($)
 }
 
 
-sub addSchemas($) { shift->schemas->addSchemas(@_) }
+sub importDefinitions($@) { shift->schemas->importDefinitions(@_) }
 
 
 sub namesFor($)

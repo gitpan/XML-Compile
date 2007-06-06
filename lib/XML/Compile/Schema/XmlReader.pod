@@ -145,7 +145,8 @@ I<Example:> to trace the paths
 =head3 hooks executed as replacement
 
 Your C<replace> hook should return a list of key-value pairs. To
-produce it, it will get the XML::LibXML::Node and the path.
+produce it, it will get the XML::LibXML::Node, the translator settings
+as HASH, the path, and the localname.
 
 This hook has a predefined C<SKIP>.
 
@@ -163,12 +164,12 @@ The keys start with an underscore C<_>.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.17,
-built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.18,
+built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

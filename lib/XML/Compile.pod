@@ -89,7 +89,7 @@ you may simply terminate the compiler object: that will clean-up
  Option     --Default
  schema_dirs  undef
 
-. schema_dirs DIRECTORY|ARRAY-OF-DIRECTORIES
+. schema_dirs => DIRECTORY|ARRAY-OF-DIRECTORIES
 
 =over 4
 
@@ -144,12 +144,12 @@ module.
 
 =head2 Read XML
 
-$obj-E<gt>B<dataToXML>(NODE|REF-XML|XML|FILENAME|KNOWN)
+$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|KNOWN)
 
 =over 4
 
 Collect XML data.  Either a preparsed NODE is provided, which
-is returned unchanged.  A ref of SCALAR is interpreted as reference
+is returned unchanged.  A SCALAR reference is interpreted as reference
 to XML as plain text (XML texts can be large, hence you can improve
 performance by passing it around as reference in stead of copy).
 Any value which starts with blanks followed by a "E<lt>" is interpreted
@@ -207,12 +207,12 @@ I<Error:> no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.17,
-built on March 20, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.18,
+built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
-Copyrights 2006-2007 by Mark Overmeer.For other contributors see ChangeLog.
+Copyrights 2006-2007 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
