@@ -1,16 +1,18 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
 
-use Carp;
+use Log::Report 'xml-compile', syntax => 'SHORT';
+
+use XML::Compile::Util qw/pack_type unpack_type pack_id unpack_id/;
 
 
 sub new($@)
@@ -56,11 +58,11 @@ sub allSchemas()
 
 
 sub find($$;$)
-{   my ($self, $kind, $ns, $name) = @_;
-    my $label  = $ns;
-    if(defined $name) { $label = "{$ns}$name" }
-    elsif($label =~ m/^\s*\{(.*)\}(.*)/) { ($ns, $name) = ($1, $2) }
-    else { return undef  } 
+{   my ($self, $kind) = (shift, shift);
+    my ($label, $ns, $name)
+      = @_==1 ? ($_[0], unpack_type $_[0]) : (pack_type($_[0], $_[1]), @_);
+
+    defined $ns or return undef;
 
     foreach my $schema ($self->schemas($ns))
     {   my $def = $schema->find($kind, $label);
@@ -72,11 +74,10 @@ sub find($$;$)
 
 
 sub findSgMembers($;$)
-{   my ($self, $ns, $name) = @_;
-    my $label  = $ns;
-    if(defined $name) { $label = "{$ns}$name" }
-    elsif($label =~ m/^\s*\{(.*)\}(.*)/) { ($ns, $name) = ($1, $2) }
-    else { return undef  } 
+{   my $self = shift;
+    my ($label, $ns, $name)
+      = @_==1 ? ($_[0], unpack_type $_[0]) : (pack_type($_[0], $_[1]), @_);
+    defined $ns or return undef;
 
     map {$_->substitutionGroupMembers($label)}
         $self->allSchemas;
@@ -84,11 +85,10 @@ sub findSgMembers($;$)
 
 
 sub findID($;$)
-{   my ($self, $ns, $name) = @_;
-    my $label  = $ns;
-    if(defined $name) { $label = "$ns#$name" }
-    elsif($label =~ m/\#/) { ($ns, $name) = split /\#/,$label,2 }
-    else { return undef  } 
+{   my $self = shift;
+    my ($label, $ns, $id)
+      = @_==1 ? ($_[0], unpack_id $_[0]) : (pack_id($_[0], $_[1]), @_);
+    defined $ns or return undef;
 
     foreach my $schema ($self->schemas($ns))
     {   my $def = $schema->id($label);

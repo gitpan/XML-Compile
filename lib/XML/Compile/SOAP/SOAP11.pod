@@ -84,7 +84,7 @@ right URI.
 
 . media_type => MIMETYPE
 
-. schemas => M<XML::Compile::Schema> object
+. schemas => C<XML::Compile::Schema> object
 
 =back
 
@@ -137,14 +137,22 @@ See L<XML::Compile::SOAP/"SOAPAction">
 
 =head1 DIAGNOSTICS
 
-I<Error:> message is INPUT or OUTPUT, not $inout
+Error: message is INPUT or OUTPUT, not $inout
 
-I<Error:> role must be CLIENT or SERVER, not $role
+=over 4
+
+=back
+
+Error: role must be CLIENT or SERVER, not $role
+
+=over 4
+
+=back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

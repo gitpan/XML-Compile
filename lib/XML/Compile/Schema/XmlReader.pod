@@ -2,6 +2,8 @@
 
 XML::Compile::Schema::XmlReader - bricks to translate XML to HASH
 
+=head1 INHERITANCE
+
 =head1 SYNOPSIS
 
  my $schema = XML::Compile::Schema->new(...);
@@ -9,7 +11,7 @@ XML::Compile::Schema::XmlReader - bricks to translate XML to HASH
 
 =head1 DESCRIPTION
 
-The translator understands schema's, but does not encode that into
+The translator understands schemas, but does not encode that into
 actions.  This module implements those actions to translate from XML
 into a (nested) Perl HASH structure.
 
@@ -40,7 +42,7 @@ each attribute, and you must return list of pairs of derived information.
 When the returned is empty, the attribute data is lost.  The value may
 be a complex structure.
 
-I<Example:> anyAttribute in XmlReader
+example: anyAttribute in XmlReader
 
 Say your schema looks like this:
 
@@ -54,15 +56,17 @@ Say your schema looks like this:
      </complexType>
    </element>
    <simpleType name="non-empty">
-     <restriction base="xs:NCName" />
+     <restriction base="NCName" />
    </simpleType>
  </schema>
 
 Then, in an application, you write:
 
- my $r = $schema->compile(READER => '{http://mine}el'
+ my $r = $schema->compile
+  ( READER => pack_type('http://mine', 'el')
   , anyAttribute => 'ALL'
   );
+ # or lazy: READER => '{http://mine}el'
 
  my $h = $r->( <<'__XML' );
    <el xmlns:me="http://mine">
@@ -119,8 +123,9 @@ case.  You can implement any kind of complex processing in the filter.
 =head3 any element
 
 By default, the C<any> definition in a schema will ignore all elements
-from the container which are not used.  Also in this case C<TAKE_ANY>
-is required to enable C<any> processing.
+from the container which are not used.  Also in this case C<TAKE_ALL>
+is required to produce C<any> results.  C<SKIP_ALL> will ignore all
+results, although this are being processed for validation needs.
 
 The C<minOccurs> and C<maxOccurs> of C<any> are ignored: the amount of
 elements is always unbounded.  Therefore, you will get an array of
@@ -138,7 +143,7 @@ is returned, the whole node will disappear.
 
 This hook offers a predefined C<PRINT_PATH>.
 
-I<Example:> to trace the paths
+example: to trace the paths
 
  $schema->addHook(path => qr/./, before => 'PRINT_PATH');
 
@@ -148,7 +153,9 @@ Your C<replace> hook should return a list of key-value pairs. To
 produce it, it will get the XML::LibXML::Node, the translator settings
 as HASH, the path, and the localname.
 
-This hook has a predefined C<SKIP>.
+This hook has a predefined C<SKIP>, which will not process the
+found element, but simply return the string C<SKIPPED> as value.
+This way, a whole tree of unneeded translations can be avoided.
 
 =head3 hooks for post-processing, after the data is collected
 
@@ -164,8 +171,8 @@ The keys start with an underscore C<_>.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

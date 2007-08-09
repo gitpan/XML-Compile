@@ -2,6 +2,8 @@
 
 XML::Compile::Dumper - Translate Schema or WSDL to code
 
+=head1 INHERITANCE
+
 =head1 SYNOPSIS
 
  # create readers and writers or soap things
@@ -24,7 +26,7 @@ XML::Compile::Dumper - Translate Schema or WSDL to code
 This module simplifies the task of saving and loading pre-compiled
 translators.  Schema's can get huge, and when you are not creating a
 daemon to do the XML communication, you may end-up compiling and
-interpreting these large schema's often, just to be able to process
+interpreting these large schemas often, just to be able to process
 simple data-structures.
 
 Based on the excellent module Data::Dump::Streamer, this module
@@ -65,7 +67,7 @@ A filehandle will be closed after processing.
  filename    undef
  package     <required>
 
-. filehandle => M<IO::Handle>
+. filehandle => C<IO::Handle>
 
 . filename => FILENAME
 
@@ -127,27 +129,47 @@ Prints the header text to the file.
 
 =head1 DIAGNOSTICS
 
-I<Error:> either filename or filehandle required
+Error: either filename or filehandle required
 
-I<Error:> freeze can only be called once
+=over 4
+
+=back
+
+Error: freeze can only be called once
+
+=over 4
 
 The various closures may have related variables, and therefore
 need to be dumped in one go.
 
-I<Error:> freeze needs PAIRS or a HASH
+=back
 
-I<Error:> package name required
+Error: freeze needs PAIRS or a HASH
+
+=over 4
+
+=back
+
+Error: package name required
+
+=over 4
 
 The perl module which is produced is cleanly encapsulating the
 produced program text in a perl package name-space.  The name
 has to be provided.
 
-I<Error:> value with $name is not a code reference
+=back
+
+Error: value with $name is not a code reference
+
+=over 4
+
+=back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

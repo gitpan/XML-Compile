@@ -2,6 +2,8 @@
 
 XML::Compile::Schema::Template - bricks to create an XML or PERL example
 
+=head1 INHERITANCE
+
 =head1 SYNOPSIS
 
  my $schema = XML::Compile::Schema->new(...);
@@ -10,7 +12,7 @@ XML::Compile::Schema::Template - bricks to create an XML or PERL example
 
 =head1 DESCRIPTION
 
-The translator understands schema's, but does not encode that into
+The translator understands schemas, but does not encode that into
 actions.  This module interprets the parse results of the translator,
 and creates a kind of abstract syntax tree from it, which can be used
 for documentational purposes.  Then, it implements to ways to represent
@@ -30,8 +32,8 @@ produce an error.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

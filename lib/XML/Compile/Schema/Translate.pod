@@ -2,6 +2,8 @@
 
 XML::Compile::Schema::Translate - create an XML data parser
 
+=head1 INHERITANCE
+
 =head1 SYNOPSIS
 
  # for internal use only
@@ -23,7 +25,7 @@ one CODE reference which can be used in the main user program.
 =head2 Unsupported features
 
 This implementation is work in progress, but most structures in
-W3C schema's are implemented.
+W3C schemas are implemented.
 
 Non-namespace schema elements are not implemented, because you shouldn't
 want that!  Therefore, missing are
@@ -31,12 +33,14 @@ want that!  Therefore, missing are
  any ##local
  anyAttribute ##local
 
-Some things do not work in schema's anyway:
+Some things do not work in schemas anyway:
  automatic import
  include
 
-Used for indexing XML, not for our need:
- unique, keyref, selector, field
+Ignored, because not for our purpose
+ key, unique, keyref, selector, field
+ notation
+ annotation
 
 A few nuts are still to crack:
  any* processContents always interpreted as lax
@@ -45,8 +49,6 @@ A few nuts are still to crack:
  facets on dates
  full understanding of patterns (now limited)
  final
- notation, annotation
- explicit ordering within choice and all
  QName writer namespace to prefix translation
 
 Of course, the latter list is all fixed in next release ;-)
@@ -67,14 +69,14 @@ this method is called is the schema already translated into
 a table of types.
 
  Option--Default
+ action  <required>
  bricks  <required>
- err     <required>
  hooks   <required>
  nss     <required>
 
-. bricks => CLASS
+. action => 'READER'|'WRITER'
 
-. err => CODE
+. bricks => CLASS
 
 . hooks => ARRAY
 
@@ -135,9 +137,9 @@ extra security.
 
 =head3 qualified XML
 
-The produced XML may not use the name-spaces as defined by the schema's,
+The produced XML may not use the name-spaces as defined by the schemas,
 just to simplify the input and output.  The structural definition of
-the schema's is still in-tact, but name-space collission may appear.
+the schemas is still in-tact, but name-space collission may appear.
 
 Per schema, it can be specified whether the elements and attributes
 defined in-there need to be used qualified (with prefix) or not.
@@ -147,7 +149,7 @@ elements are used from an other schema which is qualified.
 The suggested solution in articles about the subject is to provide
 people with both a schema which is qualified as one which is not.
 Perl is known to be blunt in its approach: we simply define a flag
-which can force one of both on all schema's together, using
+which can force one of both on all schemas together, using
 C<elements_qualified> and C<attributes_qualified>.  May people and
 applications do not understand name-spaces sufficiently, and these
 options may make your day!
@@ -221,16 +223,12 @@ This will be called when the type definitions contains an
 C<anyAttribute> definition, after processing the other attributes.
 By default, all C<anyAttribute> specifications will be ignored.
 
-=head1 DIAGNOSTICS
-
-I<Error:> $element is not an element or attribute
-
-I<Error:> expecting an element name as point to start
+=back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

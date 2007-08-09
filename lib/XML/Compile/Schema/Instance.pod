@@ -2,6 +2,8 @@
 
 XML::Compile::Schema::Instance - Represents one schema
 
+=head1 INHERITANCE
+
 =head1 SYNOPSIS
 
  # Used internally by XML::Compile::Schema
@@ -150,7 +152,7 @@ $obj-E<gt>B<find>(KIND, LOCALNAME)
 
 Returns the definition for the object of KIND, with LOCALNAME.
 
-I<Example:> of find
+example: of find
 
  my $attr = $instance->find(attribute => 'myns#my_global_attr');
 
@@ -167,8 +169,8 @@ selected FILEHANDLE.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

@@ -1,16 +1,18 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 use warnings;
 use strict;
 
 package XML::Compile::SOAP::Operation;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
 
-use Carp;
+use Log::Report 'xml-report', syntax => 'SHORT';
 use List::Util  'first';
+
+use XML::Compile::Util   qw/pack_type/;
 
 my $soap1 = 'http://schemas.xmlsoap.org/wsdl/soap/';
 my $http1 = 'http://schemas.xmlsoap.org/soap/http';
@@ -25,9 +27,10 @@ sub init()
 {   my $self = shift;
 
     # autodetect namespaces used
-    my $soapns = $self->{soap_ns}
-      = exists $self->port->{ "{$soap1}address" } ? $soap1
-      : croak "ERROR: soap namespace not supported";
+    my $soapns  = $self->{soap_ns}
+      = exists $self->port->{ pack_type $soap1, 'address' } ? $soap1
+      : error __x"soap namespace {namespace} not (yet) supported"
+            , namespace => $soap1;
 
     $self->schemas->importDefinitions($soapns);
 
@@ -72,10 +75,10 @@ sub endPointAddresses()
     return @{$self->{addrs}} if $self->{addrs};
 
     my $soapns   = $self->soapNamespace;
-    my $addrtype = "{$soapns}address";
+    my $addrtype = pack_type $soapns, 'address';
 
     my $addrxml  = $self->port->{$addrtype}
-        or croak "ERROR: soap end-point address not found in service port.\n";
+        or error __x"soap end-point address not found in service port";
 
     my $addr_r   = $self->schemas->compile(READER => $addrtype);
 
@@ -92,19 +95,19 @@ sub canTransport($$)
     unless($trans)
     {   # collect the transport information
         my $soapns   = $self->soapNamespace;
-        my $bindtype = "{$soapns}binding";
+        my $bindtype = pack_type $soapns, 'binding';
 
         my $bindxml  = $self->binding->{$bindtype}
-            or croak "ERROR: soap transport binding not found in binding.\n";
+            or error __x"soap transport binding not found in binding";
 
         my $bind_r   = $self->schemas->compile(READER => $bindtype);
   
-        my @bindings = map {$bind_r->($_)} @$bindxml;
-        $_->{style} ||= 'document' for @bindings;
-        $self->{trans} = $trans = \@bindings;
+        my %bindings = map {$bind_r->($_)} @$bindxml;
+        $_->{style} ||= 'document' for values %bindings;
+        $self->{trans} = $trans = \%bindings;
     }
 
-    my @proto = grep {$_->{transport} eq $proto} @$trans;
+    my @proto = grep {$_->{transport} eq $proto} values %$trans;
     @proto or return ();
 
     my ($action, $op_style) = $self->action;
@@ -121,7 +124,7 @@ sub action()
     unless($action)
     {   # collect the action information
         my $soapns = $self->soapNamespace;
-        my $optype = "{$soapns}operation";
+        my $optype = pack_type $soapns, 'operation';
 
         my @action;
         my $opxml = $self->bindOperation->{$optype};
@@ -183,7 +186,8 @@ sub prepare(@)
            @po_fault;
     }
     else
-    {   croak "ERROR: WSDL role must be CLIENT or SERVER, not '$role'"; 
+    {   error __x"WSDL role must be CLIENT or SERVER, not '{role}'"
+            , role => $role; 
     }
 
     my $soapns  = $self->soapNamespace;
@@ -195,18 +199,20 @@ sub prepare(@)
     my $style   = $args{soapStyle} || $self->{soapStyle} || 'document';
 
     $self->canTransport($proto, $style)
-        or croak "ERROR: transport $proto as $style not defined in WSDL";
+        or error "transport {protocol} as {style} not defined in WSDL"
+               , protocol => $proto, style => $style;
 
     $proto eq $http1
-        or die "SORRY: only transport of HTTP ($proto) implemented\n";
+        or error __x"SORRY: only transport of HTTP ({proto}) implemented"
+               , protocol => $proto;
 
     $style eq 'document'
-        or die "SORRY: only transport style 'document' implemented\n";
+        or error __x"SORRY: only transport style 'document' implemented";
 
     # http requires soapAction
     my ($action, undef) = $self->soapAction;
 
-    croak "ERROR: work in progress: implementation not finished";
+    panic "work in progress: implementation not finished";
 }
 
 sub _message_reader($$$)

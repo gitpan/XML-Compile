@@ -51,7 +51,7 @@ where it is replaced by a C<notUnderstood> structure.
 
 . rpc_ns => URI
 
-. schemas => M<XML::Compile::Schema> object
+. schemas => C<XML::Compile::Schema> object
 
 =back
 
@@ -118,26 +118,58 @@ See L<XML::Compile::SOAP/"SOAPAction">
 
 =head1 DIAGNOSTICS
 
-I<Error:> an input message does not have faults
+Error: an input message does not have faults
 
-I<Error:> headerfault does only exist in SOAP1.1
+=over 4
 
-I<Error:> message is INPUT or OUTPUT, not $inout
+=back
 
-I<Error:> option 'destination' only for writers
+Error: headerfault does only exist in SOAP1.1
 
-I<Error:> option 'mustUnderstand' only for writers
+=over 4
 
-I<Error:> option 'role' only for readers
+=back
 
-I<Error:> option 'roles' only for readers
+Error: message is INPUT or OUTPUT, not $inout
 
-I<Error:> role must be CLIENT or SERVER, not $role
+=over 4
+
+=back
+
+Error: option 'destination' only for writers
+
+=over 4
+
+=back
+
+Error: option 'mustUnderstand' only for writers
+
+=over 4
+
+=back
+
+Error: option 'role' only for readers
+
+=over 4
+
+=back
+
+Error: option 'roles' only for readers
+
+=over 4
+
+=back
+
+Error: role must be CLIENT or SERVER, not $role
+
+=over 4
+
+=back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

@@ -2,6 +2,12 @@
 
 XML::Compile - Compilation based XML processing
 
+=head1 INHERITANCE
+
+ XML::Compile is extended by
+   XML::Compile::Schema
+   XML::Compile::WSDL
+
 =head1 SYNOPSIS
 
  # See XML::Compile::Schema
@@ -163,24 +169,6 @@ files.
 
 =back
 
-$obj-E<gt>B<parse>(STRING)
-
-=over 4
-
-Extract document element tree from the STRING, which represents XML.
-This is a wrapper around XML::LibXML method C<parse_string()>.
-
-=back
-
-$obj-E<gt>B<parseFile>(FILENAME)
-
-=over 4
-
-Extract document element tree from a file, specified by FILENAME.
-This is a wrapper around XML::LibXML method C<parse_file()>.
-
-=back
-
 =head2 Filters
 
 $obj-E<gt>B<walkTree>(NODE, CODE)
@@ -195,20 +183,32 @@ nodes will be skipped.
 
 =head1 DIAGNOSTICS
 
-I<Error:> cannot find pre-installed name-space files
+Error: cannot find pre-installed name-space files
+
+=over 4
 
 Use $ENV{SCHEMA_LOCATION} or L<new(schema_dirs)|XML::Compile/"Constructors"> to express location
 of installed name-space files, which came with the L<XML::Compile|XML::Compile>
 distribution package.
 
-I<Error:> don't known how to interpret XML data
+=back
 
-I<Error:> no XML data specified
+Error: don't known how to interpret XML data
+
+=over 4
+
+=back
+
+Error: no XML data specified
+
+=over 4
+
+=back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

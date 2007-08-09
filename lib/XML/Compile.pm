@@ -1,17 +1,17 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 
 use warnings;
 use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
 
+use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::LibXML;
-use Carp;
 
 my %namespace_defs =
  ( 'http://www.w3.org/XML/1998/namespace'    => '1998-namespace.xsd'
@@ -36,16 +36,13 @@ my %namespace_defs =
  , 'http://www.w3.org/2003/05/soap-encoding' => '2003-soap-encoding.xsd'
  , 'http://www.w3.org/2003/05/soap-envelope' => '2003-soap-envelope.xsd'
  , 'http://www.w3.org/2003/05/soap-rpc'      => '2003-soap-rpc.xsd'
-
- # bug-fixes/mis-features/work-arounds
- , 'http://schemas.xmlsoap.org/wsdl/#patch'  => 'wsdl-patch.xsd'
  );
 
 
 sub new($@)
 {   my ($class, $top) = (shift, shift);
 
-    croak "ERROR: you should instantiate a sub-class, $class is base only"
+    panic "you should instantiate a sub-class, $class is base only"
         if $class eq __PACKAGE__;
 
     (bless {}, $class)->init( {top => $top, @_} );
@@ -98,36 +95,35 @@ sub dataToXML($)
     return $thing
         if ref $thing && UNIVERSAL::isa($thing, 'XML::LibXML::Node');
 
-    return $self->parse($thing)
+    return $self->_parse($thing)
         if ref $thing eq 'SCALAR'; # XML string as ref
 
-    return $self->parse(\$thing)
+    return $self->_parse(\$thing)
         if $thing =~ m/^\s*\</;    # XML starts with '<', rare for files
 
     if(my $known = $self->knownNamespace($thing))
     {   my $fn = $self->findSchemaFile($known)
-            or croak "ERROR: cannot find pre-installed name-space files.\n";
+            or error "cannot find pre-installed name-space files";
 
-        return $self->parseFile($fn);
+        return $self->_parseFile($fn);
     }
 
-    return $self->parseFile($thing)
-         if -f $thing;
+    return $self->_parseFile($thing)
+        if -f $thing;
 
     my $data = "$thing";
     $data = substr($data, 0, 39) . '...' if length($data) > 40;
-    croak "ERROR: don't known how to interpret XML data\n   $data\n";
+    mistake __x"don't known how to interpret XML data\n   {data}"
+          , data => $data;
 }
 
-
-sub parse($)
+sub _parse($)
 {   my ($thing, $data) = @_;
     my $xml = XML::LibXML->new->parse_string($$data);
     defined $xml ? $xml->documentElement : undef;
 }
 
-
-sub parseFile($)
+sub _parseFile($)
 {   my ($thing, $fn) = @_;
     my $xml = XML::LibXML->new->parse_file($fn);
     defined $xml ? $xml->documentElement : undef;

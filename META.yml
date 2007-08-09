@@ -1,16 +1,21 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         XML-Compile
-version:      0.18
-version_from: 
-installdirs:  site
-requires:
+--- #YAML:1.0
+name:                XML-Compile
+version:             0.5
+abstract:            Compilation based XML processing
+license:             perl
+generated_by:        ExtUtils::MakeMaker version 6.32
+distribution_type:   module
+requires:     
     Data::Dump::Streamer:          2.03
     IO:                            1.22
+    Log::Report:                   0.09
     Math::BigInt:                  1.77
     Test::Deep:                    0.095
     Test::More:                    0.54
+    Test::Pod:                     1
     XML::LibXML:                   1.63
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.17
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - Mark Overmeer

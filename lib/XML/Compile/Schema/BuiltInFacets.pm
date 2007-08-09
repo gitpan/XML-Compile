@@ -1,14 +1,16 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 use warnings;
 use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
 use base 'Exporter';
+
+use Log::Report 'xml-compile', syntax => 'SHORT';
 
 our @EXPORT = qw/builtin_facet/;
 
@@ -39,12 +41,12 @@ my %facets =
 sub builtin_facet($$$;@)
 {   my ($path, $args, $type, $value) = @_;
     my $def = $facets{$type};
-    unless(defined $def)
-    {   warn "WARN: unknown facet $type in $path\n";
-        return ();
-    }
 
-    $def->($path, $args, $value);
+    return $def->($path, $args, $value)
+        if defined $def;
+
+    error __x"unknown facet {type} in {path}"
+        , type => $type, path => $path;
 }
 
 sub _whiteSpace($$$)
@@ -52,7 +54,8 @@ sub _whiteSpace($$$)
       $ws eq 'replace'  ? \&_whitespace_replace
     : $ws eq 'collapse' ? \&_whitespace_collapse
     : $ws eq 'preserve' ? ()
-    : die "ERROR: illegal whiteSpace facet '$ws' in $path\n";
+    : error __x"illegal whiteSpace facet '{ws}' in {path}"
+          , ws => $ws, path => $path;
 }
 
 sub _whitespace_replace($)
@@ -105,8 +108,8 @@ sub _minInclusive($$$)
     $min = _maybe_big $path, $args, $min;
     my $err  = $args->{err};
     sub { return $_[0] if $_[0] >= $min;
-          $err->($path, $_[0], "too small inclusive, min $min");
-          $min;
+          error __x"too small inclusive {value}, min {min} at {where}"
+              , value => $_[0], min => $min, where => $path;
         }
 }
 
@@ -115,8 +118,8 @@ sub _minExclusive($$$)
     $min = _maybe_big $path, $args, $min;
     my $err  = $args->{err};
     sub { return $_[0] if $_[0] > $min;
-          $err->($path, $_[0], "too small exclusive, larger $min");
-          undef;
+          error __x"too small exclusive {value}, larger {min} at {where}"
+              , value => $_[0], min => $min, where => $path;
         }
 }
 
@@ -125,8 +128,8 @@ sub _maxInclusive($$$)
     $max = _maybe_big $path, $args, $max;
     my $err  = $args->{err};
     sub { return $_[0] if $_[0] <= $max;
-          $err->($path, $_[0], "too large inclusive, max $max");
-          $max;
+          error __x"too large inclusive {value}, max {max} at {where}"
+              , value => $_[0], max => $max, where => $path;
         }
 }
 
@@ -135,8 +138,8 @@ sub _maxExclusive($$$)
     $max = _maybe_big $path, $args, $max;
     my $err  = $args->{err};
     sub { return $_[0] if $_[0] < $max;
-          $err->($path, $_[0], "too large exclusive, smaller $max");
-          undef;
+          error __x"too large exclusive {value}, smaller {max} at {where}"
+              , value => $_[0], max => $max, where => $path;
         }
 }
 
@@ -145,7 +148,8 @@ sub _enumeration($$$)
     my %enum = map { ($_ => 1) } @$enums;
     my $err  = $args->{err};
     sub { return $_[0] if exists $enum{$_[0]};
-          $err->($path, $_[0], "invalid enum");
+          error __x"invalid enumerate `{string}' at {where}"
+              , string => $_[0], where => $path;
         };
 }
 
@@ -167,20 +171,18 @@ sub _totalFracDigits($$$)
 sub _length($$$)
 {   my ($path, $args, $len) = @_;
     my $err = $args->{err};
-    sub { return $_[0] if defined $_[0] && length $_[0]==$len;
-          $err->($path, $_[0], "required length $len");
-            length($_[0]) < $len
-          ? $_[0].('X' x ($len-length($_[0])))
-          : substr($_[0], 0, $len)
+    sub { return $_[0] if defined $_[0] && length($_[0])==$len;
+          error __x"string `{string}' does not have required length {len} at {where}"
+              , string => $_[0], len => $len, where => $path;
         };
 }
 
 sub _minLength($$$)
 {   my ($path, $args, $len) = @_;
     my $err = $args->{err};
-    sub { return $_[0] if defined $_[0] && length $_[0]>=$len;
-          $err->($path, $_[0], "required min length $len");
-          $_[0].('X' x ($len-length($_[0])));
+    sub { return $_[0] if defined $_[0] && length($_[0]) >=$len;
+          error __x"string `{string}' does not have minimum length {len} at {where}"
+              , string => $_[0], len => $len, where => $path;
         };
 }
 
@@ -188,8 +190,8 @@ sub _maxLength($$$)
 {   my ($path, $args, $len) = @_;
     my $err = $args->{err};
     sub { return $_[0] if defined $_[0] && length $_[0] <= $len;
-          $err->($path, $_[0], "max length $len");
-          substr $_[0], 0, $len;
+          error __x"string `{string}' longer maximum length {len} at {where}"
+              , string => $_[0], len => $len, where => $path;
         };
 }
 
@@ -215,8 +217,8 @@ sub _pattern($$$)
     my $err = $args->{err};
 
     sub { return $_[0] if $_[0] =~ $pat;
-          $err->($path, $_[0], "does not match pattern $pat");
-          ();
+          error __x"string `{string}' does not match pattern {pattern} at {where}"
+              , string => $_[0], pattern => $pat, where => $path;
         };
 }
 

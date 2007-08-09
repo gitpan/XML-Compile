@@ -2,6 +2,8 @@
 
 XML::Compile::SOAP::Operation - defines a possible SOAP interaction
 
+=head1 INHERITANCE
+
 =head1 SYNOPSIS
 
 =head1 DESCRIPTION
@@ -49,7 +51,7 @@ Transfer Protocol.
 
 =back
 
-. schemas => M<XML::Compile::Schema> object
+. schemas => C<XML::Compile::Schema> object
 
 . service => HASH
 
@@ -182,8 +184,8 @@ $obj-E<gt>B<soapNamespace>
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

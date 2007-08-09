@@ -1,14 +1,16 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 use warnings;
 use strict;
 
 package XML::Compile::SOAP::SOAP12;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
 use base 'XML::Compile::SOAP';
+
+use Log::Report 'xml-compile', syntax => 'SHORT';
 
 my $base  = 'http://www.w3.org/2003/05';
 
@@ -46,7 +48,7 @@ sub rpcNS() {shift->{rpc}}
 sub _writer($)
 {   my ($self, $args) = @_;
 
-    die "ERROR: headerfault does only exist in SOAP1.1\n"
+    error __x"headerfault does only exist in SOAP1.1"
         if $args->{header_fault};
 
 }

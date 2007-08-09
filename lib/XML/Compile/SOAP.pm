@@ -1,15 +1,16 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 use warnings;
 use strict;
 
 package XML::Compile::SOAP;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
 
-use Carp  qw/confess croak/;
+use Log::Report 'xml-compile', syntax => 'SHORT';
+use XML::Compile::Util  qw/pack_type/;
 
 
 sub new($@)
@@ -19,8 +20,8 @@ sub new($@)
 
 sub init($)
 {   my ($self, $args) = @_;
-    $self->{env}     = $args->{envelope_ns} || confess;
-    $self->{enc}     = $args->{encoding_ns} || confess;
+    $self->{env}     = $args->{envelope_ns} || panic "no envelope namespace";
+    $self->{enc}     = $args->{encoding_ns} || panic "no encoding namespace";
     $self->{mime}    = $args->{media_type}  || 'application/soap+xml';
     $self->{schemas} = $args->{schemas}     || XML::Compile::Schema->new;
     $self;
@@ -96,11 +97,13 @@ sub _writer($)
              , delete $understand{$label}, delete $destination{$label});
     }
 
-    croak "ERROR: mustUnderstand for unknown header @{[ keys %understand ]}"
-        if keys %understand;
+    keys %understand
+        and error __x"mustUnderstand for unknown header {headers}"
+                , headers => [keys %understand];
 
-    croak "ERROR: actor for unknown header @{[ keys %destination]}"
-        if keys %destination;
+    keys %destination
+        and error __x"actor for unknown header {headers}"
+                , headers => [keys %destination];
 
     my $headerhook = $self->_writer_hook($envns, 'Header', @header);
 
@@ -132,7 +135,7 @@ sub _writer($)
     my $encstyle = $self->_writer_encstyle_hook(\%allns);
 
     my $envelope = $self->schemas->compile
-     ( WRITER => "{$envns}Envelope"
+     ( WRITER => pack_type($envns, 'Envelope')
      , hooks  => [ $encstyle, $headerhook, $bodyhook ]
      , output_namespaces    => \%allns
      , elements_qualified   => 1
@@ -148,7 +151,7 @@ sub _writer($)
 sub _writer_hook($$@)
 {   my ($self, $ns, $local, @do) = @_;
  
-   +{ type  => "{$ns}$local"
+   +{ type    => pack_type($ns, $local)
     , replace =>
          sub { my ($doc, $data, $path, $tag) = @_;
                my %data = %$data;
@@ -176,7 +179,7 @@ sub _writer_encstyle_hook($)
 {   my ($self, $allns) = @_;
     my $envns   = $self->envelopeNS;
     my $style_w = $self->schemas->compile
-     ( WRITER => "{$envns}encodingStyle"
+     ( WRITER => pack_type($envns, 'encodingStyle')
      , output_namespaces    => $allns
      , include_namespaces   => 0
      , attributes_qualified => 1
@@ -184,14 +187,14 @@ sub _writer_encstyle_hook($)
     my $style;
 
     my $before  = sub {
-	my ($doc, $values) = @_;
+	my ($doc, $values, $path) = @_;
         ref $values eq 'HASH' or return $values;
         $style = $style_w->($doc, delete $values->{encodingStyle});
         $values;
       };
 
     my $after = sub {
-        my ($doc, $node) = @_;
+        my ($doc, $node, $path) = @_;
         $node->addChild($style) if defined $style;
         $node;
       };
@@ -251,7 +254,7 @@ sub _reader($)
     my $encstyle = $self->_reader_encstyle_hook;
 
     my $envelope = $self->schemas->compile
-     ( READER => "{$envns}Envelope"
+     ( READER => pack_type($envns, 'Envelope')
      , hooks  => [ $encstyle, $headerhook, $bodyhook ]
      );
 
@@ -262,14 +265,14 @@ sub _reader_hook($$@)
 {   my ($self, $ns, $local, @do) = @_;
     my %trans = map { ($_->[1] => [ $_->[0], $_->[2] ]) } @do; # we need copies
  
-   +{ type  => "{$ns}$local"
+   +{ type    => pack_type($ns, $local)
     , replace =>
         sub
           { my ($xml, $trans, $path, $label) = @_;
             my %h;
             foreach my $child ($xml->childNodes)
             {   next unless $child->isa('XML::LibXML::Element');
-                my $type = '{'.$child->namespaceURI.'}'.$child->localName;
+                my $type = pack_type $child->namespaceURI, $child->localName;
                 if(my $t = $trans{$type})
                 {   my $v = $t->[1]->($child);
                     $h{$t->[0]} = $v if defined $v;
@@ -278,7 +281,7 @@ sub _reader_hook($$@)
                 {   $h{$type} = $child;
                 }
             }
-            \%h;
+            ($label => \%h);
           }
     };
 }
@@ -286,7 +289,9 @@ sub _reader_hook($$@)
 sub _reader_encstyle_hook()
 {   my $self     = shift;
     my $envns    = $self->envelopeNS;
-    my $style_r = $self->schemas->compile(READER => "{$envns}encodingStyle");
+    my $style_r = $self->schemas->compile
+      ( READER => pack_type($envns, 'encodingStyle')
+      );
     my $encstyle;
 
     my $before = sub
@@ -325,7 +330,7 @@ sub direction($$)
 }
 
 
-sub roleAbbreviation($) { confess "ERROR: not implemented" }
+sub roleAbbreviation($) { panic "not implemented" }
 
 
 1;

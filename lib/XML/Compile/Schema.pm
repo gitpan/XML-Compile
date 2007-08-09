@@ -1,16 +1,17 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
 use base 'XML::Compile';
 
+use Log::Report 'xml-compile', syntax => 'SHORT';
 use Carp;
 use List::Util   qw/first/;
 use XML::LibXML  ();
@@ -49,7 +50,7 @@ sub addSchemas($)
     my $node = shift or return ();
 
     ref $node && $node->isa('XML::LibXML::Node')
-        or croak "ERROR: required is a XML::LibXML::Node\n";
+        or error __x"required is a XML::LibXML::Node";
 
     $node = $node->documentElement
         if $node->isa('XML::LibXML::Document');
@@ -111,11 +112,11 @@ sub compile($$@)
     $args{sloppy_integers}   ||= 0;
     unless($args{sloppy_integers})
     {   eval "require Math::BigInt";
-        die "ERROR: require Math::BigInt or sloppy_integers:\n$@"
+        fault "require Math::BigInt or sloppy_integers:\n$@"
             if $@;
 
         eval "require Math::BigFloat";
-        die "ERROR: require Math::BigFloat or sloppy_integers:\n$@"
+        fault "require Math::BigFloat or sloppy_integers:\n$@"
             if $@;
     }
 
@@ -134,21 +135,22 @@ sub compile($$@)
     push @hooks, ref $h1 eq 'ARRAY' ? @$h1 : $h1 if $h1;
     push @hooks, ref $h2 eq 'ARRAY' ? @$h2 : $h2 if $h2;
 
-    my $bricks = 'XML::Compile::Schema::' .
-     ( $action eq 'READER' ? 'XmlReader'
+    my $impl
+     = $action eq 'READER' ? 'XmlReader'
      : $action eq 'WRITER' ? 'XmlWriter'
-     : croak "ERROR: create only READER, WRITER, not '$action'."
-     );
+     : error __x"create only READER, WRITER, not '{action}'"
+           , action => $action;
 
+    my $bricks = "XML::Compile::Schema::$impl";
     eval "require $bricks";
-    die $@ if $@;
+    fault $@ if $@;
 
     XML::Compile::Schema::Translate->compileTree
      ( $type, %args
      , bricks => $bricks
-     , err    => $self->invalidsErrorHandler($args{invalid})
      , nss    => $self->namespaces
      , hooks  => \@hooks
+     , action => $action
      );
 }
 
@@ -169,14 +171,14 @@ sub template($@)
 
     my $bricks = 'XML::Compile::Schema::Template';
     eval "require $bricks";
-    die $@ if $@;
+    fault $@ if $@;
 
     my $compiled = XML::Compile::Schema::Translate->compileTree
      ( $type
      , bricks => $bricks
      , nss    => $self->namespaces
-     , err    => $self->invalidsErrorHandler('IGNORE')
      , hooks  => []
+     , action => 'READER'
      , %args
      );
 
@@ -195,24 +197,8 @@ sub template($@)
     {   return $bricks->toPerl($ast, @comment, indent => $indent);
     }
 
-    die "ERROR: template output is either in XML or PERL layout, not '$action'\n";
-}
-
-
-sub invalidsErrorHandler($)
-{   my $key = $_[1] || 'DIE';
-
-      ref $key eq 'CODE'? $key
-    : $key eq 'IGNORE'  ? sub { undef }
-    : $key eq 'USE'     ? sub { $_[1] }
-    : $key eq 'WARN'
-    ? sub {warn "$_[2] ("
-              . (defined $_[1]? $_[1] : 'undef')
-              . ") for $_[0]\n"; $_[1]}
-    : $key eq 'DIE'
-    ? sub {die  "$_[2] (".(defined $_[1] ? $_[1] : 'undef').") for $_[0]\n"}
-    : die "ERROR: error handler expects CODE, 'IGNORE',"
-        . "'USE','WARN', or 'DIE', not $key";
+    error __x"template output is either in XML or PERL layout, not '{action}'"
+        , action => $action;
 }
 
 

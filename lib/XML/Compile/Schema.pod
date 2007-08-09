@@ -37,6 +37,11 @@ XML::Compile::Schema - Compile a schema
  # show result
  print $xml->toString;
 
+ # to create the type nicely
+ use XML::Compile::Util qw/pack_type/;
+ my $type   = pack_type 'myns', 'mytype';
+ print $type;  # shows  {myns}mytype
+
 =head1 DESCRIPTION
 
 This module collects knowledge about one or more schemas.  The most
@@ -58,9 +63,10 @@ to the specs.
 The CODE reference which is returned can be called with anything
 accepted by L<dataToXML()|XML::Compile/"Read XML">.
 
-I<Example:> create an XML reader
+example: create an XML reader
 
  my $msgin  = $rules->compile(READER => '{myns}mytype');
+ # or  ...  = $rules->compile(READER => pack_type('myns', 'mytype'));
  my $xml    = $parser->parse("some-xml.xml");
  my $hash   = $msgin->($xml);
 
@@ -76,7 +82,7 @@ The writer produces schema compliant XML, based on a HASH.  To get the
 data encoding correct, you are required to pass a document in which the
 XML nodes may get a place later.
 
-I<Example:> create an XML writer
+example: create an XML writer
 
  my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
  my $write  = $schema->compile(WRITER => '{myns}mytype');
@@ -90,7 +96,7 @@ alternative
 =back
 
 Be warned that the schema itself is NOT VALIDATED; you can easily
-construct schema's which do work with this module, but are not
+construct schemas which do work with this module, but are not
 valid according to W3C.  Only in some cases, the translater will
 refuse to accept mistakes: mainly because it cannot produce valid
 code.
@@ -222,22 +228,6 @@ See L<XML::Compile/"Read XML">
 
 =back
 
-$obj-E<gt>B<parse>(STRING)
-
-=over 4
-
-See L<XML::Compile/"Read XML">
-
-=back
-
-$obj-E<gt>B<parseFile>(FILENAME)
-
-=over 4
-
-See L<XML::Compile/"Read XML">
-
-=back
-
 =head2 Filters
 
 $obj-E<gt>B<walkTree>(NODE, CODE)
@@ -287,7 +277,6 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
  hooks                 undef
  ignore_facets         <false>
  include_namespaces    <true>
- invalid               DIE
  namespace_reset       <false>
  output_namespaces     {}
  path                  <expanded name of type>
@@ -320,7 +309,7 @@ back-end.
 =over 4
 
 When defined, this will overrule the C<attributeFormDefault> flags in
-all schema's.  When not qualified, the xml will not produce nor
+all schemas.  When not qualified, the xml will not produce nor
 process prefixes on attributes.
 
 =back
@@ -354,7 +343,7 @@ data from external sources.
 =over 4
 
 When defined, this will overrule the C<elementFormDefault> flags in
-all schema's.  When C<TOP> is specified, at least the top-element will
+all schemas.  When C<TOP> is specified, at least the top-element will
 be name-space qualified.  When C<ALL> or a true value is given, then all
 elements will be used qualified.  When C<NONE> or a false value is given,
 the XML will not produce or process prefixes on the elements.
@@ -403,15 +392,6 @@ Indicates whether the WRITER should include the prefix to namespace
 translation on the top-level element of the returned tree.  If not,
 you may continue with the same name-space table to combine various
 XML components into one, and add the namespaces later.
-
-=back
-
-. invalid => 'IGNORE','WARN','DIE',CODE
-
-=over 4
-
-What to do in invalid values (ignored when not checking). See
-L<invalidsErrorHandler()|XML::Compile::Schema/"Compilers"> who initiates this handler.
 
 =back
 
@@ -472,27 +452,6 @@ $obj-E<gt>B<elements>
 =over 4
 
 List all elements, defined by all schemas sorted alphabetically.
-
-=back
-
-$obj-E<gt>B<invalidsErrorHandler>('IGNORE','USE'.'WARN','DIE',CODE)
-
-=over 4
-
-What to do when a validation error appears during validation?  This method
-translates all string options into a single code reference which is
-returned.  Please use the C<invalid> options of L<compile()|XML::Compile::Schema/"Compilers">
-which will call this method indirectly.
-
-When C<IGNORE> is specified, the process will ignore the specified
-value as if it was not specified at all.  C<USE> will not complain,
-and use the value found. With C<WARN>, it will continue with the value
-but a warning is printed first.  On C<DIE> it will stop processing,
-as will the program (catch it with C<eval>).
-
-When a CODE reference is specified, that will be called specifying
-the type path, actual type expected (expanded name), the errorneous
-value, and an error string.
 
 =back
 
@@ -557,7 +516,7 @@ List all types, defined by all schemas sorted alphabetically.
 =head2 Addressing components
 
 Normally, external users can only address elements within a schema,
-and types are hidden to be used by other schema's only.  For this
+and types are hidden to be used by other schemas only.  For this
 reason, it is permitted to create an element and a type with the
 same name.
 
@@ -609,7 +568,7 @@ Note that some of the reader hooks will alter the single value of these
 elements into a HASH like used for the complexType/simpleContent (next
 paragraph), to be able to return some extra collected information.
 
-I<Example:> typical simpleType
+example: typical simpleType
 
 In XML, it looks like this:
 
@@ -631,7 +590,7 @@ In this case, the single value container may have attributes.  The number
 of attributes can be endless, and the value is only one.  This value
 has no name, and therefore gets a predefined name C<_>.
 
-I<Example:> typical simpleContent example
+example: typical simpleContent example
 
 In XML, this looks like this:
 
@@ -650,7 +609,7 @@ as content.  The C<complexContent> is used to create inheritance
 structures in the data-type definition.  This does not affect the
 XML data package itself.
 
-I<Example:> typical complexType element
+example: typical complexType element
 
 The XML could look like:
 
@@ -669,10 +628,10 @@ Represented as HASH, this looks like
 
 =back
 
-=head2 Processing elements
+=head2 Processing
 
 A second factor which determines the data-structure is the element
-occurence.  Usually, elements have to appear once and exactly once
+occurrence.  Usually, elements have to appear once and exactly once
 on a certain location in the XML data structure.  This order is
 automatically produced by this module. But elements may appear multiple
 times.
@@ -686,30 +645,59 @@ appear exactly once.  When missing, this is an error.
 
 =item maxOccurs larger than 1
 
-In this case, the element can appear multiple times.  Multiple values will
-be kept in an ARRAY within the HASH.  Non-schema based XML processors
-will not return a single value as an ARRAY, which makes that code more
-complicated.
+In this case, the element or particle block can appear multiple times.
+Multiple values will be kept in an ARRAY within the HASH.  Non-schema
+based XML processors will not return a single value as an ARRAY, which
+makes that code more complicated.
 
-An error will be produced when the number of elements found is
-less than C<minOccurs> or more than C<maxOccurs>, unless
-L<compile(check_occurs)|XML::Compile::Schema/"Compilers"> is C<false>.
+When the maxOccurs larger than 1 is specified for an element, an ARRAY
+of those elements is produced.  When it is specified for a block (sequence,
+choice, all, group), then an ARRAY of HASHes is returned.  The complication,
+in this case, is that the block needs a name, where it hasn't one in the
+schema.  As name, the first element in the construct is used.
 
-I<Example:> two values for C<a>
+An error will be produced when the number of elements found is less than
+C<minOccurs> or more than C<maxOccurs>, unless L<compile(check_occurs)|XML::Compile::Schema/"Compilers">
+is C<false>.
 
- <test4><a>12</a><a>13</a><b>14</b></test4>
+example: elements with maxOccurs E<gt> 1
 
-will become
+In the schema:
+ <element name="a" type="int" maxOccurs="unbounded" />
+ <element name="b" type="int" />
 
- test4 => { a => [12, 13], b => 14 };
+In the XML message:
+ <a>12</a><a>13</a><b>14</b>
 
-I<Example:> always an array
+In the Perl representation:
+ a => [12, 13], b => 14
+
+example: always an array with maxOccurs E<gt> 1
 
 Even when there is only one element found, it will be returned as
 ARRAY (of one element).  Therefore, you can write
 
  my $data = $reader->($xml);
  foreach my $a ( @{$data->{a}} ) {...}
+
+example: blocks with maxOccurs E<gt> 1
+
+In the schema:
+ <sequence maxOccurs="5">
+   <element name="a" type="int" />
+   <element name="b" type="int" />
+ </sequence>
+
+In the XML message:
+ <a>15</a><b>16</b><a>17</a><b>18</b>
+
+In Perl representation:
+ a => [ {a => 15, b => 16}, {a => 17, b => 18} ]
+
+=item value is C<NIL>
+
+When an element is nillable, that is explicitly represented as a C<NIL>
+constant string.
 
 =item use="optional" or minOccurs="0"
 
@@ -737,7 +725,7 @@ the white-space rules where applied).
 List simpleType objects are also represented as ARRAY, like elements
 with a minOccurs or maxOccurs unequal 1.
 
-I<Example:> with a list of ints
+example: with a list of ints
 
   <test5>3 8 12</test5>
 
@@ -754,7 +742,7 @@ themselves as valid for an abstract (I<head>) element.  All alternatives
 should be extensions of the head element's type, but there is no way to
 check that.
 
-I<Example:> substitutionGroup
+example: substitutionGroup
 
  <xs:element name="price"  type="xs:int" abstract="true" />
  <xs:element name="euro"   type="xs:int" substitutionGroup="price" />
@@ -793,7 +781,7 @@ they specify groups of elements and attributes which can be used, in
 stead of being explicit.
 
 The author of this module advices B<against the use of wildcards>
-in schema's, because the purpose of schema's is to be explicit and that
+in schemas, because the purpose of schemas is to be explicit and that
 basic idea is simply thrown away by these wildcards.  Let people cleanly
 extend the schema with inheritance!  If you use a standard schema
 which facilitates these wildcards, then please do not use them!
@@ -846,7 +834,7 @@ evaluated before the global hooks.
  $wsdl->prepare('GetPrice', hook => HOOK, ...);
  $wsdl->server(hook => HOOK, ...);
 
-I<Example:> of HOOKs:
+example: of HOOKs:
 
  my $hook = { type    => '{my_ns}my_type'
             , before  => sub { ... }
@@ -904,12 +892,15 @@ However, you may also specify only the C<type> (in any name-space).
 Any REGEX will be matched to the full type name. Be careful with the
 pattern archors.
 
-I<Example:> use of the type selector
+example: use of the type selector
 
  type => 'int'
  type => '{http://www.w3.org/2000/10/XMLSchema}int'
  type => qr/\}xml_/   # type start with xml_
  type => [ qw/int float/ ];
+
+ use XML::Compile::Util qw/pack_type/;
+ type => pack_type('http://www.w3.org/2000/10/XMLSchema', 'int')
 
 =head3 hooks on matching ids
 
@@ -918,7 +909,7 @@ anonymous but still have an ID.  Best is to base selection on the full
 ID name, like C<ns#id>, to avoid all kinds of name-space conflicts in
 the future.
 
-I<Example:> use of the ID selector
+example: use of the ID selector
 
  # default schema types have id's with same name
  id => 'int'
@@ -936,23 +927,26 @@ improved in one of the future releases, breaking backwards compatibility.
 
 =head1 DIAGNOSTICS
 
-I<Error:> cannot find pre-installed name-space files
+Error: cannot find pre-installed name-space files
+
+=over 4
 
 Use $ENV{SCHEMA_LOCATION} or L<new(schema_dirs)|XML::Compile/"Constructors"> to express location
 of installed name-space files, which came with the L<XML::Compile|XML::Compile>
 distribution package.
 
-I<Error:> don't known how to interpret XML data
+=back
 
-I<Error:> required is a XML::LibXML::Node
+Error: don't known how to interpret XML data
 
-Use L<importDefinitions()|XML::Compile::Schema/"Accessors"> to specify schema's in any (other) form, like
-as string.
+=over 4
+
+=back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

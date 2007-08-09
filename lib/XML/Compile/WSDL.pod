@@ -21,7 +21,7 @@ help.  Please contact the author when you have something to contribute.
 On the moment, the development is primarily targeted to support the
 CPAN6 development.  You can change that with money or time.  ###
 
-An WSDL file defines a set of schema's and how to use the defined
+An WSDL file defines a set of schemas and how to use the defined
 types using SOAP connections.  The parsing is based on the WSDL
 schema.  The WSDL definition can get constructed from multiple
 XML trees, each added with L<addWSDL()|XML::Compile::WSDL/"Extension">.
@@ -114,22 +114,6 @@ document root element is defined.
 =head2 Read XML
 
 $obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|KNOWN)
-
-=over 4
-
-See L<XML::Compile/"Read XML">
-
-=back
-
-$obj-E<gt>B<parse>(STRING)
-
-=over 4
-
-See L<XML::Compile/"Read XML">
-
-=back
-
-$obj-E<gt>B<parseFile>(FILENAME)
 
 =over 4
 
@@ -269,18 +253,26 @@ specified, a HASH of HASHes is returned with the CLASSes on the top-level.
 
 =head1 DIAGNOSTICS
 
-I<Error:> cannot find pre-installed name-space files
+Error: cannot find pre-installed name-space files
+
+=over 4
 
 Use $ENV{SCHEMA_LOCATION} or L<new(schema_dirs)|XML::Compile/"Constructors"> to express location
 of installed name-space files, which came with the L<XML::Compile|XML::Compile>
 distribution package.
 
-I<Error:> don't known how to interpret XML data
+=back
+
+Error: don't known how to interpret XML data
+
+=over 4
+
+=back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

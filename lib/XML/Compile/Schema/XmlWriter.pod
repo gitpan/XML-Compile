@@ -2,6 +2,8 @@
 
 XML::Compile::Schema::XmlWriter - bricks to translate HASH to XML
 
+=head1 INHERITANCE
+
 =head1 SYNOPSIS
 
  my $schema = XML::Compile::Schema->new(...);
@@ -9,7 +11,7 @@ XML::Compile::Schema::XmlWriter - bricks to translate HASH to XML
 
 =head1 DESCRIPTION
 
-The translator understands schema's, but does not encode that into
+The translator understands schemas, but does not encode that into
 actions.  This module implements those actions to translate from
 a (nested) Perl HASH structure onto XML.
 
@@ -24,17 +26,20 @@ be avoided: please specify your data-structures explicit by clean type
 extensions.
 
 The procedure for the XmlWriter is simple: add key-value pairs to your
-hash, in which the valie is a fully prepared XML::LibXML::Attr
+hash, in which the value is a fully prepared XML::LibXML::Attr
 or XML::LibXML::Element.  The keys have the form C<{namespace}type>.
-The I<namespace> component is important, because only spec confirmant
-namespaces will be used.  The type is ignored.  The elements and
-attributes are added in random order.
+The I<namespace> component is important, because only spec conformant
+namespaces will be used. The elements and attributes are added in
+random order.
 
-I<Example:> specify anyAttribute
+example: specify anyAttribute
+
+ use XML::Compile::Util qw/pack_type/;
 
  my $attr = $doc->createAttributeNS($somens, $sometype, 42);
  my $h = { a => 12     # normal element or attribute
-         , "{$somens}$sometype" => $attr # anyAttribute
+         , "{$somens}$sometype"        => $attr # anyAttribute
+         , pack_type($somens, $mytype) => $attr # nicer
          };
 
 =head2 Schema hooks
@@ -57,7 +62,7 @@ node will be cancelled.
 
 On the moment, the only predefined C<before> hook is C<PRINT_PATH>.
 
-I<Example:> before hook on user-provided HASH.
+example: before hook on user-provided HASH.
 
  sub before_on_complex($$$)
  {   my ($doc, $values, $path) = @_;
@@ -69,14 +74,14 @@ I<Example:> before hook on user-provided HASH.
      \%copy;
  }
 
-I<Example:> before hook on simpleType data
+example: before hook on simpleType data
 
  sub before_on_simple($$$)
  {   my ($doc, $value, $path) = @_;
      $value *= 100;    # convert euro to euro-cents
  }
 
-I<Example:> before hook with object for complexType
+example: before hook with object for complexType
 
  sub before_on_object($$$)
  {   my ($doc, $obj, $path) = @_;
@@ -96,7 +101,7 @@ argument) to create a node.
 
 On the moment, the only predefined C<replace> hook is C<SKIP>.
 
-I<Example:> replace hook
+example: replace hook
 
  sub replace($$$)
  {  my ($doc, $values, $path, $tag) = @_
@@ -113,7 +118,7 @@ the new XML node has to be returned.
 
 On the moment, the only predefined C<after> hook is C<PRINT_PATH>.
 
-I<Example:> add an extra sibbling after the usual process
+example: add an extra sibbling after the usual process
 
  sub after($$$$)
  {   my ($doc, $node, $path) = @_;
@@ -122,12 +127,12 @@ I<Example:> add an extra sibbling after the usual process
      $node;
  }
 
-=head3 fixing bad schema's
+=head3 fixing bad schemas
 
 When a schema makes a mess out of things, we can fix that with hooks.
 Also, when you need things that XML::Compile does not support (yet).
 
-I<Example:> creating nodes with text
+example: creating nodes with text
 
  {  my $text;
 
@@ -153,8 +158,8 @@ I<Example:> creating nodes with text
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

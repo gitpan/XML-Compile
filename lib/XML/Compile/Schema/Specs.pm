@@ -1,17 +1,18 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
+
+use Log::Report 'xml-compile', syntax => 'SHORT';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
-use Carp;
 
 
 ### Who will extend this?
@@ -126,7 +127,10 @@ sub builtInType($$;$@)
     my $name = @_ % 1 ? shift : undef;
     unless(defined $name)
     {   if($ns =~ m/^\s*\{(.*)\}(.*)/ ) { ($ns, $name) = ($1, $2) }
-        else { croak "ERROR: incomplete type $ns" }
+        else
+        {   error __x"incomplete type {namespace}"
+                , namespace => $ns;
+        }
     }
 
     my $schema = $schemas{$ns}

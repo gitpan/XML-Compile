@@ -2,26 +2,39 @@
 
 XML::Compile::SOAP - base-class for SOAP implementations
 
+=head1 INHERITANCE
+
+ XML::Compile::SOAP is extended by
+   XML::Compile::SOAP::SOAP11
+   XML::Compile::SOAP::SOAP12
+
 =head1 SYNOPSIS
 
- # There are quite some differences between SOAP1.1 and 1.2
- my $soap = XML::Compile::SOAP::SOAP11->new;
+ use XML::Compile::SOAP::SOAP11;
+ use XML::Compile::Util qw/pack_type/;
 
- $soap->schemas->importDefinitions(...);   # load extra schema's
+ # There are quite some differences between SOAP1.1 and 1.2
+ my $soap   = XML::Compile::SOAP::SOAP11->new;
+
+ # load extra schemas always explicitly
+ $soap->schemas->importDefinitions(...);
+
+ my $h1type = pack_type $myns, $sometype;
+ my $b1type = "{$myns}$othertype";  # less clean
 
  # Request, answer, and call usually created via WSDL
  my $request = $soap->compile
    ('CLIENT', 'INPUT'               # client to server
-   , header   => [ h1 => 'h1type' ]
-   , body     => [ b1 => 'b1type' ]
+   , header   => [ h1 => $h1type ]
+   , body     => [ b1 => $b1type ]
    , destination    => [ h1 => 'NEXT' ]
    , mustUnderstand => 'h1'
    );
 
  my $answer = $soap->compile
    ('CLIENT', 'OUTPUT'              # server to client
-   , header   => [ h2 => 'h2type' ]
-   , body     => [ b2 => 'b2type' ]
+   , header   => [ h2 => $h2type ]
+   , body     => [ b2 => $b2type ]
    , headerfault => [ ... ]
    , fault    => [ ... ]
    );
@@ -78,7 +91,7 @@ $obj-E<gt>B<new>(OPTIONS)
 
 . media_type => MIMETYPE
 
-. schemas => M<XML::Compile::Schema> object
+. schemas => C<XML::Compile::Schema> object
 
 =over 4
 
@@ -282,13 +295,16 @@ can be quite hard to create correctly) is in file C<myschema.xsd>
 
 Ok, now the program you create the request:
 
+ use XML::Compile::SOAP::SOAP11;
+ use XML::Compile::Util  qw/pack_type/;
+
  my $soap   = XML::Compile::SOAP::SOAP11->new;
  $soap->schemas->importDefinitions('myschema.xsd');
 
  my $get_price = $soap->compile
   ( 'CLIENT', 'INPUT'
-  , header => [ transaction => "{$TestNS}Transaction" ]
-  , body =>   [ request => "{$TestNS}GetLastTradePrice" ]
+  , header => [ transaction => pack_type($TestNS, 'Transaction') ]
+  , body =>   [ request => pack_type($TestNS, 'GetLastTradePrice') ]
   , mustUnderstand => 'transaction'
   , destination => [ 'transaction' => 'NEXT http://actor' ]
   );
@@ -339,8 +355,8 @@ contains the XML.  The program looks like this:
 
  my $server = $soap->compile       # create once
   ( 'SERVER', 'INPUT'
-  , header => [ transaction => "{$TestNS}Transaction" ]
-  , body =>   [ request => "{$TestNS}GetLastTradePrice" ]
+  , header => [ transaction => pack_type($TestNS, 'Transaction') ]
+  , body =>   [ request => pack_type($TestNS, 'GetLastTradePrice') ]
   );
 
  my $data_out = $server->($soap);  # call often
@@ -350,26 +366,58 @@ equivalent to the C<%data_in> from the client.
 
 =head1 DIAGNOSTICS
 
-I<Error:> an input message does not have faults
+Error: an input message does not have faults
 
-I<Error:> headerfault does only exist in SOAP1.1
+=over 4
 
-I<Error:> message is INPUT or OUTPUT, not $inout
+=back
 
-I<Error:> option 'destination' only for writers
+Error: headerfault does only exist in SOAP1.1
 
-I<Error:> option 'mustUnderstand' only for writers
+=over 4
 
-I<Error:> option 'role' only for readers
+=back
 
-I<Error:> option 'roles' only for readers
+Error: message is INPUT or OUTPUT, not $inout
 
-I<Error:> role must be CLIENT or SERVER, not $role
+=over 4
+
+=back
+
+Error: option 'destination' only for writers
+
+=over 4
+
+=back
+
+Error: option 'mustUnderstand' only for writers
+
+=over 4
+
+=back
+
+Error: option 'role' only for readers
+
+=over 4
+
+=back
+
+Error: option 'roles' only for readers
+
+=over 4
+
+=back
+
+Error: role must be CLIENT or SERVER, not $role
+
+=over 4
+
+=back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.18,
-built on June 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.5,
+built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

@@ -1,18 +1,18 @@
 # Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.00.
+# Pod stripped from pm file by OODoc 1.02.
 
 use warnings;
 use strict;
 
 package XML::Compile::Dumper;
 use vars '$VERSION';
-$VERSION = '0.18';
+$VERSION = '0.5';
 
+use Log::Report 'xml-compile', syntax => 'SHORT';
 use Data::Dump::Streamer;
-use POSIX 'asctime';
-use Carp;
+use POSIX     qw/asctime/;
 use IO::File;
 
 # I have no idea why the next is needed, but without it, the
@@ -31,15 +31,15 @@ sub init($)
     my $fh      = $opts->{filehandle};
     unless($fh)
     {   my $fn  = $opts->{filename}
-            or croak "ERROR: either filename or filehandle required";
+            or error __x"either filename or filehandle required";
 
         $fh     = IO::File->new($fn, '>:utf8')
-            or die "ERROR: cannot write to $fn: $!";
+            or fault __x"cannot write to {filename}", filename => $fn;
     }
     $self->{XCD_fh} = $fh;
 
     my $package = $opts->{package}
-        or croak "ERROR: package name required";
+        or error __x"package name required";
 
     $self->header($fh, $package);
     $self;
@@ -95,10 +95,10 @@ __HEADER
 sub freeze(@)
 {   my $self = shift;
 
-    croak "ERROR: freeze needs PAIRS or a HASH"
+    error "freeze needs PAIRS or a HASH"
         if (@_==1 && ref $_[0] ne 'HASH') || @_ % 2;
 
-    croak "ERROR: freeze can only be called once"
+    error "freeze can only be called once"
         if $self->{XCD_freeze}++;
 
     my (@names, @data);
@@ -122,7 +122,9 @@ sub freeze(@)
 
     for(my $i = 0; $i < @names; $i++)
     {   ref $data[$i] eq 'CODE'
-            or croak "ERROR: value with '$names[$i]' is not a code reference";
+            or error __x"value with '{label}' is not a code reference"
+                   , label => $names[$i];
+
         my $code  = '$CODE'.($i+1);
         $fh->print("*${names[$i]} = $code;\n");
     }
