@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.5';
+$VERSION = '0.51';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  'first';
@@ -57,8 +57,8 @@ sub compileTree($@)
 
            $name eq 'element'
         or $name eq 'attribute'
-        or error __x"ID {id} must be element or attribute, but is {name}"
-               , id => $element, name => $name;
+        or error __x"ID {id} must be an element or attribute, but is {name}"
+              , id => $element, name => $name;
 
         $element  = $def->{full};
     }
@@ -150,7 +150,8 @@ sub topLevel($$)
       : error __x"top-level {full} is not an element or attribute but {name} at {where}"
             , full => $fullname, name => $name, where => $tree->path;
 
-    $self->make(wrapper => $path, $make);
+    my $wrapper = $name eq 'element' ? 'element_wrapper' : 'attribute_wrapper';
+    $self->make($wrapper, $path, $make);
 }
 
 sub typeByName($$)
@@ -531,8 +532,8 @@ sub particle($)
             , name => $local, where => $tree->path;
 
    return ($label =>
-       $self->make(block_handler => $where, $label, $min, $max, $process))
-          if ref $process eq 'BLOCK';
+     $self->make(block_handler => $where, $label, $min, $max, $process, $local))
+        if ref $process eq 'BLOCK';
 
     my $required = $min==0 ? undef
       : $self->make(required => $where, $label, $process);
@@ -673,6 +674,7 @@ sub attributeOne($)
     # content: annotation?, simpleType?
 
     my $node = $tree->node;
+    my $type;
 
     my($ref, $name, $form, $typeattr);
     if(my $refattr =  $node->getAttribute('ref'))
@@ -688,9 +690,31 @@ sub attributeOne($)
             or error __x"ref attribute without name at {where}"
                    , where => $tree->path;
 
-        $typeattr   = $ref->getAttribute('type');
+        if($typeattr = $ref->getAttribute('type'))
+        {   # postpone interpretation
+        }
+        else
+        {   my $other = $tree->descend($ref);
+            $other->nrChildren==1 && $other->currentLocal eq 'simpleType'
+                or error __x"toplevel attribute {type} has no type attribute nor single simpleType child"
+                      , type => $refname;
+            $type   = $self->simpleType($other->descend);
+        }
         $form       = $ref->getAttribute('form');
     }
+    elsif($tree->nrChildren==1)
+    {   $tree->currentLocal eq 'simpleType'
+            or error __x"attribute child can only be `simpleType', not `{found}' at {where}"
+                  , found => $tree->currentLocal, where => $tree->path;
+
+        $name       = $node->getAttribute('name')
+            or error __x"attribute without name at {where}"
+                   , where => $tree->path;
+
+        $form       = $node->getAttribute('form');
+        $type       = $self->simpleType($tree->descend);
+    }
+
     else
     {   $name       = $node->getAttribute('name')
             or error __x"attribute without name or ref at {where}"
@@ -705,7 +729,19 @@ sub attributeOne($)
     $self->assertType($where, type => QName => $typeattr)
         if $typeattr;
 
-    my $path = $tree->path . "/at($name)";
+    my $path    = $tree->path . "/at($name)";
+
+    unless($type)
+    {    my $typename = defined $typeattr
+          ? $self->rel2abs($path, $node, $typeattr)
+          : $self->anyType($node);
+
+         $type  = $self->typeByName($tree, $typename);
+    }
+
+    my $st      = $type->{st}
+        or error __x"attribute not based in simple value type at {where}"
+               , where => $where;
 
     my $qual
       = ! defined $form        ? $self->{attrs_qual}
@@ -714,18 +750,9 @@ sub attributeOne($)
       : error __x"form must be (un)qualified, not {form} at {where}"
             , form => $form, where => $where;
 
-    my $trans = $qual ? 'tag_qualified' : 'tag_unqualified';
-    my $tag   = $self->make($trans => $path, $node, $name);
-    my $ns    = $qual ? $self->{tns} : '';
-
-    my $typename = defined $typeattr
-     ? $self->rel2abs($path, $node, $typeattr)
-     : $self->anyType($node);
-
-    my $type     = $self->typeByName($tree, $typename);
-    my $st       = $type->{st}
-        or error __x"attribute not based in simple value type at {where}"
-               , where => $where;
+    my $trans   = $qual ? 'tag_qualified' : 'tag_unqualified';
+    my $tag     = $self->make($trans => $path, $node, $name);
+    my $ns      = $qual ? $self->{tns} : '';
 
     my $use     = $node->getAttribute('use') || '';
     $use =~ m/^(?:optional|required|prohibited|)$/
@@ -744,7 +771,7 @@ sub attributeOne($)
      :                       'attribute';
 
     my $value = defined $default ? $default : $fixed;
-    $name => $self->make($generate => $path, $ns, $tag, $st, $value);
+    ($name => $self->make($generate => $path, $ns, $tag, $st, $value));
 }
 
 sub attributeGroup($)

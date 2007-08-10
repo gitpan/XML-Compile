@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.5';
+$VERSION = '0.51';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::LibXML;
@@ -42,8 +42,8 @@ my %namespace_defs =
 sub new($@)
 {   my ($class, $top) = (shift, shift);
 
-    panic "you should instantiate a sub-class, $class is base only"
-        if $class eq __PACKAGE__;
+    $class ne __PACKAGE__
+       or panic "you should instantiate a sub-class, $class is base only";
 
     (bless {}, $class)->init( {top => $top, @_} );
 }
@@ -103,7 +103,8 @@ sub dataToXML($)
 
     if(my $known = $self->knownNamespace($thing))
     {   my $fn = $self->findSchemaFile($known)
-            or error "cannot find pre-installed name-space files";
+            or mistake __x"cannot find pre-installed name-space files named {path} for {name}"
+                 , path => $known, name => $thing;
 
         return $self->_parseFile($fn);
     }
@@ -137,5 +138,6 @@ sub walkTree($$)
             for $node->getChildNodes;
     }
 }
+
 
 1;

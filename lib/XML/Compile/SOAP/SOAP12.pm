@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::SOAP::SOAP12;
 use vars '$VERSION';
-$VERSION = '0.5';
+$VERSION = '0.51';
 use base 'XML::Compile::SOAP';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';

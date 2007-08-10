@@ -7,13 +7,14 @@ use strict;
 
 package XML::Compile::Util;
 use vars '$VERSION';
-$VERSION = '0.5';
+$VERSION = '0.51';
 use base 'Exporter';
 
 our @EXPORT = qw/pack_type unpack_type pack_id unpack_id
-  odd_elements/;
+  odd_elements block_label/;
 
 use Log::Report 'xml-compile';
+
 
 sub pack_type($$) {
    defined $_[0] && defined $_[1]
@@ -34,6 +35,16 @@ sub unpack_id($) { split /\#/, $_[0], 2 }
 sub odd_elements(@)
 {   my $i = 0;
     map {$i++ % 2 ? $_ : ()} @_;
+}
+
+
+my %block_abbrev = qw/sequence seq_  choice cho_  all all_  group gr_/;
+sub block_label($$)
+{   my ($kind, $label) = @_;
+    return $label if $kind eq 'element';
+
+    $label =~ s/^(?:seq|cho|all|gr)_//;
+    $block_abbrev{$kind} . $label;
 }
 
 1;

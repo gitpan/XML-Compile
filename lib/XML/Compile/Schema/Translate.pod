@@ -24,8 +24,8 @@ one CODE reference which can be used in the main user program.
 
 =head2 Unsupported features
 
-This implementation is work in progress, but most structures in
-W3C schemas are implemented.
+This implementation is work in progress, but by far most structures in
+W3C schemas are implemented (and tested!).
 
 Non-namespace schema elements are not implemented, because you shouldn't
 want that!  Therefore, missing are
@@ -33,22 +33,23 @@ want that!  Therefore, missing are
  any ##local
  anyAttribute ##local
 
-Some things do not work in schemas anyway:
- automatic import
- include
+Some things do not work in schemas anyway: C<import>, C<include>.  They
+only work if everyone always has a working connection to internet.  You
+have to require them manually.  Include also does work, because it does not
+use namespaces.  (see L<XML::Compile::Schema::importDefinitions()|XML::Compile::Schema/"Accessors">)
 
-Ignored, because not for our purpose
- key, unique, keyref, selector, field
- notation
- annotation
+Ignored, because not for our purpose is the search optimization
+information: C<key, unique, keyref, selector, field>, and de schema
+documentation: C<notation, annotation>.  Compile the schema schema itself
+to interpret the message if you need them.
 
 A few nuts are still to crack:
  any* processContents always interpreted as lax
  schema version
  element mixed
- facets on dates
+ attribute limitiations (facets) on dates
  full understanding of patterns (now limited)
- final
+ final is not protected
  QName writer namespace to prefix translation
 
 Of course, the latter list is all fixed in next release ;-)
@@ -56,7 +57,7 @@ See chapter L</DETAILS> for more on how the tune the translator.
 
 =head1 METHODS
 
-XML::Compile::Schema::Translate-E<gt>B<compileTree>(ELEMENT, OPTIONS)
+XML::Compile::Schema::Translate-E<gt>B<compileTree>(ELEMENT|ATTRIBUTE, OPTIONS)
 
 =over 4
 
@@ -227,8 +228,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.5,
-built on August 09, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.51,
+built on August 10, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

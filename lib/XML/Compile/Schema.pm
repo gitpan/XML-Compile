@@ -8,11 +8,10 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.5';
+$VERSION = '0.51';
 use base 'XML::Compile';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
-use Carp;
 use List::Util   qw/first/;
 use XML::LibXML  ();
 use File::Spec   ();
@@ -45,7 +44,7 @@ sub init($)
 sub namespaces() { shift->{namespaces} }
 
 
-sub addSchemas($)
+sub addSchemas($@)
 {   my $self = shift;
     my $node = shift or return ();
 
