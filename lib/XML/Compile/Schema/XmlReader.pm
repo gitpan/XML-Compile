@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.02.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.51';
+$VERSION = '0.52';
 
 use strict;
 use warnings;

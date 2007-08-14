@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Dumper;
 use vars '$VERSION';
-$VERSION = '0.51';
+$VERSION = '0.52';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use Data::Dump::Streamer;
