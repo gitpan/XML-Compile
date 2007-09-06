@@ -216,9 +216,9 @@ $obj-E<gt>B<prepare>([NAME], OPTIONS)
 =over 4
 
 Creates temporarily an L<XML::Compile::SOAP::Operation|XML::Compile::SOAP::Operation> with L<operation()|XML::Compile::WSDL/"Extension">,
-and then calls C<prepare()> on that; a usual combination.
-As OPTIONS, combine all possibilities for L<operation()|XML::Compile::WSDL/"Extension"> and
-L<XML::Compile::SOAP::Operation::prepare()|XML::Compile::SOAP::Operation/"Use">.
+and then calls C<prepare()> on that; an usual combination.
+As OPTIONS are available the combination of all possibilities for
+L<operation()|XML::Compile::WSDL/"Extension"> and all of L<XML::Compile::SOAP::Operation::prepare()|XML::Compile::SOAP::Operation/"Use">.
 
 =back
 
@@ -273,8 +273,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.52,
-built on August 14, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.53,
+built on September 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

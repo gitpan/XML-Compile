@@ -6,7 +6,23 @@ XML::Compile::SOAP::Operation - defines a possible SOAP interaction
 
 =head1 SYNOPSIS
 
+ # created by XML::SOAP::WSDL
+ ### this implementation has not yet finished
+
 =head1 DESCRIPTION
+
+These objects are created by XML::SOAP::WSDL, grouping information
+about a certain specific message interchange between a client and
+a server. You can better (try to) create a WSDL file itself, then
+attempt to instantiate these objects yourself... or even better: use
+L<XML::Compile::SOAP::SOAP11|XML::Compile::SOAP::SOAP11> directly, and forget WSDL complexity.
+
+There are two styles of SOAP: document-style and XML-RPC.  The former
+can be used directly, for the XML-RPC will require you to specify
+explicitly a prototype for the call.  See XML::Compile::SOAP::Operation subroutine rpcPrototype ???
+
+TODO:
+  translate objects into calls to readers and writers
 
 =head1 METHODS
 
@@ -184,8 +200,8 @@ $obj-E<gt>B<soapNamespace>
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.52,
-built on August 14, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.53,
+built on September 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

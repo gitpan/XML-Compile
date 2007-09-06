@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::SOAP;
 use vars '$VERSION';
-$VERSION = '0.52';
+$VERSION = '0.53';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::Compile::Util  qw/pack_type/;
@@ -15,6 +15,9 @@ use XML::Compile::Util  qw/pack_type/;
 
 sub new($@)
 {   my $class = shift;
+    error __x"you can only instantiate sub-classes of {class}"
+        if $class eq __PACKAGE__;
+
     (bless {}, $class)->init( {@_} );
 }
 
@@ -81,7 +84,7 @@ sub _writer($)
     # produce header parsing
     #
 
-    my @header;
+    my (@header, @hlabels);
     my @h = @{$args->{header} || []};
     while(@h)
     {   my ($label, $element) = splice @h, 0, 2;
@@ -94,7 +97,9 @@ sub _writer($)
            );
 
         push @header, $label => $self->_writer_header_env($code, \%allns
-             , delete $understand{$label}, delete $destination{$label});
+           , delete $understand{$label}, delete $destination{$label});
+
+        push @hlabels, $label;
     }
 
     keys %understand
@@ -111,7 +116,7 @@ sub _writer($)
     # Produce body parsing
     #
 
-    my @body;
+    my (@body, @blabels);
     my @b = @{$args->{body} || []};
     while(@b)
     {   my ($label, $element) = splice @b, 0, 2;
@@ -124,6 +129,7 @@ sub _writer($)
            );
 
         push @body, $label => $code;
+        push @blabels, $label;
     }
 
     my $bodyhook   = $self->_writer_hook($envns, 'Body', @body);
@@ -144,7 +150,11 @@ sub _writer($)
 
     sub { my ($values, $charset) = @_;
           my $doc = XML::LibXML::Document->new('1.0', $charset);
-          $envelope->($doc, $values);
+          my %data = %$values;  # do not destroy the calling hash
+
+          $data{Header}{$_} = delete $data{$_} for @hlabels;
+          $data{Body}{$_}   = delete $data{$_} for @blabels;
+          $envelope->($doc, \%data);
         };
 }
 
@@ -258,7 +268,16 @@ sub _reader($)
      , hooks  => [ $encstyle, $headerhook, $bodyhook ]
      );
 
-    $envelope;
+    sub { my $xml   = shift;
+          my $data  = $envelope->($xml);
+          my @pairs = ( %{delete $data->{Header} || {}}
+                      , %{delete $data->{Body}   || {}});
+          while(@pairs)
+          {  my $k       = shift @pairs;
+             $data->{$k} = shift @pairs;
+          }
+          $data;
+        }
 }
 
 sub _reader_hook($$@)

@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.52';
+$VERSION = '0.53';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::LibXML;
@@ -103,7 +103,7 @@ sub dataToXML($)
 
     if(my $known = $self->knownNamespace($thing))
     {   my $fn = $self->findSchemaFile($known)
-            or mistake __x"cannot find pre-installed name-space files named {path} for {name}"
+            or error __x"cannot find pre-installed name-space files named {path} for {name}"
                  , path => $known, name => $thing;
 
         return $self->_parseFile($fn);

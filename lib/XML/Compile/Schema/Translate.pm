@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.52';
+$VERSION = '0.53';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  'first';

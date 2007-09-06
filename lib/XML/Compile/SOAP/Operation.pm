@@ -7,12 +7,13 @@ use strict;
 
 package XML::Compile::SOAP::Operation;
 use vars '$VERSION';
-$VERSION = '0.52';
+$VERSION = '0.53';
 
 use Log::Report 'xml-report', syntax => 'SHORT';
 use List::Util  'first';
 
 use XML::Compile::Util   qw/pack_type/;
+use Data::Dumper;  # needs to go away
 
 my $soap1 = 'http://schemas.xmlsoap.org/wsdl/soap/';
 my $http1 = 'http://schemas.xmlsoap.org/soap/http';
@@ -154,11 +155,8 @@ sub prepare(@)
     my $role     = $args{role} || 'CLIENT';
     my $port     = $self->portOperation;
     my $bind     = $self->bindOperation;
+warn Dumper $port;
 
-# parsing of input and output wrong: both lists.  Schema parser gets
-# confused by <choice><group><group>.  Needs a hook
-    my @po_in    = @{$port->{input}  || []};
-    my @po_out   = @{$port->{output} || []};
     my @po_fault = @{$port->{fault}  || []};
     my $bi_in    = $bind->{input};
     my $bi_out   = $bind->{output};
@@ -166,22 +164,15 @@ sub prepare(@)
 
     my (@readers, @writers);
     if($role eq 'CLIENT')
-    {   @readers = map {$self->_message_reader(\%args, $_, $bi_out)}
-           @po_out;
-
-        @writers = map {$self->_message_writer(\%args, $_, $bi_in)}
-           @po_in;
+    {   @readers = $self->_message_reader(\%args, $port->{output}, $bi_out);
+        @writers = $self->_message_writer(\%args, $port->{input}, $bi_in);
 
         push @readers, map {$self->_message_reader(\%args, $_, $bi_fault)}
            @po_fault;
     }
     elsif($role eq 'SERVER')
-    {   @readers = map {$self->_message_reader(\%args, $_, $bi_in)}
-           @po_in;
-
-        @writers = map {$self->_message_writer(\%args, $_, $bi_out)}
-           @po_out;
-
+    {   @readers = $self->_message_reader(\%args, $port->{input}, $bi_out);
+        @writers = $self->_message_writer(\%args, $port->{output}, $bi_in);
         push @writers, map {$self->_message_reader(\%args, $_, $bi_fault)}
            @po_fault;
     }
@@ -190,20 +181,20 @@ sub prepare(@)
             , role => $role; 
     }
 
-    my $soapns  = $self->soapNamespace;
-    my $addrs   = $self->endPointAddresses;
+    my $soapns = $self->soapNamespace;
+    my $addrs  = $self->endPointAddresses;
 
-    my $proto   = $args{protocol}  || $self->{protocol}  || 'HTTP';
-    $proto = $http1 if $proto eq 'HTTP';
+    my $proto  = $args{protocol}  || $self->{protocol}  || 'HTTP';
+    $proto     = $http1 if $proto eq 'HTTP';
 
-    my $style   = $args{soapStyle} || $self->{soapStyle} || 'document';
+    my $style  = $args{soapStyle} || $self->{soapStyle} || 'document';
 
     $self->canTransport($proto, $style)
-        or error "transport {protocol} as {style} not defined in WSDL"
+        or error __x"transport {protocol} as {style} not defined in WSDL"
                , protocol => $proto, style => $style;
 
     $proto eq $http1
-        or error __x"SORRY: only transport of HTTP ({proto}) implemented"
+        or error __x"SORRY: only transport of HTTP implemented, not {protocol}"
                , protocol => $proto;
 
     $style eq 'document'
@@ -215,13 +206,24 @@ sub prepare(@)
     panic "work in progress: implementation not finished";
 }
 
+my $bind_body_reader;
 sub _message_reader($$$)
-{   my ($self, $args, $message, $bind) = @_;
+{   my ($self, $args, $protop, $bind) = @_;
+
+    my $type = $protop->{message}
+        or error __x"no message type in portOperation input";
+
+    my $binding = $bind->{"{$soap1}body"}
+        or error __x"no input binding operation body";
+
+    $bind_body_reader ||= $self->schemas->compile(READER => "{$soap1}body");
+    my @bind_data = map { $bind_body_reader->($_)} @$binding;
+warn Dumper $type, \@bind_data;
     ();
 }
 
 sub _message_writer($$$)
-{   my ($self, $args, $message, $bind) = @_;
+{   my ($self, $args, $protop, $bind) = @_;
     ();
 }
 
