@@ -61,8 +61,8 @@ Returns the uri of all predefined schemas.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.53,
-built on September 06, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.54,
+built on September 14, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

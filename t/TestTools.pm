@@ -7,7 +7,7 @@ use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.53';
+$VERSION = '0.54';
 use base 'Exporter';
 
 use XML::LibXML;

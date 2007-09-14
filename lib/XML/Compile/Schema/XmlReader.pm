@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.02.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.53';
+$VERSION = '0.54';
 
 use strict;
 use warnings;
@@ -106,16 +106,26 @@ sub choice($@)
 
     bless
     sub { my $tree  = shift;
-          my $local = $tree->currentLocal
+          my $local = defined $tree  ? $tree->currentLocal : undef;
+          my $elem  = defined $local ? $do{$local} : undef;
+
+          return $elem->($tree) if $elem;
+
+          # very silly situation: some people use a minOccurs within
+          # a choice, instead on choice itself.
+          foreach my $some (values %do)
+          {   try { $some->(undef) };
+              $@ or return ();
+          }
+
+          $local
               or error __x"no elements left for choice at {path}"
                    , path => $path, _class => 'misfit';
 
-          my $do = $do{$local}
+          defined $elem
               or error __x"no alternative for choice before `{tag}' at {path}"
                    , tag => $local, path => $path, _class => 'misfit';
-
-          $do->($tree);
-        }, 'BLOCK';
+    }, 'BLOCK';
 }
 
 sub all($@)
@@ -149,7 +159,7 @@ sub block_handler
     {   return $process if $min==1;
         return bless     # $min==0
         sub { my $tree    = shift or return ();
-              my $starter = $tree->currentChild or last;
+              my $starter = $tree->currentChild or return;
               my @pairs   = try { $process->($tree) };
               if($@->wasFatal(class => 'misfit'))
               {   # error is ok, if nothing consumed
