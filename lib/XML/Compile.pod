@@ -55,7 +55,7 @@ are support packages):
 
 Interpret schema elements and types: process XML messages.
 
-=item L<XML::Compile::WSDL|XML::Compile::WSDL> and L<XML::Compile::SOAP|XML::Compile::SOAP>
+=item L<XML::Compile::WSDL|XML::Compile::WSDL> and XML::Compile::SOAP
 
 Use the SOAP protocol. (implementation in progress)
 
@@ -105,6 +105,8 @@ See L<addSchemaDirs()|XML::Compile/"Accessors"> for a detailed explanation.
 
 $obj-E<gt>B<addSchemaDirs>(DIRECTORIES)
 
+XML::Compile-E<gt>B<addSchemaDirs>(DIRECTORIES)
+
 =over 4
 
 Each time this method is called, the specified DIRECTORIES will be added
@@ -113,8 +115,14 @@ the value of the environment variable C<SCHEMA_DIRECTORIES> is added
 (therefore used last), then the constructor option C<schema_dirs>
 is processed.
 
+If a pm filename is provided, then the directory to be used is
+calculated from it (platform independent).  So, C<lib/XML/Compile.pm>
+becomes C<lib/XML/Compile/xsd/>.  This way, modules can simply add
+their definitions via C<< XML::Compile->addSchemaDirs(__FILE__) >>
+
 Values which are C<undef> are skipped.  ARRAYs are flattened.  
 Arguments are split on colons (only when on UNIX) after flattening.
+The list of directories is returned, in all but VOID context.
 
 =back
 
@@ -130,15 +138,18 @@ the file is returned to the caller.
 
 =back
 
-$obj-E<gt>B<knownNamespace>(NAMESPACE)
+$obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
 
-XML::Compile-E<gt>B<knownNamespace>(NAMESPACE)
+XML::Compile-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
 
 =over 4
 
-Returns the file which contains the definition of a NAMESPACE, if it
-is one of the set which is distributed with the L<XML::Compile|XML::Compile>
-module.
+If used with only one NAMESPACE, it returns the filename in the
+distribution (not the full path) which contains the definition.
+
+When PAIRS of NAMESPACE-FILENAME are given, then those get defined.
+This is typically called during the initiation of modules, like
+XML::Compile and XML::Compile::SOAP.  The definitions are global.
 
 =back
 
@@ -226,8 +237,8 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.54,
-built on September 14, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.55,
+built on September 26, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

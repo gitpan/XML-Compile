@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Util;
 use vars '$VERSION';
-$VERSION = '0.54';
+$VERSION = '0.55';
 use base 'Exporter';
 
 our @EXPORT = qw/pack_type unpack_type pack_id unpack_id

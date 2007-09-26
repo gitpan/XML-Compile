@@ -8,35 +8,23 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.54';
+$VERSION = '0.55';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::LibXML;
 
-my %namespace_defs =
- ( 'http://www.w3.org/XML/1998/namespace'    => '1998-namespace.xsd'
+use File::Spec     qw();
 
- # XML Schema's
- , 'http://www.w3.org/1999/XMLSchema'        => '1999-XMLSchema.xsd'
- , 'http://www.w3.org/1999/part2.xsd'        => '1999-XMLSchema-part2.xsd'
- , 'http://www.w3.org/2000/10/XMLSchema'     => '2000-XMLSchema.xsd'
- , 'http://www.w3.org/2001/XMLSchema'        => '2001-XMLSchema.xsd'
-
- # WSDL 1.1
- , 'http://schemas.xmlsoap.org/wsdl/'        => 'wsdl.xsd'
- , 'http://schemas.xmlsoap.org/wsdl/soap/'   => 'wsdl-soap.xsd'
- , 'http://schemas.xmlsoap.org/wsdl/http/'   => 'wsdl-http.xsd'
- , 'http://schemas.xmlsoap.org/wsdl/mime/'   => 'wsdl-mime.xsd'
-
- # SOAP 1.1
- , 'http://schemas.xmlsoap.org/soap/encoding/' => 'soap-encoding.xsd'
- , 'http://schemas.xmlsoap.org/soap/envelope/' => 'soap-envelope.xsd'
-
- # SOAP 1.2
- , 'http://www.w3.org/2003/05/soap-encoding' => '2003-soap-encoding.xsd'
- , 'http://www.w3.org/2003/05/soap-envelope' => '2003-soap-envelope.xsd'
- , 'http://www.w3.org/2003/05/soap-rpc'      => '2003-soap-rpc.xsd'
+__PACKAGE__->knownNamespace
+ ( 'http://www.w3.org/XML/1998/namespace' => '1998-namespace.xsd'
+ , 'http://www.w3.org/1999/XMLSchema'     => '1999-XMLSchema.xsd'
+ , 'http://www.w3.org/1999/part2.xsd'     => '1999-XMLSchema-part2.xsd'
+ , 'http://www.w3.org/2000/10/XMLSchema'  => '2000-XMLSchema.xsd'
+ , 'http://www.w3.org/2001/XMLSchema'     => '2001-XMLSchema.xsd'
  );
+
+__PACKAGE__->addSchemaDirs($ENV{SCHEMA_DIRECTORIES});
+__PACKAGE__->addSchemaDirs(__FILE__);
 
 
 sub new($@)
@@ -50,25 +38,38 @@ sub new($@)
 
 sub init($)
 {   my ($self, $args) = @_;
-    $self->addSchemaDirs($ENV{SCHEMA_DIRECTORIES});
     $self->addSchemaDirs($args->{schema_dirs});
     $self;
 }
 
 
+my @schema_dirs;
 sub addSchemaDirs(@)
-{   my $self = shift;
+{   my $thing = shift;
     foreach (@_)
     {   my $dir  = shift;
         my @dirs = grep {defined} ref $dir eq 'ARRAY' ? @$dir : $dir;
-        push @{$self->{schema_dirs}},
-           $^O eq 'MSWin32' ? @dirs : map { split /\:/ } @dirs;
+        foreach ($^O eq 'MSWin32' ? @dirs : map { split /\:/ } @dirs)
+        {   my $el = $_;
+            $el = File::Spec->catfile($el, 'xsd') if $el =~ s/\.pm$//i;
+            push @schema_dirs, $el;
+        }
     }
-    $self;
+    defined wantarray ? @schema_dirs : ();
 }
 
 
-sub knownNamespace($) { $namespace_defs{$_[1]} }
+my %namespace_file;
+sub knownNamespace($;@)
+{   my $thing = shift;
+    return $namespace_file{ $_[0] } if @_==1;
+
+    while(@_)
+    {  my $ns = shift;
+       $namespace_file{$ns} = shift;
+    }
+    undef;
+}
 
 
 sub findSchemaFile($)
@@ -77,7 +78,7 @@ sub findSchemaFile($)
     return (-r $fn ? $fn : undef)
         if File::Spec->file_name_is_absolute($fn);
 
-    foreach my $dir (@{$self->{schema_dirs}})
+    foreach my $dir (@schema_dirs)
     {   my $full = File::Spec->catfile($dir, $fn);
         next unless -e $full;
         return -r $full ? $full : undef;

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                XML-Compile
-version:             0.54
+version:             0.55
 abstract:            Compilation based XML processing
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.32

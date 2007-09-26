@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.54';
+$VERSION = '0.55';
 use base 'Exporter';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';

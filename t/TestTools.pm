@@ -5,9 +5,11 @@
 use warnings;
 use strict;
 
+use lib '../XMLCompile/lib';  # test environment at home
+
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.54';
+$VERSION = '0.55';
 use base 'Exporter';
 
 use XML::LibXML;
@@ -22,8 +24,6 @@ use Data::Dumper qw/Dumper/;
 # avoid refcount errors perl 5.8.8, libxml 2.6.26, XML::LibXML 2.60,
 # and Data::Dump::Streamer 2.03;  actually, the bug can be anywhere...
 our $skip_dumper = 1;
-
-$ENV{SCHEMA_DIRECTORIES} = 'xsd';
 
 our @EXPORT = qw/
  $skip_dumper

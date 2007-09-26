@@ -175,6 +175,8 @@ and L<addHook()|XML::Compile::Schema/"Accessors">. C<undef> values are ignored.
 
 $obj-E<gt>B<addSchemaDirs>(DIRECTORIES)
 
+XML::Compile::Schema-E<gt>B<addSchemaDirs>(DIRECTORIES)
+
 =over 4
 
 See L<XML::Compile/"Accessors">
@@ -220,9 +222,9 @@ and the OPTIONS are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">.
 
 =back
 
-$obj-E<gt>B<knownNamespace>(NAMESPACE)
+$obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
 
-XML::Compile::Schema-E<gt>B<knownNamespace>(NAMESPACE)
+XML::Compile::Schema-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
 
 =over 4
 
@@ -1029,8 +1031,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.54,
-built on September 14, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.55,
+built on September 26, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
