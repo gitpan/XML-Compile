@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.55';
+$VERSION = '0.56';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  'first';
@@ -170,7 +170,7 @@ sub typeByName($$)
     if($code)
     {   my $where = $typename;
         my $st = $self->make
-          ( builtin=> $where, $node, $typename , $code, $self->{check_values});
+          (builtin=> $where, $node, $typename , $code, $self->{check_values});
 
         return +{ st => $st };
     }

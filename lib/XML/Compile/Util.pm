@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Util;
 use vars '$VERSION';
-$VERSION = '0.55';
+$VERSION = '0.56';
 use base 'Exporter';
 
 our @EXPORT = qw/pack_type unpack_type pack_id unpack_id
@@ -16,14 +16,12 @@ our @EXPORT = qw/pack_type unpack_type pack_id unpack_id
 use Log::Report 'xml-compile';
 
 
-sub pack_type($$) {
-   defined $_[0] && defined $_[1]
-       or report PANIC => "pack_type with undef `$_[0]' or `$_[1]'";
-   "{$_[0]}$_[1]"
+sub pack_type($;$)
+{   @_==1 || !defined $_[0] || !length $_[0] ? $_[0] : "{$_[0]}$_[1]"
 }
 
 
-sub unpack_type($) { $_[0] =~ m/^\{(.*?)\}(.*)$/ ? ($1, $2) : () }
+sub unpack_type($) { $_[0] =~ m/^\{(.*?)\}(.*)$/ ? ($1, $2) : ('', $_[0]) }
 
 
 sub pack_id($$) { "$_[0]#$_[1]" }

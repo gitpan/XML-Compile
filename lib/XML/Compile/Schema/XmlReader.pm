@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.02.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.55';
+$VERSION = '0.56';
 
 use strict;
 use warnings;
@@ -536,10 +536,7 @@ sub attribute_prohibited
 
 sub attribute
 {   my ($path, $args, $ns, $tag, $do) = @_;
-    sub {
-use Carp;
- $_[0]->isa('XML::LibXML::Node') or confess "$!";
-          my $node = $_[0]->getAttributeNodeNS($ns, $tag);
+    sub { my $node = $_[0]->getAttributeNodeNS($ns, $tag);
           defined $node or return ();;
           my $val = $do->($node);
           defined $val ? ($tag => $val) : ();

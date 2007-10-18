@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.55';
+$VERSION = '0.56';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -19,13 +19,17 @@ use MIME::Base64;
 use POSIX              qw/strftime/;
 # use XML::RegExp;  ### can we use this?
 
-use XML::Compile::Util qw/pack_type/;
+use XML::Compile::Util qw/pack_type unpack_type/;
 
 
 # The XML reader calls
 #     check(parse(value))  or check_read(parse(value))
+
 # The XML writer calls
 #     check(format(value)) or check_write(format(value))
+
+# Parse has a second argument, only for QNAME: the node
+# Format has a second argument for QNAME as well.
 
 sub identity { $_[0] };
 sub str2int
@@ -46,11 +50,12 @@ sub str2num
     $v;
 }
 
-sub num2str { "$_[0]" }
+sub num2str   { "$_[0]" }
+sub str       { "$_[0]" };
+sub _collapse { $_[0] =~ s/\s+//g; $_[0]}
+sub _preserve { for($_[0]) {s/\s+/ /g; s/^ //; s/ $//}; $_[0]}
+sub _replace  { $_[0] =~ s/[\t\r\n]/ /gs; $_[0]}
 
-sub str      { "$_[0]" };
-sub collapse { $_[0] =~ s/\s+//g; $_[0]}
-sub preserve { for($_[0]) {s/\s+/ /g; s/^ //; s/ $//}; $_[0]}
 sub bigint   { $_[0] =~ s/\s+//g;
    my $v = Math::BigInt->new($_[0]); $v->is_nan ? undef : $v }
 sub bigfloat { $_[0] =~ s/\s+//g;
@@ -64,7 +69,7 @@ $builtin_types{anyType}       =
 
 
 $builtin_types{boolean} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , format  => sub { $_[0] eq 'false' || $_[0] eq 'true' ? $_[0] : !!$_[0] }
  , check   => sub { $_[0] =~ m/^(false|true|0|1)$/ }
  , example => 'true'
@@ -255,7 +260,7 @@ my $timeFrag     = qr/ (?: $hourFrag \: $minuteFrag \: $secondFrag )
 
 my $date         = qr/^ $yearFrag \- $monthFrag \- $dayFrag $timezoneFrag? $/x;
 $builtin_types{date} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , format  => sub { $_[0] =~ /\D/ ? $_[0] : strftime("%Y-%m-%d", gmtime $_[0])}
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $date }
  , example => '2006-10-06'
@@ -266,7 +271,7 @@ my $dateTime = qr/^ $yearFrag \- $monthFrag \- $dayFrag
                     T $timeFrag $timezoneFrag? $/x;
 
 $builtin_types{dateTime} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , format  => sub { $_[0] =~ /\D/ ? $_[0]
      : strftime("%Y-%m-%dT%H:%S%MZ", gmtime($_[0])) }
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $dateTime }
@@ -276,7 +281,7 @@ $builtin_types{dateTime} =
 
 my $gDay = qr/^ \- \- \- $dayFrag $timezoneFrag? $/x;
 $builtin_types{gDay} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gDay }
  , example => '---12+09:00'
  };
@@ -284,7 +289,7 @@ $builtin_types{gDay} =
 
 my $gMonth = qr/^ \- \- $monthFrag $timezoneFrag? $/x;
 $builtin_types{gMonth} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gMonth }
  , example => '--09+07:00'
  };
@@ -292,7 +297,7 @@ $builtin_types{gMonth} =
 
 my $gMonthDay = qr/^ \- \- $monthFrag \- $dayFrag $timezoneFrag? /x;
 $builtin_types{gMonthDay} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gMonthDay }
  , example => '--09-12+07:00'
  };
@@ -300,7 +305,7 @@ $builtin_types{gMonthDay} =
 
 my $gYear = qr/^ $yearFrag \- $monthFrag $timezoneFrag? $/x;
 $builtin_types{gYear} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gYear }
  , example => '2006+07:00'
  };
@@ -308,14 +313,14 @@ $builtin_types{gYear} =
 
 my $gYearMonth = qr/^ $yearFrag \- $monthFrag $timezoneFrag? $/x;
 $builtin_types{gYearMonth} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gYearMonth }
  , example => '2006-11+07:00'
  };
 
 
 $builtin_types{duration} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
      m/^\-?P(?:\d+Y)?(?:\d+M)?(?:\d+D)?
         (?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?)S)?$/x }
@@ -324,7 +329,7 @@ $builtin_types{duration} =
 
 
 $builtin_types{dayTimeDuration} =
- { parse  => \&collapse
+ { parse  => \&_collapse
  , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
      m/^\-?P(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?)S)?$/ }
  , example => 'P2DT3H5M10S'
@@ -332,7 +337,7 @@ $builtin_types{dayTimeDuration} =
 
 
 $builtin_types{yearMonthDuration} =
- { parse  => \&collapse
+ { parse  => \&_collapse
  , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
      m/^\-?P(?:\d+Y)?(?:\d+M)?$/ }
  , example => 'P40Y5M'
@@ -345,13 +350,13 @@ $builtin_types{string} =
 
 
 $builtin_types{normalizedString} =
- { parse   => \&preserve
+ { parse   => \&_preserve
  , example => 'example'
  };
 
 
 $builtin_types{language} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , check   => sub { my $v = $_[0]; $v =~ s/\s+//g; $v =~
        m/^[a-zA-Z]{1,8}(?:\-[a-zA-Z0-9]{1,8})*$/ }
  , example => 'nl-NL'
@@ -367,33 +372,33 @@ $builtin_types{ID} =
 $builtin_types{IDREF} =
 $builtin_types{NCName} =
 $builtin_types{ENTITY} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , check   => sub { $_[0] !~ m/\:/ }
  , example => 'label'
  };
 
 $builtin_types{IDREFS} =
 $builtin_types{ENTITIES} =
- { parse   => \&preserve
+ { parse   => \&_preserve
  , check   => sub { $_[0] !~ m/\:/ }
  , example => 'labels'
  };
 
 
 $builtin_types{Name} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , example => 'name'
  };
 
 $builtin_types{token} =
 $builtin_types{NMTOKEN} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , example => 'token'
  };
 
 
 $builtin_types{NMTOKENS} =
- { parse   => \&preserve
+ { parse   => \&_preserve
  , example => 'tokens'
  };
 
@@ -404,7 +409,7 @@ $builtin_types{NMTOKENS} =
 #    check   => sub { $_[0] =~ $RE{URI} }
 
 $builtin_types{anyURI} =
- { parse   => \&collapse
+ { parse   => \&_collapse
  , example => 'http://example.com'
  };
 
@@ -420,16 +425,48 @@ $builtin_types{QName} =
  { parse   =>
      sub { my ($qname, $node) = @_;
            my $prefix = $qname =~ s/^([^:]*)\:// ? $1 : '';
+
+           length $prefix
+               or error __x"QNAME requires prefix at `{qname}'", qname=>$qname;
+
+           $node = $node->node if $node->isa('XML::Compile::Iterator');
            my $ns = $node->lookupNamespaceURI($prefix)
                or error __x"cannot find prefix `{prefix}' for QNAME `{qname}'"
                      , prefix => $prefix, qname => $qname;
-           pack_type($ns, $qname);
+           pack_type $ns, $qname;
          }
+ , format  =>
+    sub { my ($type, $trans) = @_;
+          my ($ns, $local) = unpack_type $type;
+          $ns or return $local;
+
+          my $def = $trans->{$ns};
+          if(!$def || !$def->{used})
+          {   error __x"QNAME formatting only works if the namespace is used elsewhere, not {ns}", ns => $ns;
+          }
+          "$def->{prefix}:$local";
+        }
  , check   => \&_valid_qname
  , example => 'myns:name'
  };
 
 
 $builtin_types{NOTATION} = {};
+
+
+$builtin_types{binary} = { example => 'binary string' };
+
+
+$builtin_types{timeDuration} = $builtin_types{duration};
+
+
+$builtin_types{uriReference} = $builtin_types{anyURI};
+
+
+# only in 2000/10 schemas
+$builtin_types{CDATA} =
+ { parse   => \&_replace
+ , example => 'CDATA'
+ };
 
 1;

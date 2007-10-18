@@ -6,7 +6,7 @@ XML::Compile - Compilation based XML processing
 
  XML::Compile is extended by
    XML::Compile::Schema
-   XML::Compile::WSDL
+   XML::Compile::WSDL11
 
 =head1 SYNOPSIS
 
@@ -25,24 +25,24 @@ Three serious WARNINGS:
 
 =item .
 
-The compiler does only support B<namespace schemas>.  It is possible,
+The compiler B<only supports namespace schemas>.  It is possible,
 but generally seen as weakness, to make schemas which do not use
-namespaces, but for the moment XML::Compile does not handle those.
+namespaces, but for the moment, XML::Compile does not handle those.
 Check for a C<targetNamespace> attribute on C<schema> in your C<xsd>
 file.
 
 =item .
 
 The focus is on B<data-centric XML>, which means that mixed elements
-are not understood automatically.  However, with using hooks, you can
+are not understood automatically.  However, with using hooks you can
 work around this.
 
 =item .
 
-The provided B<schema is not validated>!  In many cases, compile-time
-and run-time errors will get reported.  On the other hand, the processed
-B<data is strictly validated>: both input and output will follow the
-specs closely.
+The provided B<schema is not validated>.  In many cases, compile-time
+errors will get reported.  On the other hand, the processed B<data is
+strictly validated>: both input and output will follow the specs closely
+(unless disabled).
 
 =back
 
@@ -55,13 +55,15 @@ are support packages):
 
 Interpret schema elements and types: process XML messages.
 
-=item L<XML::Compile::WSDL|XML::Compile::WSDL> and XML::Compile::SOAP
+=item XML::Compile::WSDL and L<XML::Compile::SOAP|XML::Compile::SOAP>
 
-Use the SOAP protocol. (implementation in progress)
+Use the SOAP protocol, client side.  Requires the installation of
+the XML-Compile-SOAP distribition.  Implementation in progress.
 
-=item L<XML::Compile::Dumper|XML::Compile::Dumper>
+=item L<XML::Compile::SOAP::Daemon|XML::Compile::SOAP::Daemon>
 
-Save pre-compiled converters in pure perl packages.
+Create a SOAP daemon.  Requires the installation of the
+XML-Compile-SOAP-Daemon distribition.  Implementation in progress.
 
 =back
 
@@ -237,8 +239,8 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.55,
-built on September 26, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.56,
+built on October 18, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

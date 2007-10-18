@@ -397,8 +397,11 @@ B<QName>
 A qualified type name: a type name with optional prefix.  The prefix notation
 C<prefix:type> will be translated into the C<{$ns}type> notation.
 
-This conversion currently only works for the reader, but should be
-implemented for the writer as well.
+For writers, this translation can only happen when the C<$ns> is also
+in use on some other place in the message: the name-space declaration
+can not be added at run-time.  In other cases, you will get a run-time
+error.  Play with L<XML::Compile::Schema::compile(output_namespaces)|XML::Compile::Schema/"Compilers">,
+predefining evenything what may be used, setting the C<used> count to C<1>.
 
 =back
 
@@ -412,10 +415,47 @@ be translated into an URI object: it may not be used that way.
 
 =back
 
+=head2 only in 1999 and 2000/10 schemas
+
+B<binary>
+
+=over 4
+
+Perl strings can contain any byte, also nul-strings, so can
+contain any sequence of bits.  Limited to byte length.
+
+=back
+
+B<timeDuration>
+
+=over 4
+
+'Old' name for L<duration()|XML::Compile::Schema::BuiltInTypes/"Duration">.
+
+=back
+
+B<uriReference>
+
+=over 4
+
+Probably the same rules as L<anyURI()|XML::Compile::Schema::BuiltInTypes/"URI">.
+
+=pod how to do these constants?
+
+$builtin_types{century}       = {                     period => 'P100Y' }
+$builtin_types{recurringDate} = { duration => 'P24H', period => 'P1Y'   }
+$builtin_types{recurringDay}  = { duration => 'P24H', period => 'P1M'   }
+$builtin_types{timeInstant}   = { duration => 'P0Y',  period => 'P0Y'   }
+$builtin_types{timePeriod}    = { duration => 'P0Y' }
+$builtin_types{year}          = {                     period => 'P1Y'   }
+$builtin_types{recurringDuration} = ??
+
+=back
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.55,
-built on September 26, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.56,
+built on October 18, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
