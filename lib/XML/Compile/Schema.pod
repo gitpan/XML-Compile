@@ -286,8 +286,8 @@ When a WRITER is created, a CODE reference is returned which needs
 to be called with an XML::LibXML::Document object and a HASH, and
 returns a XML::LibXML::Node.
 
-Most options below are explained in more detailed in the manual-page
-L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implements the compilation..
+Most options below are B<explained in more detailed> in the manual-page
+L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implements the compilation.
 
  Option              --Default
  anyAttribute          undef
@@ -304,6 +304,7 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implem
  output_namespaces     {}
  path                  <expanded name of type>
  sloppy_integers       <false>
+ use_default_prefix    <false>
 
 . anyAttribute => CODE
 
@@ -430,7 +431,7 @@ piece, but reset the counts to zero first.
 
 =back
 
-. output_namespaces => HASH
+. output_namespaces => HASH|ARRAY-of-PAIRS
 
 =over 4
 
@@ -468,6 +469,16 @@ floats.  See their respective manual-pages.  Especially when you wish
 for some performance, you should optimize access to these objects to
 avoid expensive copying which is exactly the spot where the difference
 are.
+
+=back
+
+. use_default_prefix => BOOLEAN
+
+=over 4
+
+When mixing qualified and unqualified namespaces, then the use of
+a default prefix can be quite confusing.  Therefore, by default, all
+qualified elements will have an explicit prefix.
 
 =back
 
@@ -774,7 +785,7 @@ the repeated block.  This array needs to have a name, because more of
 these blocks may appear together in a construct.  The B<name of the
 block> is derived from the I<type of block> and the name of the I<first
 element> in the block, regardless whether that element is present in
-the data or not.  See L<XML::Compile::Util::block_label()|XML::Compile::Util/"FUNCTIONS">.  So, about data
+the data or not.  See L<XML::Compile::Util::block_label()|XML::Compile::Util/"Other">.  So, about data
 is translated into (and vice versa)
 
   example =>
@@ -915,11 +926,6 @@ evaluated before the global hooks.
  my $reader = $schema->compile(READER => $type
   , hook => HOOK, hooks => [ HOOK, HOOK, ...]);
 
- # syntax may still change
- $wsdl->call(GetPrice => $params, hook => HOOK, ...);
- $wsdl->prepare('GetPrice', hook => HOOK, ...);
- $wsdl->server(hook => HOOK, ...);
-
 example: of HOOKs:
 
  my $hook = { type    => '{my_ns}my_type'
@@ -943,7 +949,9 @@ Each hook has two kinds of parameters: selectors and processors.
 Selectors define the schema component of which the processing is modified.
 When one of the selectors matches, the processing information for the hook
 is used.  When no selector is specified, then the hook will be used on all
-elements.  Available selectors (see below for details on each of them):
+elements.
+
+Available selectors (see below for details on each of them):
 
 =over 4
 
@@ -985,8 +993,8 @@ example: use of the type selector
  type => qr/\}xml_/   # type start with xml_
  type => [ qw/int float/ ];
 
- use XML::Compile::Util qw/pack_type/;
- type => pack_type('http://www.w3.org/2000/10/XMLSchema', 'int')
+ use XML::Compile::Util qw/pack_type SCHEMA2000/;
+ type => pack_type(SCHEMA2000, 'int')
 
 =head3 hooks on matching ids
 
@@ -999,9 +1007,12 @@ example: use of the ID selector
 
  # default schema types have id's with same name
  id => 'int'
- id => 'http://www.w3.org/2000/10/XMLSchema#int'
+ id => 'http://www.w3.org/2001/XMLSchema#int'
  id => qr/\#xml_/   # id which start with xml_
  id => [ qw/int float/ ];
+
+ use XML::Compile::Util qw/pack_id SCHEMA2001/;
+ id => pack_id(SCHEMA2001, int)
 
 =head3 hooks on matching paths
 
@@ -1031,8 +1042,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.56,
-built on October 18, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.57,
+built on November 05, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

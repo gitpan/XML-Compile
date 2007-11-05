@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.02.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.56';
+$VERSION = '0.57';
 
 use strict;
 use warnings;
@@ -618,7 +618,7 @@ sub anyAttribute
     sub { my @result;
           foreach my $attr ($_[0]->attributes)
           {   $attr->isa('XML::LibXML::Attr') or next;
-              my $ns = $attr->namespaceURI || $_[0]->namespaceURI;
+              my $ns = $attr->namespaceURI || $_[0]->namespaceURI || '';
               next if keys %yes && !$yes{$ns};
               next if keys %no  &&   $no{$ns};
               my $local = $attr->localName;
@@ -660,20 +660,20 @@ sub anyElement
           my %result;
           while(   (my $child = $tree->currentChild)
                 && ($max eq 'unbounded' || $count < $max))
-          {   my $ns = $child->namespaceURI;
+          {   my $ns = $child->namespaceURI || '';
               $yes{$ns} or last if keys %yes;
               $no{$ns} and last if keys %no;
 
-              my ($k, $v) = (pack_type($ns, $child->localName) => $child);
+              my $k = pack_type $ns, $child->localName;
+              push @{$result{$k}}, $child;
+
               $count++;
-              push @{$result{$k}}, $v;
               $tree->nextChild;
           }
 
           $count >= $min
               or error __x"too few any elements, requires {min} and got {found}"
                     , min => $min, found => $count;
-
           %result;
         }, 'ANY';
 

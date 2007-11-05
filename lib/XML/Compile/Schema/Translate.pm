@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.56';
+$VERSION = '0.57';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  'first';
@@ -15,7 +15,7 @@ use List::Util  'first';
 use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::BuiltInFacets;
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
-use XML::Compile::Util                   qw/pack_type/;
+use XML::Compile::Util                   qw/pack_type unpack_type/;
 use XML::Compile::Iterator               ();
 
 # Elements from the schema to ignore: remember, we are collecting data
@@ -103,13 +103,26 @@ sub make($@)
 
 sub topLevel($$)
 {   my ($self, $path, $fullname) = @_;
-    my $nss  = $self->namespaces;
 
+    # built-in types have to be handled differently.
+    my $internal = XML::Compile::Schema::Specs->builtInType
+      (undef, $fullname, sloppy_integers => $self->{sloppy_integers});
+
+    if($internal)
+    {   my $builtin = $self->make(builtin => $fullname, undef
+            , $fullname, $internal, $self->{check_values});
+        my $builder = $self->{action} eq 'WRITER'
+          ? sub { $_[0]->createTextNode($builtin->(@_)) }
+          : $builtin;
+        return $self->make('element_wrapper', $path, $builder);
+    }
+
+    my $nss  = $self->namespaces;
     my $top  = $nss->find(element   => $fullname)
             || $nss->find(attribute => $fullname)
        or error __x(( $fullname eq $path
-                    ? N__"cannot find element or attribute {name}"
-                    : N__"cannot find element or attribute {name} at {where}"
+                    ? N__"cannot find element or attribute `{name}'"
+                    : N__"cannot find element or attribute `{name}' at {where}"
                     ), name => $fullname, where => $path);
 
     my $node = $top->{node};
@@ -134,7 +147,7 @@ sub topLevel($$)
     my $schemans = $node->namespaceURI;
 
     my $tree = XML::Compile::Iterator->new
-      ( $top->{node}
+      ( $node
       , $path
       , sub { my $n = shift;
                  $n->isa('XML::LibXML::Element')
@@ -1178,10 +1191,12 @@ sub findHooks($$$)
     {   my $match;
 
         $match++
-            if !$hook->{path} && !$hook->{id} && !$hook->{type};
+            if !$hook->{path} && !$hook->{id}
+            && !$hook->{type} && !$hook->{attribute};
 
-        if(my $p = $hook->{path})
-        {   $match++
+        if(!$match && $hook->{path})
+        {   my $p = $hook->{path};
+            $match++
                if first {ref $_ eq 'Regexp' ? $path =~ $_ : $path eq $_}
                      ref $p eq 'ARRAY' ? @$p : $p;
         }
@@ -1195,8 +1210,8 @@ sub findHooks($$$)
         }
 
         if(!$match && defined $type && $hook->{type})
-        {   my $t     = $hook->{type};
-            my $local = $type =~ m/^\{.*?\}(.*)$/ ? $1 : die $type;
+        {   my $t  = $hook->{type};
+            my ($ns, $local) = unpack_type $t;
             $match++
                 if first {ref $_ eq 'Regexp'     ? $type  =~ $_
                          : substr($_,0,1) eq '{' ? $type  eq $_

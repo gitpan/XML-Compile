@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.56';
+$VERSION = '0.57';
 
 use XML::Compile::Schema::XmlWriter;
 

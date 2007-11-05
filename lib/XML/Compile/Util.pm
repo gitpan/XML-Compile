@@ -7,11 +7,21 @@ use strict;
 
 package XML::Compile::Util;
 use vars '$VERSION';
-$VERSION = '0.56';
+$VERSION = '0.57';
 use base 'Exporter';
 
-our @EXPORT = qw/pack_type unpack_type pack_id unpack_id
-  odd_elements block_label/;
+my @constants  = qw/XMLNS SCHEMA1999 SCHEMA2000 SCHEMA2001 SCHEMA2001i/;
+our @EXPORT    = qw/pack_type unpack_type/;
+our @EXPORT_OK =
+   ( qw/pack_id unpack_id odd_elements block_label/
+   , @constants );
+our %EXPORT_TAGS = (constants => \@constants);
+
+use constant XMLNS       => 'http://www.w3.org/XML/1998/namespace';
+use constant SCHEMA1999  => 'http://www.w3.org/1999/XMLSchema';
+use constant SCHEMA2000  => 'http://www.w3.org/2000/10/XMLSchema';
+use constant SCHEMA2001  => 'http://www.w3.org/2001/XMLSchema';
+use constant SCHEMA2001i => 'http://www.w3.org/2001/XMLSchema-instance';
 
 use Log::Report 'xml-compile';
 

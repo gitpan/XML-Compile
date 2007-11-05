@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.56';
+$VERSION = '0.57';
 
 use strict;
 use warnings;
@@ -285,8 +285,6 @@ sub block_handler
 
 sub required
 {   my ($path, $args, $label, $do) = @_;
-use Carp;
-$do or confess;
     my $req =
     sub { my @nodes = $do->(@_);
           return @nodes if @nodes;

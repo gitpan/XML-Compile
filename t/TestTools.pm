@@ -9,14 +9,15 @@ use lib '../XMLCompile/lib';  # test environment at home
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.56';
+$VERSION = '0.57';
 use base 'Exporter';
 
 use XML::LibXML;
+use XML::Compile::Dumper;
+use XML::Compile::Util qw/SCHEMA2001/;
+
 use Test::More;
 use Test::Deep   qw/cmp_deeply/;
-
-use XML::Compile::Dumper;
 use POSIX        qw/_exit/;
 use Log::Report  qw/try/;
 use Data::Dumper qw/Dumper/;
@@ -43,7 +44,7 @@ our @EXPORT = qw/
  /;
 
 our $TestNS   = 'http://test-types';
-our $SchemaNS = 'http://www.w3.org/2001/XMLSchema';
+our $SchemaNS = SCHEMA2001;
 our $dump_pkg = 't::dump';
 our @run_opts = ();
 
@@ -122,6 +123,7 @@ sub writer($$$@)
      ( WRITER             => $type
      , check_values       => 1
      , include_namespaces => 0
+     , use_default_prefix => 1
      , @run_opts
      , @_
      );

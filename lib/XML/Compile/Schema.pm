@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.56';
+$VERSION = '0.57';
 use base 'XML::Compile';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -75,8 +75,9 @@ sub addSchemas($@)
 
 
 sub importDefinitions($@)
-{   my ($self, $thing) = (shift, shift);
-    my $tree = $self->dataToXML($thing) or return;
+{   my $self  = shift;
+    my $thing = shift or return;
+    my $tree  = $self->dataToXML($thing) or return;
     $self->addSchemas($tree, @_);
 }
 
@@ -102,11 +103,9 @@ sub compile($$@)
 {   my ($self, $action, $type, %args) = @_;
     defined $type or return ();
 
-    exists $args{check_values}
-       or $args{check_values} = 1;
-
-    exists $args{check_occurs}
-       or $args{check_occurs} = 1;
+    exists $args{check_values}       or $args{check_values} = 1; 
+    exists $args{check_occurs}       or $args{check_occurs} = 1;
+    exists $args{include_namespaces} or $args{include_namespaces} = 1;
 
     $args{sloppy_integers}   ||= 0;
     unless($args{sloppy_integers})
@@ -119,13 +118,25 @@ sub compile($$@)
             if $@;
     }
 
-    $args{include_namespaces} = 1
-        unless defined $args{include_namespaces};
 
-    $args{output_namespaces}  ||= {};
+    my $outns = $args{output_namespaces} ||= {};
+    if(ref $outns eq 'ARRAY')
+    {   my @ns = @$outns;
+        $outns = $args{output_namespaces} = {};
+        while(@ns)
+        {   my ($prefix, $uri) = (shift @ns, shift @ns);
+            $outns->{$uri} = { uri => $uri, prefix => $prefix };
+        }
+    }
 
-    do { $_->{used} = 0 for values %{$args{output_namespaces}} }
-        if $args{namespace_reset};
+    my $saw_default = 0;
+    foreach (values %$outns)
+    {   $_->{used} = 0 if $args{namespace_reset};
+        $saw_default ||= $_->{prefix} eq '';
+    }
+
+    $outns->{''} = {uri => '', prefix => '', used => 0}
+        if !$saw_default && !$args{use_default_prefix};
 
     my $nss   = $self->namespaces;
 

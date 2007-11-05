@@ -8,11 +8,12 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.56';
+$VERSION = '0.57';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
+use XML::Compile::Util qw/SCHEMA1999 SCHEMA2000 SCHEMA2001 unpack_type/;
 
 
 ### Who will extend this?
@@ -115,22 +116,22 @@ my %sloppy_int_version =
  );
 
 my %schema_1999 =
- ( uri_xsd => 'http://www.w3.org/1999/XMLSchema'
- , uri_xsi => 'http://www.w3.org/1999/XMLSchema-instance'
+ ( uri_xsd => SCHEMA1999
+ , uri_xsi => SCHEMA1999.'-instance'
 
  , builtin_public => \%builtin_public_1999
  );
 
 my %schema_2000 =
- ( uri_xsd => 'http://www.w3.org/2000/10/XMLSchema'
- , uri_xsi => 'http://www.w3.org/2000/10/XMLSchema-instance'
+ ( uri_xsd => SCHEMA2000
+ , uri_xsi => SCHEMA2000.'-instance'
 
  , builtin_public => \%builtin_public_2000
  );
 
 my %schema_2001 =
- ( uri_xsd  => 'http://www.w3.org/2001/XMLSchema'
- , uri_xsi  => 'http://www.w3.org/2001/XMLSchema-instance'
+ ( uri_xsd  => SCHEMA2001
+ , uri_xsi  => SCHEMA2001 .'-instance'
 
  , builtin_public => \%builtin_public_2001
  );
@@ -148,13 +149,8 @@ sub predefinedSchema($) { defined $_[1] ? $schemas{$_[1]} : () }
 sub builtInType($$;$@)
 {   my ($class, $node, $ns) = (shift, shift, shift);
     my $name = @_ % 1 ? shift : undef;
-    unless(defined $name)
-    {   if($ns =~ m/^\s*\{(.*)\}(.*)/ ) { ($ns, $name) = ($1, $2) }
-        else
-        {   error __x"incomplete type {namespace}"
-                , namespace => $ns;
-        }
-    }
+    ($ns, $name) = unpack_type $ns
+        unless defined $name;
 
     my $schema = $schemas{$ns}
         or return ();

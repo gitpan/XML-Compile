@@ -20,39 +20,13 @@ components, which on their own may be unrelated.
 
 =head1 FUNCTIONS
 
-B<block_label>(KIND, LABEL)
+=head2 Constants
 
-=over 4
+The followinf URI are exported as constants, to avoid typinng
+in the same long URIs each time again: XMLNS, SCHEMA1999,
+SCHEMA2000, SCHEMA2001, and SCHEMA2001i.
 
-Particle blocks, like `sequence' and `choice', which have a maxOccurs
-(maximum occurrence) which is 2 of more, are represented by an ARRAY
-of HASHs.  The label with such a block is derived from its first element.
-This function determines how.
-
-The KIND of block is abbreviated, and prepended before the LABEL.  When
-the LABEL already had a block abbreviation (which may be caused by nested
-blocks), that will be stripped first.
-
-An element KIND of block is found in substitution groups.  That label
-will not change.
-
-example: labels for blocks with maxOccurs > 1
-
-  seq_address      # sequence get seq_ prepended
-  cho_gender       # choices get cho_ before them
-  all_money        # an all block can also be repreated in spec >1.1
-  gr_people        # group refers to a block of above type, but
-                   #    that type is not reflected in the name
-
-=back
-
-B<odd_elements>(LIST)
-
-=over 4
-
-Returns the odd-numbered elements in the list.
-
-=back
+=head2 Packing
 
 B<pack_id>(NAMESPACE, ID)
 
@@ -95,14 +69,50 @@ B<unpack_type>(STRING)
 
 Returns a LIST of two elements: the name-space and the id, as
 included in the STRING.  That STRING must be compatible with the
-result of L<pack_id()|XML::Compile::Util/"FUNCTIONS">.
+result of L<pack_id()|XML::Compile::Util/"Packing">.
+
+=back
+
+=head2 Other
+
+B<block_label>(KIND, LABEL)
+
+=over 4
+
+Particle blocks, like `sequence' and `choice', which have a maxOccurs
+(maximum occurrence) which is 2 of more, are represented by an ARRAY
+of HASHs.  The label with such a block is derived from its first element.
+This function determines how.
+
+The KIND of block is abbreviated, and prepended before the LABEL.  When
+the LABEL already had a block abbreviation (which may be caused by nested
+blocks), that will be stripped first.
+
+An element KIND of block is found in substitution groups.  That label
+will not change.
+
+example: labels for blocks with maxOccurs > 1
+
+  seq_address      # sequence get seq_ prepended
+  cho_gender       # choices get cho_ before them
+  all_money        # an all block can also be repreated in spec >1.1
+  gr_people        # group refers to a block of above type, but
+                   #    that type is not reflected in the name
+
+=back
+
+B<odd_elements>(LIST)
+
+=over 4
+
+Returns the odd-numbered elements in the list.
 
 =back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.56,
-built on October 18, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.57,
+built on November 05, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

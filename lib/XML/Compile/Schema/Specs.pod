@@ -11,14 +11,11 @@ XML::Compile::Schema::Specs - Predefined Schema Information
 
 =head1 DESCRIPTION
 
-This package defines the various schema-specifications, however
-currently only supports the last one: L<http://www.w3.org/2001/XMLSchema>.
-It is simple to extend the list of supported schemas, but someone has
-to do it.  Feel invited.
+This package defines the various schema-specifications.
 
 =head1 METHODS
 
-XML::Compile::Schema::Specs-E<gt>B<builtInType>(EXPANDED | (URI,LOCAL), OPTIONS)
+XML::Compile::Schema::Specs-E<gt>B<builtInType>((NODE|undef), EXPANDED | (URI,LOCAL), OPTIONS)
 
 =over 4
 
@@ -61,8 +58,8 @@ Returns the uri of all predefined schemas.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.56,
-built on October 18, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.57,
+built on November 05, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
