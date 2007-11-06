@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.57';
+$VERSION = '0.58';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  'first';
@@ -139,6 +139,8 @@ sub topLevel($$)
             # use unqualified schemas anyway!!!
             $node->removeAttribute('form');   # when in schema
             $node->setAttribute(form => 'qualified');
+            $elems_qual = 0;
+            delete $self->{elements_qualified};
         }
     }
 
@@ -561,7 +563,10 @@ sub particle($)
       : error __x"unknown particle type '{name}' at {where}"
             , name => $local, where => $tree->path;
 
-   return ($label =>
+    defined $label
+        or return ();
+
+    return ($label =>
      $self->make(block_handler => $where, $label, $min, $max, $process, $local))
         if ref $process eq 'BLOCK';
 

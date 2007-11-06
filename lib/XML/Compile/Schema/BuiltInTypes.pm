@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.57';
+$VERSION = '0.58';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -69,9 +69,9 @@ $builtin_types{anyType}       =
 
 
 $builtin_types{boolean} =
- { parse   => \&_collapse
+ { parse   => sub { $_[0] =~ m/false|0/ ? 0 : 1 }
  , format  => sub { $_[0] eq 'false' || $_[0] eq 'true' ? $_[0] : !!$_[0] }
- , check   => sub { $_[0] =~ m/^(false|true|0|1)$/ }
+ , check   => sub { $_[0] =~ m/^\s*(?:false|true|0|1)\s*$/ }
  , example => 'true'
  };
 
