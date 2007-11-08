@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.02.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.58';
+$VERSION = '0.59';
 
 use strict;
 use warnings;
@@ -385,7 +385,7 @@ sub complex_element
     my @elems = odd_elements @$elems;
     my @attrs = (odd_elements(@$attrs), @$attrs_any);
 
-    sub { my $tree    = shift; # or return ();
+    sub { my $tree    = shift or return ();
           my $node    = $tree->node;
           my %complex
            = ( (map {$_->($tree)} @elems)

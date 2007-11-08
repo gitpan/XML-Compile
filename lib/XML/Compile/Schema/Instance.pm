@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.58';
+$VERSION = '0.59';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::Compile::Schema::Specs;
@@ -81,13 +81,15 @@ sub _collectTypes($)
     $schema->localName eq 'schema'
         or panic "requires schema element";
 
-    my $xsd = $self->{xsd} = $schema->namespaceURI;
-    my $def = $self->{def}
-       = XML::Compile::Schema::Specs->predefinedSchema($xsd)
-            or error __x"schema namespace {namespace} not (yet) supported"
+    my $xsd = $self->{xsd} = $schema->namespaceURI || '';
+    if(length $xsd)
+    {   my $def = $self->{def}
+          = XML::Compile::Schema::Specs->predefinedSchema($xsd)
+            or error __x"schema namespace `{namespace}' not (yet) supported"
                   , namespace => $xsd;
 
-    my $xsi = $self->{xsi} = $def->{uri_xsi};
+        $self->{xsi} = $def->{uri_xsi};
+    }
     my $tns = $self->{tns} = $schema->getAttribute('targetNamespace') || '';
 
     my $efd = $self->{efd}
@@ -114,9 +116,9 @@ sub _collectTypes($)
             $tag =~ s/.*?\://;
         }
 
-        $node->namespaceURI eq $xsd
-           or error __x"schema component {name} must be in {namespace}"
-                  , name => $tag, namespace => $xsd;
+        error __x"schema component `{name}' must be in {namespace}"
+            , name => $tag, namespace => $xsd
+            if $xsd && $node->namespaceURI ne $xsd;
 
         my $id    = $schema->getAttribute('id');
 
