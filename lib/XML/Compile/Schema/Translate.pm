@@ -1,13 +1,13 @@
-# Copyrights 2006-2007 by Mark Overmeer.
+# Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.02.
+# Pod stripped from pm file by OODoc 1.03.
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.59';
+$VERSION = '0.60';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  'first';
@@ -700,7 +700,12 @@ sub particleElement($)
      : undef;
 
     my $ns    = $node->namespaceURI;
-    ($name => $self->make($generate => $where, $ns, $name, $do, $value));
+    my $do_el = $self->make($generate => $where, $ns, $name, $do, $value);
+
+    $do_el = $self->make('element_href' => $where, $ns, $name, $do_el)
+        if $self->{permit_href} && $self->{action} eq 'READER';
+ 
+    ($name => $do_el);
 }
 
 sub attributeOne($)

@@ -1,10 +1,10 @@
-# Copyrights 2006-2007 by Mark Overmeer.
+# Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.02.
+# Pod stripped from pm file by OODoc 1.03.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.59';
+$VERSION = '0.60';
 
 use strict;
 use warnings;
@@ -316,11 +316,25 @@ sub required
     $req;
 }
 
+sub element_href
+{   my ($path, $args, $ns, $childname, $do) = @_;
+
+    sub { my $tree  = shift;
+          return ($childname => $tree->node)
+              if defined $tree
+              && $tree->nodeLocal eq $childname
+              && $tree->node->hasAttribute('href');
+
+          $do->($tree);
+        };
+}
+
 sub element
 {   my ($path, $args, $ns, $childname, $do) = @_;
+
     sub { my $tree  = shift;
           my $value = defined $tree && $tree->nodeLocal eq $childname
-            ? $do->($tree) : $do->(undef);
+             ? $do->($tree) : $do->(undef);
           defined $value ? ($childname => $value) : ();
         };
 }
@@ -756,7 +770,7 @@ sub _decode_after($$)
     : $call eq 'ELEMENT_ORDER' ?
       sub { my ($xml, $h) = @_;
             ref $h eq 'HASH' or $h = { _ => $h };
-            my @order = map {$_->nodeName}
+            my @order = map {pack_type $_->namespaceURI, $_->localName}
                grep { $_->isa('XML::LibXML::Element') }
                   $xml->childNodes;
             $h->{_ELEMENT_ORDER} = \@order;
