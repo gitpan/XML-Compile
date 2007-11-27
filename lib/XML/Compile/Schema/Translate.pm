@@ -1,4 +1,4 @@
-# Copyrights 2006-2008 by Mark Overmeer.
+# Copyrights 2006-2007 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.03.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.60';
+$VERSION = '0.61';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  'first';
@@ -130,18 +130,21 @@ sub topLevel($$)
     my $elems_qual = $top->{efd} eq 'qualified';
     if(exists $self->{elements_qualified})
     {   my $qual = $self->{elements_qualified} || 0;
+
            if($qual eq 'ALL')  { $elems_qual = 1 }
         elsif($qual eq 'NONE') { $elems_qual = 0 }
-        elsif($qual ne 'TOP')  { $elems_qual = $qual }
-        else
-        {   # explitly overrule the name-space qualification of the
-            # top-level element, which is dirty but people shouldn't
-            # use unqualified schemas anyway!!!
-            $node->removeAttribute('form');   # when in schema
-            $node->setAttribute(form => 'qualified');
-            $elems_qual = 0;
-            delete $self->{elements_qualified};
+        elsif($qual eq 'TOP')
+        {   unless($elems_qual)
+            {   # explitly overrule the name-space qualification of the
+                # top-level element, which is dirty but people shouldn't
+                # use unqualified schemas anyway!!!
+                $node->removeAttribute('form');   # when in schema
+                $node->setAttribute(form => 'qualified');
+                delete $self->{elements_qualified};
+                $elems_qual = 0;
+            }
         }
+        else {$elems_qual = $qual}
     }
 
     local $self->{elems_qual} = $elems_qual;
