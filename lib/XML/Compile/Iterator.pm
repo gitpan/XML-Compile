@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Iterator;
 use vars '$VERSION';
-$VERSION = '0.61';
+$VERSION = '0.62';
 
 use XML::Compile::Util  qw/pack_type/;
 use Log::Report 'xml-compile', syntax => 'SHORT';
