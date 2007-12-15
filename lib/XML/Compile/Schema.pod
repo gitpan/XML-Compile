@@ -299,6 +299,7 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implem
  hook                  undef
  hooks                 undef
  ignore_facets         <false>
+ ignore_used_tags      <false>
  include_namespaces    <true>
  namespace_reset       <false>
  output_namespaces     {}
@@ -409,6 +410,18 @@ not come cheap, so can be turned off.  It affects the restrictions
 set for a simpleType.  The processing speed will improve, but validation
 is a crucial requirement for XML: please do not turn this off when the
 data comes from external sources.
+
+=back
+
+. ignore_used_tags => BOOLEAN
+
+=over 4
+
+(WRITER) Usually, a C<mistake> warning is produced when a user provides
+a data structure which contains more data than is needed for the XML
+message which is created; this will show structural problems.  However,
+in some cases, you may want to play tricks with the data-structure and
+therefore disable this precausion.
 
 =back
 
@@ -1054,8 +1067,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.62,
-built on November 27, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.63,
+built on December 15, 2007. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

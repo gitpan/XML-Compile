@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.62';
+$VERSION = '0.63';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -273,7 +273,7 @@ my $dateTime = qr/^ $yearFrag \- $monthFrag \- $dayFrag
 $builtin_types{dateTime} =
  { parse   => \&_collapse
  , format  => sub { $_[0] =~ /\D/ ? $_[0]
-     : strftime("%Y-%m-%dT%H:%S%MZ", gmtime($_[0])) }
+     : strftime("%Y-%m-%dT%H:%S:%MZ", gmtime($_[0])) }
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $dateTime }
  , example => '2006-10-06T00:23:02'
  };

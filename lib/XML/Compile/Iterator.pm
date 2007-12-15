@@ -7,9 +7,9 @@ use strict;
 
 package XML::Compile::Iterator;
 use vars '$VERSION';
-$VERSION = '0.62';
+$VERSION = '0.63';
 
-use XML::Compile::Util  qw/pack_type/;
+use XML::Compile::Util  qw/pack_type type_of_node/;
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
 
@@ -102,10 +102,7 @@ sub nrChildren()
 }
 
 
-sub nodeType()
-{   my $node = shift->node or return '';
-    pack_type $node->namespaceURI, $node->localName;
-}
+sub nodeType() { type_of_node(shift->node) || '' }
 
 
 sub nodeLocal()
@@ -120,10 +117,7 @@ sub textContent()
 }
 
 
-sub currentType()
-{   my $current = shift->currentChild or return '';
-    pack_type $current->namespaceURI, $current->localName;
-}
+sub currentType() { type_of_node(shift->currentChild) || '' }
 
 
 sub currentLocal()

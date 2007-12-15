@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                XML-Compile
-version:             0.62
+version:             0.63
 abstract:            Compilation based XML processing
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.36_01
@@ -12,7 +12,7 @@ requires:
     Test::Deep:                    0.095
     Test::More:                    0.54
     Test::Pod:                     1.00
-    XML::LibXML:                   1.63
+    XML::LibXML:                   1.65
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.2.html
     version: 1.2
