@@ -1,4 +1,4 @@
-# Copyrights 2006-2007 by Mark Overmeer.
+# Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.03.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.63';
+$VERSION = '0.64';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -226,7 +226,7 @@ $builtin_types{double} =
  };
 
 
-$builtin_types{base64binary} =
+$builtin_types{base64Binary} =
  { parse   => sub { eval { decode_base64 $_[0] } }
  , format  => sub { eval { encode_base64 $_[0] } }
  , check   => sub { !$@ }

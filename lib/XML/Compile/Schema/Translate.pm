@@ -1,4 +1,4 @@
-# Copyrights 2006-2007 by Mark Overmeer.
+# Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.03.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.63';
+$VERSION = '0.64';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  'first';
@@ -815,7 +815,8 @@ sub attributeOne($)
      :                       'attribute';
 
     my $value = defined $default ? $default : $fixed;
-    ($name => $self->make($generate => $path, $ns, $tag, $st, $value));
+    my $do    = $self->make($generate => $path, $ns, $tag, $st, $value);
+    defined $do ? ($name => $do) : ();
 }
 
 sub attributeGroup($)
@@ -927,9 +928,6 @@ sub translateNsLimits($$)
 
 sub complexType($)
 {   my ($self, $tree) = @_;
-
-    $tree->nrChildren
-        or error __x"empty complexType at {where}", where => $tree->path;
 
     # Full content:
     #    annotation?

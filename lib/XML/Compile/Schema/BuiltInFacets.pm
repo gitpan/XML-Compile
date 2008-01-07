@@ -1,4 +1,4 @@
-# Copyrights 2006-2007 by Mark Overmeer.
+# Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.03.
@@ -7,12 +7,15 @@ use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.63';
+$VERSION = '0.64';
 use base 'Exporter';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
 our @EXPORT = qw/builtin_facet/;
+
+use Math::BigInt;
+use Math::BigFloat;
 
 use constant DBL_MAX_DIG => 15;
 use constant DBL_MAX_EXP => 307;

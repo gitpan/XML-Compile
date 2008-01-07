@@ -1,4 +1,4 @@
-# Copyrights 2006-2007 by Mark Overmeer.
+# Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.03.
@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.63';
+$VERSION = '0.64';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
@@ -81,7 +81,7 @@ my @builtin_extra_2001  = qw/
  anySimpleType
  anyType
  anyURI
- base64binary
+ base64Binary
  dateTime
  dayTimeDuration
  gDay

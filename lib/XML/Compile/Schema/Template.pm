@@ -1,11 +1,11 @@
-# Copyrights 2006-2007 by Mark Overmeer.
+# Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.03.
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.63';
+$VERSION = '0.64';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -35,12 +35,22 @@ sub element_wrapper
 sub _block($@)
 {   my ($block, $path, $args, @pairs) = @_;
     bless
-    sub { my @elems = map { $_->() } odd_elements @pairs;
-          my @tags  = map { $_->{tag} } @elems;
+    sub { my @elems  = map { $_->() } odd_elements @pairs;
+          my @tags   = map { $_->{tag} } @elems;
+
+          my $struct = "$block of ". join(', ',@tags);
+          my @lines;
+          while(length $struct > 65)
+          {   $struct =~ s/(.{1,60})(\s)//;
+              push @lines, $1;
+          }
+          push @lines, $struct;
+          $lines[$_] =~ s/^/  / for 1..$#lines;
+
           local $" = ', ';
            { tag    => $block
            , elems  => \@elems
-           , struct => "$block of @tags"
+           , struct => \@lines
            };
         }, 'BLOCK';
 }
@@ -204,7 +214,7 @@ sub attribute_required
 
 sub attribute_prohibited
 {   my ($path, $args, $ns, $tag, $do) = @_;
-    sub { () };
+    ();
 }
 
 sub attribute
@@ -295,15 +305,20 @@ sub perl_any($$)
 {   my ($ast, $args) = @_;
 
     my @lines;
-    push @lines, "# $ast->{struct}"  if $ast->{struct} && $args->{show_struct};
+    if($ast->{struct} && $args->{show_struct})
+    {   my $struct = $ast->{struct};
+        my @struct = ref $struct ? @$struct : $struct;
+        s/^/# /gm for @struct;
+        push @lines, @struct;
+    }
     push @lines, "# is a $ast->{type}" if $ast->{type} && $args->{show_type};
-    push @lines, "# $ast->{occur}"   if $ast->{occur}  && $args->{show_occur};
-    push @lines, "# $ast->{facets}"  if $ast->{facets} && $args->{show_facets};
+    push @lines, "# $ast->{occur}"  if $ast->{occur}  && $args->{show_occur};
+    push @lines, "# $ast->{facets}" if $ast->{facets} && $args->{show_facets};
 
     my @childs;
-    push @childs, @{$ast->{attrs}}   if $ast->{attrs};
-    push @childs, @{$ast->{elems}}   if $ast->{elems};
-    push @childs,   $ast->{body}     if $ast->{body};
+    push @childs, @{$ast->{attrs}}  if $ast->{attrs};
+    push @childs, @{$ast->{elems}}  if $ast->{elems};
+    push @childs,   $ast->{body}    if $ast->{body};
 
     my @subs;
     foreach my $child (@childs)
@@ -376,7 +391,11 @@ sub xml_any($$$$)
     my @res;
 
     my @comment;
-    push @comment, $ast->{struct} if $ast->{struct} && $args->{show_struct};
+    if($ast->{struct} && $args->{show_struct})
+    {   my $struct = $ast->{struct};
+        push @comment, ref $struct ? @$struct : $struct;
+    }
+
     push @comment, $ast->{occur}  if $ast->{occur}  && $args->{show_occur};
     push @comment, $ast->{facets} if $ast->{facets} && $args->{show_facets};
 
