@@ -25,24 +25,16 @@ Three serious WARNINGS:
 
 =item .
 
-The compiler B<only supports namespace schemas>.  It is possible,
-but generally seen as weakness, to make schemas which do not use
-namespaces, but for the moment, XML::Compile does not handle those.
-Check for a C<targetNamespace> attribute on C<schema> in your C<xsd>
-file.
-
-=item .
-
 The focus is on B<data-centric XML>, which means that mixed elements
 are not understood automatically.  However, with using hooks you can
 work around this.
 
 =item .
 
-The provided B<schema is not validated>.  In many cases, compile-time
-errors will get reported.  On the other hand, the processed B<data is
-strictly validated>: both input and output will follow the specs closely
-(unless disabled).
+The provided B<schema is not strictly validated>.  In many cases,
+compile-time errors will get reported.  On the other hand, the processed
+B<data is strictly validated>: both input and output will follow the
+specs closely (unless disabled).
 
 =item .
 
@@ -254,8 +246,8 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.64,
-built on January 07, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.65,
+built on January 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

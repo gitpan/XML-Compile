@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Iterator;
 use vars '$VERSION';
-$VERSION = '0.64';
+$VERSION = '0.65';
 
 use XML::Compile::Util  qw/pack_type type_of_node/;
 use Log::Report 'xml-compile', syntax => 'SHORT';

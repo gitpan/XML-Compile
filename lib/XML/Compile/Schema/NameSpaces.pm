@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.64';
+$VERSION = '0.65';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
@@ -59,8 +59,8 @@ sub allSchemas()
 
 sub find($$;$)
 {   my ($self, $kind) = (shift, shift);
-    my ($label, $ns, $name)
-      = @_==1 ? ($_[0], unpack_type $_[0]) : (pack_type($_[0], $_[1]), @_);
+    my ($ns, $name) = @_==1 ? (unpack_type $_[0]) : @_;
+    my $label = pack_type $ns, $name; # re-pack unpacked for consistency
 
     defined $ns or return undef;
 

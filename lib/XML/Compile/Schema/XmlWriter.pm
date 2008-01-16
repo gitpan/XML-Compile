@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.64';
+$VERSION = '0.65';
 
 use strict;
 use warnings;
@@ -322,14 +322,20 @@ sub element_fixed
 
 sub element_nillable
 {   my ($path, $args, $ns, $childname, $do) = @_;
-    sub { my ($doc, $value) = @_;
-          return $do->($doc, $value)
-              unless defined $value && $value eq 'NIL';
+    my $inas = $args->{interpret_nillable_as_optional};
 
-          my $node = $doc->createElement($childname);
-          $node->setAttribute(nil => 'true');
-          $node;
-        };
+    sub
+    {   my ($doc, $value) = @_;
+        return $do->($doc, $value)
+            if !defined $value || $value ne 'NIL';
+
+        return $doc->createTextNode('')
+            if $inas;
+
+        my $node = $doc->createElement($childname);
+        $node->setAttribute(nil => 'true');
+        $node;
+    };
 }
 
 sub element_default
@@ -436,8 +442,11 @@ sub simple_element
     sub { my ($doc, $data) = @_;
           my $value = $st->($doc, $data);
           my $node  = $doc->createElement($tag);
+          error __x"expected single value for {tag}, but got {type}"
+             , tag => $tag, type => ref($value)
+              if ref $value eq 'ARRAY' || ref $value eq 'HASH';
           $node->addChild
-            ( ref $value && $value->isa('XML::LibXML::Node') ? $value
+            ( UNIVERSAL::isa($value, 'XML::LibXML::Node') ? $value
             : $doc->createTextNode(defined $value ? $value : ''));
           $node;
         };

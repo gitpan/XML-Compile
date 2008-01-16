@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.03.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.64';
+$VERSION = '0.65';
 
 use strict;
 use warnings;
@@ -373,6 +373,9 @@ sub element_fixed
 sub element_nillable
 {   my ($path, $args, $ns, $childname, $do) = @_;
 
+    # some people cannot read the specs.
+    my $inas = $args->{interpret_nillable_as_optional};
+
     sub { my $tree = shift;
           my $value;
           if(defined $tree && $tree->nodeLocal eq $childname)
@@ -381,9 +384,8 @@ sub element_nillable
                   if $nil eq 'true' || $nil eq '1';
               $value = $do->($tree);
           }
-          else
-          {   $value = $do->(undef);
-          }
+          elsif($inas) { return ($childname => undef) }
+          else { $value = $do->(undef) }
 
           defined $value ? ($childname => $value) : ();
         };
