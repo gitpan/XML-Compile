@@ -9,7 +9,7 @@ use lib '../XMLCompile/lib';  # test environment at home
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.65';
+$VERSION = '0.66';
 use base 'Exporter';
 
 use XML::LibXML;

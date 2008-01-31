@@ -77,6 +77,14 @@ Returns a list of all defined model groups.
 
 =back
 
+$obj-E<gt>B<id>(STRING)
+
+=over 4
+
+Returns one global element, selected by ID.
+
+=back
+
 $obj-E<gt>B<ids>
 
 =over 4
@@ -158,6 +166,32 @@ example: of find
 
 =back
 
+$obj-E<gt>B<importLocations>(NAMESPACE)
+
+=over 4
+
+Returns a list of all schemaLocations specified with the import NAMESPACE
+(one of the values returned by L<imports()|XML::Compile::Schema::Instance/"Index">).
+
+=back
+
+$obj-E<gt>B<imports>
+
+=over 4
+
+Returns a list with all namespaces which need to be imported.
+
+=back
+
+$obj-E<gt>B<includeLocations>
+
+=over 4
+
+Returns a list of all schemaLocations which where specified with include
+statements.
+
+=back
+
 $obj-E<gt>B<printIndex>([FILEHANDLE])
 
 =over 4
@@ -169,8 +203,8 @@ selected FILEHANDLE.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.65,
-built on January 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.66,
+built on January 31, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

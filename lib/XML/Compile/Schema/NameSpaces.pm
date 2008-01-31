@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.65';
+$VERSION = '0.66';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
@@ -45,10 +45,7 @@ sub add($)
 }
 
 
-sub schemas($)
-{   my ($self, $ns) = @_;
-    $self->namespace($ns);
-}
+sub schemas($) { $_[0]->namespace($_[1]) }
 
 
 sub allSchemas()

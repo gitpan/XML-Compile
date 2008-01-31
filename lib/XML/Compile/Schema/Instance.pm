@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.65';
+$VERSION = '0.66';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::Compile::Schema::Specs;
@@ -34,6 +34,9 @@ sub init($)
 
     $self->{$_} = {} for @defkinds, 'sgs';
 
+    $self->{import}  = {};
+    $self->{include} = [];
+
     $self->_collectTypes($top);
     $self;
 }
@@ -48,6 +51,9 @@ sub type($) { $_[0]->{types}{$_[1]} }
 
 
 sub element($) { $_[0]->{elements}{$_[1]} }
+
+
+sub id($) { $_[0]->{ids}{$_[1]} }
 
 
 sub ids()             { keys %{shift->{ids}} }
@@ -72,8 +78,7 @@ sub substitutionGroupMembers($)
 }
 
 
-my %skip_toplevel = map { ($_ => 1) }
-   qw/annotation import notation include redefine/;
+my %skip_toplevel = map { ($_ => 1) } qw/annotation notation redefine/;
 
 sub _collectTypes($)
 {   my ($self, $schema) = @_;
@@ -101,11 +106,26 @@ sub _collectTypes($)
     $self->{types} = {};
     $self->{ids}   = {};
 
+  NODE:
     foreach my $node ($schema->childNodes)
     {   next unless $node->isa('XML::LibXML::Element');
         my $local = $node->localName;
 
         next if $skip_toplevel{$local};
+
+        if($local eq 'import')
+        {   my $namespace = $node->getAttribute('namespace')      || $tns;
+            my $location  = $node->getAttribute('schemaLocation') || '';
+            push @{$self->{import}{$namespace}}, $location;
+            next NODE;
+        }
+
+        if($local eq 'include')
+        {   my $location  = $node->getAttribute('schemaLocation')
+                or error __x"include requires schemaLocation attribute";
+            push @{$self->{include}}, $location;
+            next NODE;
+        }
 
         my $tag   = $node->getAttribute('name');
         my $ref;
@@ -165,6 +185,18 @@ sub _collectTypes($)
     }
 
     $self;
+}
+
+
+sub includeLocations() { @{shift->{include}} }
+
+
+sub imports() { keys %{shift->{import}} }
+
+
+sub importLocations($)
+{   my $locs = $_[0]->{import}{$_[1]};
+    $locs ? @$locs : ();
 }
 
 

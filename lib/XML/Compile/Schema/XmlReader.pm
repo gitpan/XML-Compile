@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.03.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.65';
+$VERSION = '0.66';
 
 use strict;
 use warnings;
@@ -610,8 +610,7 @@ sub substgroup
                     , type => $type, path => $path;
 
           my $do    = $do{$local}
-              or error __x"no substitute for {type} found at {path}"
-                    , type => $type, path => $path;
+              or return;
 
           my @subst = $do->($tree->descend);
           $tree->nextChild;

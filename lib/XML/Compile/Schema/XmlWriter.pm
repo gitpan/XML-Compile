@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.65';
+$VERSION = '0.66';
 
 use strict;
 use warnings;
@@ -546,9 +546,6 @@ sub substgroup
 
               return $do{$take}->($doc, $subst);
           }
-
-          error __x"no substitute for {type} found at {path}"
-             , type => $type, path => $path;
         }, 'BLOCK';
 }
 

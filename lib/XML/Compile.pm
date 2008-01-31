@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.65';
+$VERSION = '0.66';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::LibXML;
@@ -52,7 +52,8 @@ sub addSchemaDirs(@)
     foreach (@_)
     {   my $dir  = shift;
         my @dirs = grep {defined} ref $dir eq 'ARRAY' ? @$dir : $dir;
-        foreach ($^O eq 'MSWin32' ? @dirs : map { split /\:/ } @dirs)
+        my $sep  = $^O eq 'MSWin32' ? qr/\;/ : qr/\:/;
+        foreach (map { split $sep } @dirs)
         {   my $el = $_;
             $el = File::Spec->catfile($el, 'xsd') if $el =~ s/\.pm$//i;
             push @schema_dirs, $el;
@@ -78,13 +79,12 @@ sub knownNamespace($;@)
 sub findSchemaFile($)
 {   my ($self, $fn) = @_;
 
-    return (-r $fn ? $fn : undef)
+    return (-f $fn ? $fn : undef)
         if File::Spec->file_name_is_absolute($fn);
 
     foreach my $dir (@schema_dirs)
     {   my $full = File::Spec->catfile($dir, $fn);
-        next unless -e $full;
-        return -r $full ? $full : undef;
+        return $full if -f $full;
     }
 
     undef;

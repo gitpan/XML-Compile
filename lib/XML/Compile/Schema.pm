@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.65';
+$VERSION = '0.66';
 use base 'XML::Compile';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -55,6 +55,7 @@ sub addSchemas($@)
         if $node->isa('XML::LibXML::Document');
 
     my $nss = $self->namespaces;
+    my @schemas;
 
     $self->walkTree
     ( $node,
@@ -68,9 +69,12 @@ sub addSchemas($@)
 #warn $schema->targetNamespace;
 #$schema->printIndex(\*STDERR);
             $nss->add($schema);
+            push @schemas, $schema;
             return 0;
           }
     );
+
+    @schemas;
 }
 
 

@@ -27,8 +27,7 @@ one CODE reference which can be used in the main user program.
 This implementation is work in progress, but by far most structures in
 W3C schemas are implemented (and tested!).
 
-Non-namespace schema elements are not implemented, because you shouldn't
-want that!  Therefore, missing are
+Missing are
  schema noNamespaceSchemaLocation
  any ##local
  anyAttribute ##local
@@ -271,8 +270,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.65,
-built on January 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.66,
+built on January 31, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

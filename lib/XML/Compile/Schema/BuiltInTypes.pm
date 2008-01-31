@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.65';
+$VERSION = '0.66';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -58,6 +58,7 @@ sub _replace  { $_[0] =~ s/[\t\r\n]/ /gs; $_[0]}
 
 sub bigint   { $_[0] =~ s/\s+//g;
    my $v = Math::BigInt->new($_[0]); $v->is_nan ? undef : $v }
+
 sub bigfloat { $_[0] =~ s/\s+//g;
    my $v = Math::BigFloat->new($_[0]); $v->is_nan ? undef : $v }
 
