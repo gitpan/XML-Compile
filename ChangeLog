@@ -4,6 +4,13 @@
 Unless noted otherwise, these changes where initiated and applied by
 Mark Overmeer.
 
+version 0.67: Mon Feb  4 09:31:17 CET 2008
+
+	Fixes:
+
+	- use of boolean 0 produced an error. [Allan Wind]
+	  tests in t/21types.t
+
 version 0.66: Thu Jan 31 09:32:00 CET 2008
 
 	Fixes:

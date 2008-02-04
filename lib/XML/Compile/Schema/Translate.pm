@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.66';
+$VERSION = '0.67';
 
 # Errors are either in class 'usage': called with request
 #                         or 'schema': syntax error in schema
