@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.03.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.67';
+$VERSION = '0.68';
 
 use strict;
 use warnings;
@@ -661,7 +661,6 @@ sub anyAttribute
 
 sub anyElement
 {   my ($path, $args, $handler, $yes, $no, $process, $min, $max) = @_;
-
     $handler ||= 'SKIP_ALL';
 
     my %yes = map { ($_ => 1) } @{$yes || []};

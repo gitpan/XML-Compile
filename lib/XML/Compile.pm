@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.67';
+$VERSION = '0.68';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::LibXML;
@@ -94,32 +94,43 @@ sub findSchemaFile($)
 sub dataToXML($)
 {   my ($self, $thing) = @_;
     defined $thing
-        or return undef;
+        or return;
 
-    return $thing
-        if ref $thing && UNIVERSAL::isa($thing, 'XML::LibXML::Node');
-
-    return $self->_parse($thing)
-        if ref $thing eq 'SCALAR'; # XML string as ref
-
-    return $self->_parse(\$thing)
-        if $thing =~ m/^\s*\</;    # XML starts with '<', rare for files
-
-    if(my $known = $self->knownNamespace($thing))
-    {   my $fn = $self->findSchemaFile($known)
+    my ($xml, $source, %details);
+    if(ref $thing && UNIVERSAL::isa($thing, 'XML::LibXML::Node'))
+    {   $xml    = $thing;
+        $source = ref $thing;
+    }
+    elsif(ref $thing eq 'SCALAR')   # XML string as ref
+    {   $xml    = $self->_parse($thing);
+        $source = ref $thing;
+    }
+    elsif($thing =~ m/^\s*\</)      # XML starts with '<', rare for files
+    {   $xml    = $self->_parse(\$thing);
+        $source = 'string';
+    }
+    elsif(my $known = $self->knownNamespace($thing))
+    {   my $fn  = $self->findSchemaFile($known)
             or error __x"cannot find pre-installed name-space file named {path} for {name}"
                  , path => $known, name => $thing;
 
-        return $self->_parseFile($fn);
+        $xml    = $self->_parseFile($fn);
+        $source = "known namespace $thing";
+        $details{filename} = $fn;
+    }
+    elsif(-f $thing)
+    {   $xml    = $self->_parseFile($thing);
+        $source = "file";
+        $details{filename} = $thing;
+    }
+    else
+    {   my $data = "$thing";
+        $data = substr($data, 0, 39) . '...' if length($data) > 40;
+        error __x"don't known how to interpret XML data\n   {data}"
+           , data => $data;
     }
 
-    return $self->_parseFile($thing)
-        if -f $thing;
-
-    my $data = "$thing";
-    $data = substr($data, 0, 39) . '...' if length($data) > 40;
-    error __x"don't known how to interpret XML data\n   {data}"
-       , data => $data;
+    wantarray ? ($xml, %details) : $xml;
 }
 
 sub _parse($)

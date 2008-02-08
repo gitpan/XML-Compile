@@ -56,7 +56,7 @@ See chapter L</DETAILS> for more on how the tune the translator.
 
 =head1 METHODS
 
-XML::Compile::Schema::Translate-E<gt>B<compileTree>(ELEMENT|ATTRIBUTE, OPTIONS)
+XML::Compile::Schema::Translate-E<gt>B<compileTree>(ELEMENT|ATTRIBUTE|TYPE, OPTIONS)
 
 =over 4
 
@@ -270,8 +270,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.67,
-built on February 04, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.68,
+built on February 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

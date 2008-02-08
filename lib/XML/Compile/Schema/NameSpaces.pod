@@ -12,8 +12,12 @@ XML::Compile::Schema::NameSpaces - Connect name-spaces from schemas
 
 =head1 DESCRIPTION
 
-This module keeps overview on a set of namespaces, collected from
-various schema files.
+This module keeps overview on a set of namespaces, collected from various
+schema files.  Per XML namespace, it will collect a list of fragments
+which contain definitions for the namespace, each fragment comes from a
+different source.  These fragments are searched in reverse order when
+an element or type is looked up (the last definitions overrule the
+older definitions).
 
 =head1 METHODS
 
@@ -77,7 +81,7 @@ $obj-E<gt>B<list>
 
 =over 4
 
-Returns the list of name-space names defined until now.
+Returns the list of name-space URIs defined.
 
 =back
 
@@ -87,6 +91,36 @@ $obj-E<gt>B<namespace>(URI)
 
 Returns a list of L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects which have
 the URI as target namespace.
+
+=back
+
+$obj-E<gt>B<printIndex>([FILEHANDLE])
+
+=over 4
+
+Show all definitions from all namespaces, for debugging purposes, by
+default to the STDOUT.
+
+ Option   --Default
+ namespace  undef
+
+. namespace => URI|ARRAY-of-URI
+
+=over 4
+
+Show only information about the indicate namespaces.
+
+=back
+
+example: 
+
+ my $nss = $schema->namespaces;
+ $nss->printIndex(\*MYFILE);
+ $nss->printIndex(namespace => "my namespace");
+
+ # types defined in the wsdl schema
+ use XML::Compile::SOAP::Util qw/WSDL11/;
+ $nss->printIndex(\*STDERR, namespace => WSDL11);
 
 =back
 
@@ -101,8 +135,8 @@ must be called explictly.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.67,
-built on February 04, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.68,
+built on February 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

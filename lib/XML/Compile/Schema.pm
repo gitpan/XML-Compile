@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.67';
+$VERSION = '0.68';
 use base 'XML::Compile';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -45,8 +45,12 @@ sub namespaces() { shift->{namespaces} }
 
 
 sub addSchemas($@)
-{   my $self = shift;
-    my $node = shift or return ();
+{   my ($self, $node, %opts) = @_;
+    defined $node or return ();
+
+    my @nsopts;
+    push @nsopts, source   => delete $opts{source}   if $opts{source};
+    push @nsopts, filename => delete $opts{filename} if $opts{filename};
 
     ref $node && $node->isa('XML::LibXML::Node')
         or error __x"required is a XML::LibXML::Node";
@@ -63,7 +67,7 @@ sub addSchemas($@)
             return 1 unless $this->isa('XML::LibXML::Element')
                          && $this->localname eq 'schema';
 
-            my $schema = XML::Compile::Schema::Instance->new($this)
+            my $schema = XML::Compile::Schema::Instance->new($this, @nsopts)
                 or next;
 
 #warn $schema->targetNamespace;
@@ -81,8 +85,10 @@ sub addSchemas($@)
 sub importDefinitions($@)
 {   my $self  = shift;
     my $thing = shift or return;
-    my $tree  = $self->dataToXML($thing) or return;
-    $self->addSchemas($tree, @_);
+    my ($tree, @details) = $self->dataToXML($thing);
+    defined $tree or return;
+
+    $self->addSchemas($tree, @details, @_);
 }
 
 
@@ -121,7 +127,6 @@ sub compile($$@)
         fault "require Math::BigFloat or sloppy_integers:\n$@"
             if $@;
     }
-
 
     my $outns = $args{output_namespaces} ||= {};
     if(ref $outns eq 'ARRAY')
@@ -227,7 +232,7 @@ sub types()
 sub elements()
 {   my $nss = shift->namespaces;
     sort map {$_->elements}
-          map {$nss->schemas($_)}
+         map {$nss->schemas($_)}
              $nss->list;
 }
 

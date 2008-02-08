@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.67';
+$VERSION = '0.68';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::Compile::Schema::Specs;
@@ -32,10 +32,11 @@ sub init($)
     defined $top && $top->isa('XML::LibXML::Node')
         or panic "instance is based on XML node";
 
-    $self->{$_} = {} for @defkinds, 'sgs';
+    $self->{filename} = $args->{filename};
+    $self->{source}   = $args->{source};
 
-    $self->{import}  = {};
-    $self->{include} = [];
+    $self->{$_}       = {} for @defkinds, 'sgs', 'import';
+    $self->{include}  = [];
 
     $self->_collectTypes($top);
     $self;
@@ -45,6 +46,8 @@ sub init($)
 sub targetNamespace { shift->{tns} }
 sub schemaNamespace { shift->{xsd} }
 sub schemaInstance  { shift->{xsi} }
+sub source          { shift->{source} }
+sub filename        { shift->{filename} }
 
 
 sub type($) { $_[0]->{types}{$_[1]} }
@@ -201,10 +204,17 @@ sub importLocations($)
 
 
 sub printIndex(;$)
-{   my $self  = shift;
-    my $fh    = shift || select;
+{   my $self   = shift;
+    my $fh     = shift || select;
 
     $fh->print("namespace: ", $self->targetNamespace, "\n");
+    if(defined(my $source = $self->source))
+    {   $fh->print("  source: $source\n");
+    }
+    if(defined(my $filename = $self->filename))
+    {   $fh->print("  filename: $filename\n");
+    }
+
     foreach my $kind (@defkinds)
     {   my $table = $self->{$kind};
         keys %$table or next;

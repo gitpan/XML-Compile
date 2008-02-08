@@ -25,6 +25,26 @@ $obj-E<gt>B<new>(TOP, OPTIONS)
 Get's the top of an XML::LibXML tree, which must be a schema element.
 The tree is parsed: the information collected.
 
+ Option  --Default
+ filename  undef
+ source    undef
+
+. filename => FILENAME
+
+=over 4
+
+When the source is some file, this is its name.
+
+=back
+
+. source => STRING
+
+=over 4
+
+An indication where this information came from.
+
+=back
+
 =back
 
 =head2 Accessors
@@ -69,6 +89,12 @@ Returns a list of all globally defined element names.
 
 =back
 
+$obj-E<gt>B<filename>
+
+=over 4
+
+=back
+
 $obj-E<gt>B<groups>
 
 =over 4
@@ -110,6 +136,12 @@ $obj-E<gt>B<simpleTypes>
 =over 4
 
 Returns a list with all simpleType names.
+
+=back
+
+$obj-E<gt>B<source>
+
+=over 4
 
 =back
 
@@ -203,8 +235,8 @@ selected FILEHANDLE.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.67,
-built on February 04, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.68,
+built on February 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

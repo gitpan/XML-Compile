@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.67';
+$VERSION = '0.68';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
@@ -31,8 +31,7 @@ sub list() { keys %{shift->{tns}} }
 
 
 sub namespace($)
-{   my $self = shift;
-    my $nss  = $self->{tns}{(shift)};
+{   my $nss  = $_[0]->{tns}{$_[1]};
     $nss ? @$nss : ();
 }
 
@@ -93,6 +92,18 @@ sub findID($;$)
     }
 
     undef;
+}
+
+
+sub printIndex(@)
+{   my $self = shift;
+    my $fh   = @_ % 2 ? shift : \*STDOUT;
+    my %opts = @_;
+
+    my $nss  = $opts{namespace} || [$self->list];
+    foreach my $nsuri (ref $nss eq 'ARRAY' ? @$nss : $nss)
+    {   $_->printIndex($fh) for $self->namespace($nsuri);
+    }
 }
 
 1;

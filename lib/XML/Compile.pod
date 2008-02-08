@@ -194,7 +194,11 @@ $obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|KNOWN)
 
 =over 4
 
-Collect XML data.  When a ready XML::LibXML NODE is provided, it is
+Collect XML data, from a wide variety of sources.  In SCALAR context,
+a XML::LibXML::Element or ::Document is returned.  In LIST context,
+pairs of additional information follow the result.
+
+When a ready XML::LibXML NODE is provided, it is
 returned immediately and unchanged.  A SCALAR reference is interpreted
 as reference to XML as plain text (XML texts can be large, and you can
 improve performance by passing it around by reference instead of copy).
@@ -206,6 +210,11 @@ definition files is included in the distribution, and installed somewhere
 when this all gets installed.  Either define an environment variable
 named SCHEMA_LOCATION or use L<new(schema_dirs)|XML::Compile/"Constructors"> (option available to
 all end-user objects) to inform the library where to find these files.
+
+example: 
+
+  my $xml = $schema->dataToXML('/etc/config.xml');
+  my ($xml, %details) = $schema->dataToXML($something);
 
 =back
 
@@ -272,8 +281,8 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.67,
-built on February 04, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.68,
+built on February 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
