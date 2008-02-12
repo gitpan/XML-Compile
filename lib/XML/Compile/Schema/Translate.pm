@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.68';
+$VERSION = '0.69';
 
 # Errors are either in class 'usage': called with request
 #                         or 'schema': syntax error in schema
@@ -680,7 +680,7 @@ sub particleElement($)
         }
         local $self->{elems_qual} = $elems_qual;
 
-        my $attrs_qual = $def->{efd} eq 'qualified';
+        my $attrs_qual = $def->{afd} eq 'qualified';
         if(exists $self->{attributes_qualified})
         {   my $qual = $self->{attributes_qualified} || 0;
             $attrs_qual = $qual eq 'ALL' ? 1 : $qual eq 'NONE' ? 0 : $qual;
