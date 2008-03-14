@@ -1,14 +1,14 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.03.
+# Pod stripped from pm file by OODoc 1.04.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.69';
+$VERSION = '0.70';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::Compile::Schema::Specs;
@@ -125,7 +125,9 @@ sub _collectTypes($)
 
         if($local eq 'include')
         {   my $location  = $node->getAttribute('schemaLocation')
-                or error __x"include requires schemaLocation attribute";
+                or error __x"include requires schemaLocation attribute at line {linenr}"
+                   , linenr => $node->line_number;
+
             push @{$self->{include}}, $location;
             next NODE;
         }
@@ -134,8 +136,9 @@ sub _collectTypes($)
         my $ref;
         unless(defined $tag && length $tag)
         {   $ref = $tag = $node->getAttribute('ref')
-               or error __x"schema component {local} without name or ref"
-                      , local => $local;
+               or error __x"schema component {local} without name or ref at line {linenr}"
+                    , local => $local, linenr => $node->line_number;
+
             $tag =~ s/.*?\://;
         }
 

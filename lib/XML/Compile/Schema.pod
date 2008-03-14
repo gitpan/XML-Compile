@@ -25,7 +25,7 @@ XML::Compile::Schema - Compile a schema into CODE
  $schema->importDefinitions('http://www.w3.org/2001/XMLSchema');
  $schema->importDefinitions('2001-XMLSchema.xsd');
 
- # see what is defined
+ # see what types are defined
  $schema->namespaces->printIndex;
 
  # create and use a reader
@@ -275,7 +275,7 @@ to collect schemas.
 
 =head2 Read XML
 
-$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|KNOWN)
+$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
 
 =over 4
 
@@ -325,7 +325,7 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implem
  anyAttribute                    undef
  anyElement                      undef
  attributes_qualified            <undef>
- check_occurs                    <false>
+ check_occurs                    <true>
  check_values                    <true>
  elements_qualified              <undef>
  hook                            undef
@@ -340,6 +340,7 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implem
  permit_href                     <false>
  sloppy_integers                 <false>
  use_default_prefix              <false>
+ validation                      <true>
 
 . anyAttribute => CODE
 
@@ -497,7 +498,8 @@ Can be used to predefine an output namespace (when 'WRITER') for instance
 to reserve common abbreviations like C<soap> for external use.  Each
 entry in the hash has as key the namespace uri.  The value is a hash
 which contains C<uri>, C<prefix>, and C<used> fields.  Pass a reference
-to a private hash to catch this index.
+to a private hash to catch this index. An ARRAY with prefix, uri PAIRS
+is simpler.
 
 =back
 
@@ -536,8 +538,11 @@ Be aware that C<Math::BigInt> and C<Math::BigFloat> objects are nearly
 but not fully transparent mimicing the behavior of Perl's ints and
 floats.  See their respective manual-pages.  Especially when you wish
 for some performance, you should optimize access to these objects to
-avoid expensive copying which is exactly the spot where the difference
+avoid expensive copying which is exactly the spot where the differences
 are.
+
+You can also improve the speed of Math::BigInt by installing
+Math::BigInt::GMP.
 
 =back
 
@@ -548,6 +553,17 @@ are.
 When mixing qualified and unqualified namespaces, then the use of
 a default prefix can be quite confusing.  Therefore, by default, all
 qualified elements will have an explicit prefix.
+
+=back
+
+. validation => BOOLEAN
+
+=over 4
+
+XML message must be validated, to lower the chance on abuse.  However,
+of course, it costs performance which is only partially compensated by
+fewer checks in your code.  This flag overrules the C<check_values>,
+C<check_occurs>, and C<ignore_facets>.
 
 =back
 
@@ -838,7 +854,7 @@ An error is produced when the number of elements found is less than
 C<minOccurs> (defaults to 1) or more than C<maxOccurs> (defaults to 1),
 unless L<compile(check_occurs)|XML::Compile::Schema/"Compilers"> is C<false>.
 
-example: elements with maxOccurs E<gt> 1
+example: elements with maxOccurs larger than 1
 
 In the schema:
  <element name="a" type="int" maxOccurs="unbounded" />
@@ -932,7 +948,7 @@ So, our example data is translated into (and vice versa)
 
   example =>
     { a     => 1
-    , seq_b => [ {b => 2}, {b => 3}, {b => 4}
+    , seq_b => [ {b => 2}, {b => 3}, {b => 4} ]
     , c     => 5
     }
 
@@ -952,7 +968,7 @@ something like this:
 
 Each HASH has only one key.
 
-example: always an array with maxOccurs E<gt> 1
+example: always an array with maxOccurs larger than 1
 
 Even when there is only one element found, it will be returned as
 ARRAY (of one element).  Therefore, you can write
@@ -960,7 +976,7 @@ ARRAY (of one element).  Therefore, you can write
  my $data = $reader->($xml);
  foreach my $a ( @{$data->{a}} ) {...}
 
-example: blocks with maxOccurs E<gt> 1
+example: blocks with maxOccurs larger than 1
 
 In the schema:
  <sequence maxOccurs="5">
@@ -1200,8 +1216,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.69,
-built on February 12, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.70,
+built on March 14, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

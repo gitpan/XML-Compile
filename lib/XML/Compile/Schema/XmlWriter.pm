@@ -1,11 +1,11 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.03.
+# Pod stripped from pm file by OODoc 1.04.
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.69';
+$VERSION = '0.70';
 
 use strict;
 use warnings;
@@ -145,6 +145,7 @@ sub all($@)
 
 sub element_handler
 {   my ($path, $args, $label, $min, $max, $required, $optional) = @_;
+    $max eq "0" and return sub {};
 
     if($min==0 && $max eq 'unbounded')
     {   return
@@ -215,17 +216,18 @@ sub block_handler
     my $multi = block_label $kind, $label;
 
     if($min==0 && $max eq 'unbounded')
-    {   return bless
+    {   my $code =
         sub { my $doc    = shift;
               my $values = delete shift->{$multi};
                 ref $values eq 'ARRAY' ? (map {$process->($doc, $_)} @$values)
               : defined $values        ? $process->($doc, $values)
               :                          ();
-            }, 'BLOCK';
+            };
+        return ($multi, bless($code, 'BLOCK'));
     }
 
     if($max eq 'unbounded')
-    {   return bless
+    {   my $code =
         sub { my $doc    = shift;
               my $values = delete shift->{$multi};
               my @values = ref $values eq 'ARRAY' ? @$values
@@ -237,11 +239,12 @@ sub block_handler
                         , min => $min, path => $path;
 
               map { $process->($doc, $_) } @values;
-            }, 'BLOCK';
+            };
+        return ($multi, bless($code, 'BLOCK'));
     }
 
     if($min==0 && $max==1)
-    {   return bless
+    {   my $code =
         sub { my ($doc, $values) = @_;
               my @values = ref $values eq 'ARRAY' ? @$values
                          : defined $values ? $values : ();
@@ -251,11 +254,12 @@ sub block_handler
                         , tag => $label, count => scalar @values, path => $path;
 
               map { $process->($doc, $_) } @values;
-            }, 'BLOCK';
+            };
+        return ($label, bless($code, 'BLOCK'));
     }
 
     if($min==1 && $max==1)
-    {   return bless
+    {   my $code =
         sub { my ($doc, $values) = @_;
               my @values = ref $values eq 'ARRAY' ? @$values
                          : defined $values ? $values : ();
@@ -265,11 +269,12 @@ sub block_handler
                         , tag => $label, count => scalar @values, path => $path;
 
               map { $process->($doc, $_) } @values;
-            }, 'BLOCK';
+            };
+        return ($label, bless($code, 'BLOCK'));
     }
 
-    my $opt = $max - $min;
-    bless
+    my $opt  = $max - $min;
+    my $code =
     sub { my $doc    = shift;
           my $values = delete shift->{$multi};
           my @values = ref $values eq 'ARRAY' ? @$values
@@ -281,7 +286,8 @@ sub block_handler
                    , found => scalar @values;
 
           map { $process->($doc, $_) } @values;
-        }, 'BLOCK';
+        };
+    ($multi, bless($code, 'BLOCK'));
 }
 
 sub required
@@ -355,6 +361,9 @@ sub complex_element
     my $ignore_unused_tags = $args->{ignore_unused_tags};
 
     sub { my ($doc, $data) = @_;
+          return $doc->importNode($data)
+              if UNIVERSAL::isa($data, 'XML::LibXML::Element');
+
           unless(UNIVERSAL::isa($data, 'HASH'))
           {   defined $data
                   or error __x"complex `{tag}' requires data at {path}"
@@ -400,6 +409,9 @@ sub tagged_element
     my @anya  = @$attrs_any;
 
     sub { my ($doc, $data) = @_;
+          return $doc->importNode($data)
+              if UNIVERSAL::isa($data, 'XML::LibXML::Element');
+
           UNIVERSAL::isa($data, 'HASH')
              or error __x"tagged `{tag}' requires a HASH of input data, not `{found}' at {path}"
                    , tag => $tag, found => $data, path => $path;
@@ -440,6 +452,9 @@ sub tagged_element
 sub simple_element
 {   my ($path, $args, $tag, $st) = @_;
     sub { my ($doc, $data) = @_;
+          return $doc->importNode($data)
+              if UNIVERSAL::isa($data, 'XML::LibXML::Element');
+          
           my $value = $st->($doc, $data);
           my $node  = $doc->createElement($tag);
           error __x"expected single value for {tag}, but got {type}"

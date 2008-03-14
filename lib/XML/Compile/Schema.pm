@@ -1,14 +1,14 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.03.
+# Pod stripped from pm file by OODoc 1.04.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.69';
+$VERSION = '0.70';
 use base 'XML::Compile';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -113,10 +113,17 @@ sub compile($$@)
 {   my ($self, $action, $type, %args) = @_;
     defined $type or return ();
 
-    exists $args{check_values}       or $args{check_values} = 1; 
-    exists $args{check_occurs}       or $args{check_occurs} = 1;
-    exists $args{include_namespaces} or $args{include_namespaces} = 1;
+    if(exists $args{validation})
+    {   $args{check_values}  =   $args{validation};
+        $args{check_occurs}  =   $args{validation};
+        $args{ignore_facets} = ! $args{validation};
+    }
+    else
+    {   exists $args{check_values}   or $args{check_values} = 1; 
+        exists $args{check_occurs}   or $args{check_occurs} = 1;
+    }
 
+    exists $args{include_namespaces} or $args{include_namespaces} = 1;
     $args{sloppy_integers}   ||= 0;
     unless($args{sloppy_integers})
     {   eval "require Math::BigInt";

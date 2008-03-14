@@ -1,14 +1,14 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.03.
+# Pod stripped from pm file by OODoc 1.04.
 
 use warnings;
 use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.69';
+$VERSION = '0.70';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::LibXML;
@@ -91,6 +91,7 @@ sub findSchemaFile($)
 }
 
 
+my $parser = XML::LibXML->new(line_numbers => 1);
 sub dataToXML($)
 {   my ($self, $thing) = @_;
     defined $thing
@@ -103,6 +104,11 @@ sub dataToXML($)
     }
     elsif(ref $thing eq 'SCALAR')   # XML string as ref
     {   $xml    = $self->_parse($thing);
+        $source = ref $thing;
+    }
+    elsif(ref $thing eq 'GLOB')     # from file-handle
+    {   $xml    = $parser->parse_fh($thing);
+        $xml    = $xml->documentElement if defined $xml;
         $source = ref $thing;
     }
     elsif($thing =~ m/^\s*\</)      # XML starts with '<', rare for files
@@ -135,13 +141,13 @@ sub dataToXML($)
 
 sub _parse($)
 {   my ($thing, $data) = @_;
-    my $xml = XML::LibXML->new->parse_string($$data);
+    my $xml = $parser->parse_string($$data);
     defined $xml ? $xml->documentElement : undef;
 }
 
 sub _parseFile($)
 {   my ($thing, $fn) = @_;
-    my $xml = XML::LibXML->new->parse_file($fn);
+    my $xml = $parser->parse_file($fn);
     defined $xml ? $xml->documentElement : undef;
 }
 

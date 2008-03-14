@@ -45,7 +45,8 @@ to interpret the message if you need them.
 A few nuts are still to crack:
  any* processContents always interpreted as lax
  schema version
- element mixed
+ automatic handling of complexType/complexContent mixed
+ openContent
  attribute limitiations (facets) on dates
  full understanding of patterns (now limited)
  final is not protected
@@ -112,6 +113,12 @@ option to C<true> when you are sure that ALL USES of C<integer> in the
 scheme will fit into signed longs (are between -2147483648 and 2147483647
 inclusive)
 
+=item check_values BOOLEAN
+
+Check the validity of the values, before parsing them.  This will
+report errors for the reader, instead of crashes.  The writer will
+not produce invalid data.
+
 =item check_occurs BOOLEAN
 
 Checking whether the number of occurrences for an item are between
@@ -132,6 +139,18 @@ better performance.
 Simple type restrictions are not implemented by other XML perl
 modules.  When the schema is nicely detailed, this will give
 extra security.
+
+=item validation BOOLEAN
+
+When used, it overrules the above C<check_values>, C<check_occurs>, and
+C<ignore_facets> options.  A true value enables all checks, a false
+value will disable them all.  Of course, the latter is the fastest but
+also less secure: your program will need to validate the values in some
+other way.
+
+XML::LibXML has its own validate method, but I have not yet seen any
+performance figures on that.  If you use it, however, it is of course
+a good idea to turn XML::Compile's validation off.
 
 =back
 
@@ -270,8 +289,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.69,
-built on February 12, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.70,
+built on March 14, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

@@ -190,7 +190,7 @@ L<addSchemaDirs()|XML::Compile/"Accessors"> call.
 
 =head2 Read XML
 
-$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|KNOWN)
+$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
 
 =over 4
 
@@ -210,6 +210,10 @@ definition files is included in the distribution, and installed somewhere
 when this all gets installed.  Either define an environment variable
 named SCHEMA_LOCATION or use L<new(schema_dirs)|XML::Compile/"Constructors"> (option available to
 all end-user objects) to inform the library where to find these files.
+
+According the XML::LibXML::Parser manual page, passing a FILEHANDLE
+is much slower than pasing a FILENAME.  However, it may be needed to
+open a file with an explicit character-set.
 
 example: 
 
@@ -281,8 +285,8 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.69,
-built on February 12, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.70,
+built on March 14, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
