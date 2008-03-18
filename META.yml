@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                XML-Compile
-version:             0.70
+version:             0.71
 abstract:            Compilation based XML processing
 license:             perl
 author:              
@@ -10,7 +10,7 @@ distribution_type:   module
 requires:     
     IO:                            1.22
     Log::Report:                   0.09
-    Math::BigInt:                  1.77
+    Math::BigInt:                  1.78
     Test::Deep:                    0.095
     Test::More:                    0.54
     Test::Pod:                     1.00

@@ -180,7 +180,7 @@ distribution (not the full path) which contains the definition.
 
 When PAIRS of NAMESPACE-FILENAME are given, then those get defined.
 This is typically called during the initiation of modules, like
-XML::Compile::WSDL and L<XML::Compile::SOAP|XML::Compile::SOAP>.  The definitions
+L<XML::Compile::WSDL11|XML::Compile::WSDL11> and L<XML::Compile::SOAP|XML::Compile::SOAP>.  The definitions
 are global: not related to specific instances.
 
 The FILENAMES are relative to the directories as specified with some
@@ -285,8 +285,8 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.70,
-built on March 14, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.71,
+built on March 18, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
