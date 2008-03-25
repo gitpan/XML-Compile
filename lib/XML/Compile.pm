@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.71';
+$VERSION = '0.72';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::LibXML;

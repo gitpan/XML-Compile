@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.71';
+$VERSION = '0.72';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -193,10 +193,12 @@ sub facets
 
 sub union
 {   my ($path, $args, @types) = @_;
-    sub { +{ kind   => 'union'
-           , struct => "one of the following (union)"
-           , choice => [ map { $_->() } @types ]
-           };
+    sub { my @choices = map { +{$_->()} } @types;
+          +( kind    => 'union'
+           , struct  => "one of the following (union)"
+           , choice  => \@choices
+           , example => $choices[0]->{example}
+           );
         };
 }
 
@@ -276,6 +278,7 @@ sub anyAttribute
 
 sub anyElement
 {   my ($path, $args, $handler, $yes, $no, $process, $min, $max) = @_;
+    $yes ||= []; $no ||= [];
     my $occurs = @$yes ? "in @$yes" : @$no ? "not in @$no" : 'any type';
     bless sub { +{kind => 'element', struct  => 'anyElement'} }, 'ANY';
 }
@@ -345,13 +348,14 @@ sub perl_any($$)
     }
 
     # XML does not permit difficult tags, but we still check.
-    my $tag = $ast->{tag};
+    my $tag = $ast->{tag} || '';
     if(defined $tag && $tag !~ m/^[\w_][\w\d_]+$/)
     {   $tag =~ s/\\/\\\\/g;
         $tag =~ s/'/\\'/g;
         $tag = qq{'$tag'};
     }
-    
+
+    my $kind = $ast->{kind} || '';
     if(ref $ast eq 'REP-BLOCK')
     {   s/^(.)/  $1/ for @subs;
         $subs[0] =~ s/^ ?/[/;
@@ -374,18 +378,27 @@ sub perl_any($$)
             push @lines, "$tag =>", @subs;
         }
     }
-    elsif(my $example = $ast->{example})
+    elsif($kind eq 'complex')  # empty complex-type
+    {   push @lines, "$tag => {}";
+    }
+    elsif($kind eq 'union')    # union type
+    {   foreach my $union ( @{$ast->{choice}} )
+        {  # remove examples
+           my @l = grep { m/^#/ } perl_any($union,$args);
+           s/^\#/# - / for $l[0];
+           s/^\#/#   / for @l[1..$#l];
+           push @lines, @l;
+        }
+    }
+    elsif(!$ast->{example})
+    {   push @lines, "$tag => 'TEMPLATE-ERROR $ast->{kind}'";
+    }
+
+    if(my $example = $ast->{example})
     {   $example = qq{"$example"} if $example !~ m/^[+-]?\d+(?:\.\d+)?$/;
         push @lines, "$tag => "
           . ($ast->{is_array} ? " [ $example, ]" : $example);
     }
-    elsif($ast->{kind} eq 'complex')  # empty complex-type
-    {   push @lines, "$tag => {}";
-    }
-    else
-    {   push @lines, "$tag => TEMPLATE-ERROR";
-    }
-
     @lines;
 }
 
@@ -411,6 +424,10 @@ sub xml_any($$$$)
 
     push @comment, $ast->{occur}  if $ast->{occur}  && $args->{show_occur};
     push @comment, $ast->{facets} if $ast->{facets} && $args->{show_facets};
+
+    if(defined $ast->{kind} && $ast->{kind} eq 'union')
+    {   push @comment, map { "  $_->{type}"} @{$ast->{choice}};
+    }
 
     my $nest_indent = $indent.$args->{indent};
     if(@comment)

@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.71';
+$VERSION = '0.72';
 
 # Errors are either in class 'usage': called with request
 #                         or 'schema': syntax error in schema
@@ -1152,8 +1152,7 @@ sub complexContent($)
     # content: annotation?, (restriction | extension)
 
     my $node = $tree->node;
-    $self->isTrue($node->getAttribute('mixed') || 'false')
-        and warn "mixed content not supported" if $^W;
+    #$self->isTrue($node->getAttribute('mixed') || 'false')
     
     $tree->nrChildren == 1
         or error __x"only one complexContent child expected at {where}"

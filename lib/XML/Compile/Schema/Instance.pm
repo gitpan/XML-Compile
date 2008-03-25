@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.71';
+$VERSION = '0.72';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::Compile::Schema::Specs;
@@ -142,9 +142,10 @@ sub _collectTypes($)
             $tag =~ s/.*?\://;
         }
 
-        error __x"schema component `{name}' must be in {namespace}"
-            , name => $tag, namespace => $xsd
-            if $xsd && $node->namespaceURI ne $xsd;
+        my $nns = $node->namespaceURI || '';
+        error __x"schema component `{name}' must be in namespace {ns}"
+          , name => $tag, ns => $xsd
+              if $xsd && $nns ne $xsd;
 
         my $id    = $schema->getAttribute('id');
 
