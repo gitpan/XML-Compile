@@ -3,6 +3,7 @@ MANIFEST
 Makefile.PL
 README
 README.todo
+bin/schema2example
 bin/xml2yaml
 html/manual/doclist.html
 html/manual/grouped.html

@@ -88,11 +88,12 @@ exist.
 These constructors are base class methods to be extended,
 and therefore should not be accessed directly.
 
-XML::Compile-E<gt>B<new>(TOP, OPTIONS)
+XML::Compile-E<gt>B<new>([XMLDATA], OPTIONS)
 
 =over 4
 
-The TOP is the source of XML. See L<dataToXML()|XML::Compile/"Read XML"> for valid options.
+The XMLDATA is a source of XML. See L<dataToXML()|XML::Compile/"Read XML"> for valid ways,
+for example as filename, string or undef.
 
 If you have compiled/collected all readers and writers you need,
 you may simply terminate the compiler object: that will clean-up
@@ -195,15 +196,15 @@ $obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
 =over 4
 
 Collect XML data, from a wide variety of sources.  In SCALAR context,
-a XML::LibXML::Element or ::Document is returned.  In LIST context,
-pairs of additional information follow the result.
+a XML::LibXML::Element or XML::LibXML::Document is returned.  In LIST
+context, pairs of additional information follow the result.
 
-When a ready XML::LibXML NODE is provided, it is
-returned immediately and unchanged.  A SCALAR reference is interpreted
-as reference to XML as plain text (XML texts can be large, and you can
-improve performance by passing it around by reference instead of copy).
-Any value which starts with blanks followed by a 'E<lt>' is interpreted
-as XML text.
+When a ready XML::LibXML::Node (::Element or ::Document) NODE is
+provided, it is returned immediately and unchanged.  A SCALAR reference is
+interpreted as reference to XML as plain text (XML texts can be large,
+and you can improve performance by passing it around by reference
+instead of copy).  Any value which starts with blanks followed by a
+'E<lt>' is interpreted as XML text.
 
 You may also specify a pre-defined I<known> name-space URI.  A set of
 definition files is included in the distribution, and installed somewhere
@@ -285,8 +286,8 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.72,
-built on March 25, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.73,
+built on April 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

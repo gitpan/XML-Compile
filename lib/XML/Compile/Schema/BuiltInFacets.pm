@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.72';
+$VERSION = '0.73';
 use base 'Exporter';
 
 

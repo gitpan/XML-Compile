@@ -150,12 +150,26 @@ example: to trace the paths
 =head3 hooks executed as replacement
 
 Your C<replace> hook should return a list of key-value pairs. To
-produce it, it will get the XML::LibXML::Node, the translator settings
+produce it, it will get the XML::LibXML::Element, the translator settings
 as HASH, the path, and the localname.
 
 This hook has a predefined C<SKIP>, which will not process the
-found element, but simply return the string C<SKIPPED> as value.
+found element, but simply return the string "SKIPPED" as value.
 This way, a whole tree of unneeded translations can be avoided.
+
+Sometimes, the Schema spec is such a mess, that XML::Compile cannot
+automatically translate it.  I have seen cases where confusion over
+name-spaces is created: a choice between three elements with the same
+name but different types.  Well, in such case you may use XML::LibXML::Simple
+to translate a part of your tree.  Simply
+
+ use XML::LibXML::Simple  qw/XMLin/;
+ $schema->addHook
+   ( type => ...bad-type-definition...
+   , sub { my ($xml, $args, $path, $local) = @_;
+           $local => XMLin($xml, ...);
+         }
+   );
 
 =head3 hooks for post-processing, after the data is collected
 
@@ -171,8 +185,8 @@ The keys start with an underscore C<_>.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.72,
-built on March 25, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.73,
+built on April 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

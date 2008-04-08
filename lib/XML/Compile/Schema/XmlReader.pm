@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.04.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.72';
+$VERSION = '0.73';
 
 use strict;
 use warnings;
@@ -52,7 +52,7 @@ sub element_wrapper
                   sub { $_[0]->isa('XML::LibXML::Element') } );
           }
 
-          $processor->($tree);
+          ($processor->($tree))[-1];
         };
 }
 
@@ -62,7 +62,7 @@ sub attribute_wrapper
     sub { my $attr = shift;
           ref $attr && $attr->isa('XML::LibXML::Attr')
               or error __x"expects an attribute node, but got `{something}' at {path}"
-                    , something => (ref $attr || $attr), path => $path;
+                   , something => (ref $attr || $attr), path => $path;
 
           my $node = XML::LibXML::Element->new('dummy');
           $node->addChild($attr);
@@ -489,7 +489,7 @@ sub list
 {   my ($path, $args, $st) = @_;
     sub { my $tree = shift or return undef;
           my $v = $tree->textContent;
-          my @v = grep {defined} map {$st->($_) } split(" ",$v);
+          my @v = grep {defined} map {$st->($_)} split(" ",$v);
           \@v;
         };
 }
@@ -503,7 +503,7 @@ sub facets_list
           my @r;
       EL: for my $e (@v)
           {   for(@$late) { defined $e or next EL; $e = $_->($e) }
-              push @r, $e;
+              push @r, $e if defined $e;
           }
           @r ? \@r : ();
         };

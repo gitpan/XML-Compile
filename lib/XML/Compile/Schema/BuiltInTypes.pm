@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.72';
+$VERSION = '0.73';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -72,7 +72,6 @@ sub bigint
 sub bigfloat
 {   $_[0] =~ s/\s+//g;
     my $v = Math::BigFloat->new($_[0]);
-print STDERR "$_[0];$v";
     error __x"Value `{val}' is not a (big) float", val => $v if $v->is_nan;
     $v;
 }
@@ -275,7 +274,7 @@ my $timeFrag     = qr/ (?: $hourFrag \: $minuteFrag \: $secondFrag )
                      | $endOfDayFrag
                      /x;
 
-my $date = qr/^ $yearFrag \- $monthFrag \- $dayFrag (?: $timezoneFrag)? $/x;
+my $date = qr/^ $yearFrag \- $monthFrag \- $dayFrag $timezoneFrag? $/x;
 
 $builtin_types{date} =
  { parse   => \&_collapse
@@ -285,7 +284,7 @@ $builtin_types{date} =
  };
 
 
-my $time = qr /^ $timeFrag (?: $timezoneFrag )? $/x;
+my $time = qr /^ $timeFrag $timezoneFrag? $/x;
 
 $builtin_types{time} =
  { parse   => \&_collapse
@@ -296,7 +295,7 @@ $builtin_types{time} =
 
 
 my $dateTime = qr/^ $yearFrag \- $monthFrag \- $dayFrag
-                    T $timeFrag (?: $timezoneFrag )? $/x;
+                    T $timeFrag $timezoneFrag? $/x;
 
 $builtin_types{dateTime} =
  { parse   => \&_collapse
@@ -307,7 +306,7 @@ $builtin_types{dateTime} =
  };
 
 
-my $gDay = qr/^ \- \- \- $dayFrag (?: $timezoneFrag )? $/x;
+my $gDay = qr/^ \- \- \- $dayFrag $timezoneFrag? $/x;
 $builtin_types{gDay} =
  { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gDay }
@@ -315,7 +314,7 @@ $builtin_types{gDay} =
  };
 
 
-my $gMonth = qr/^ \- \- $monthFrag (?: $timezoneFrag )? $/x;
+my $gMonth = qr/^ \- \- $monthFrag $timezoneFrag? $/x;
 $builtin_types{gMonth} =
  { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gMonth }
@@ -323,7 +322,7 @@ $builtin_types{gMonth} =
  };
 
 
-my $gMonthDay = qr/^ \- \- $monthFrag \- $dayFrag (?: $timezoneFrag )? /x;
+my $gMonthDay = qr/^ \- \- $monthFrag \- $dayFrag $timezoneFrag? /x;
 $builtin_types{gMonthDay} =
  { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gMonthDay }
@@ -331,7 +330,7 @@ $builtin_types{gMonthDay} =
  };
 
 
-my $gYear = qr/^ $yearFrag \- $monthFrag (?: $timezoneFrag )? $/x;
+my $gYear = qr/^ $yearFrag \- $monthFrag $timezoneFrag? $/x;
 $builtin_types{gYear} =
  { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gYear }
@@ -339,7 +338,7 @@ $builtin_types{gYear} =
  };
 
 
-my $gYearMonth = qr/^ $yearFrag \- $monthFrag (?: $timezoneFrag )? $/x;
+my $gYearMonth = qr/^ $yearFrag \- $monthFrag $timezoneFrag? $/x;
 $builtin_types{gYearMonth} =
  { parse   => \&_collapse
  , check   => sub { (my $val = $_[0]) =~ s/\s+//g; $val =~ $gYearMonth }

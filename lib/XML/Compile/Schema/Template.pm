@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.72';
+$VERSION = '0.73';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -126,16 +126,28 @@ sub element_nillable
     sub { (occur => "$childname is nillable", $do->()) };
 }
 
+my %recurse;
 sub complex_element
 {   my ($path, $args, $tag, $elems, $attrs, $any_attr) = @_;
     my @parts = (odd_elements(@$elems, @$attrs), @$any_attr);
 
     sub { my (@attrs, @elems);
+
+          if($recurse{$tag})
+          {   return
+              +{ kind   => 'complex'
+               , struct => 'probably a recursive complex'
+               , tag    => $tag
+               };
+          }
+
+          $recurse{$tag}++;
           foreach my $part (@parts)
           {   my $child = $part->();
               if($child->{attr}) { push @attrs, $child }
               else               { push @elems, $child }
           }
+          $recurse{$tag}--;
 
           +{ kind    => 'complex'
 #          , struct  => "$tag is complex"  # too obvious to mention
@@ -328,7 +340,7 @@ sub perl_any($$)
         @sub or next;
 
         # last line is code and gets comma
-        $sub[-1] =~ s/\,?$/,/;
+        $sub[-1] =~ s/\,?\s*$/,/;
 
         if(ref $ast ne 'BLOCK')
         {   s/^(.)/$args->{indent}$1/ for @sub;
@@ -369,7 +381,7 @@ sub perl_any($$)
         if($ast->{is_array})
         {   s/^(.)/  $1/ for @subs;
             $subs[0]  =~ s/^[ ]{0,3}/[ {/;
-            $subs[-1] =~ s/$/ }, ]/;
+            $subs[-1] =~ s/$/ }, ], /;
             push @lines, "$tag =>", @subs;
         }
         else
@@ -385,7 +397,7 @@ sub perl_any($$)
     {   foreach my $union ( @{$ast->{choice}} )
         {  # remove examples
            my @l = grep { m/^#/ } perl_any($union,$args);
-           s/^\#/# - / for $l[0];
+           s/^\#/#  -/ for $l[0];
            s/^\#/#   / for @l[1..$#l];
            push @lines, @l;
         }

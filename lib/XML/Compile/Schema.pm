@@ -8,13 +8,15 @@ use strict;
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.72';
+$VERSION = '0.73';
 use base 'XML::Compile';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
-use List::Util   qw/first/;
-use XML::LibXML  ();
-use File::Spec   ();
+use List::Util     qw/first/;
+use XML::LibXML    ();
+use File::Spec     ();
+use File::Basename qw/basename/;
+use Digest::MD5    qw/md5_hex/;
 
 use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::Translate      ();
@@ -70,25 +72,79 @@ sub addSchemas($@)
             my $schema = XML::Compile::Schema::Instance->new($this, @nsopts)
                 or next;
 
-#warn $schema->targetNamespace;
-#$schema->printIndex(\*STDERR);
             $nss->add($schema);
             push @schemas, $schema;
             return 0;
           }
     );
-
     @schemas;
 }
 
 
-sub importDefinitions($@)
-{   my $self  = shift;
-    my $thing = shift or return;
-    my ($tree, @details) = $self->dataToXML($thing);
-    defined $tree or return;
+# The cache will certainly avoid penalties by the average module user,
+# which does not understand the sharing schema definitions between objects
+# especially in SOAP implementations.
+my (%cacheByFilestamp, %cacheByChecksum);
 
-    $self->addSchemas($tree, @details, @_);
+sub importDefinitions($@)
+{   my ($self, $thing, @options) = @_;
+    my @data = ref $thing eq 'ARRAY' ? @$thing : $thing;
+
+    my @schemas;
+    foreach my $data (@data)
+    {   defined $data or next;
+        my ($xml, %details) = $self->dataToXML($data);
+        if(defined $xml)
+        {   my @added = $self->addSchemas($xml, %details, @options);
+            if(my $checksum = $details{checksum})
+            {    $cacheByChecksum{$checksum} = \@added;
+            }
+            elsif(my $filestamp = $details{filestamp})
+            {   $cacheByFilestamp{$filestamp} = \@added;
+            }
+            push @schemas, @added;
+        }
+        elsif(my $filestamp = $details{filestamp})
+        {   my $cached = $cacheByFilestamp{$filestamp};
+            $self->namespaces->add(@$cached);
+        }
+        elsif(my $checksum = $details{checksum})
+        {   my $cached = $cacheByChecksum{$checksum};
+            $self->namespaces->add(@$cached);
+        }
+    }
+    @schemas;
+}
+
+sub _parseScalar($)
+{   my ($thing, $data) = @_;
+    my $checksum = md5_hex $$data;
+
+    if($cacheByChecksum{$checksum})
+    {   trace "importDefinitions reusing string data with checksum $checksum";
+        return (undef, checksum => $checksum);
+    }
+
+    trace "importDefintions for scalar with checksum $checksum";
+    ( $thing->SUPER::_parseScalar($data)
+    , checksum => $checksum
+    );
+}
+
+sub _parseFile($)
+{   my ($thing, $fn) = @_;
+    my ($mtime, $size) = (stat $fn)[9,7];
+    my $filestamp = basename($fn) . '-'. $mtime . '-' . $size;
+
+    if($cacheByFilestamp{$filestamp})
+    {   trace "importDefinitions reusing schemas from file $filestamp";
+        return (undef, filestamp => $filestamp);
+    }
+
+    trace "importDefinitions for filestamp $filestamp";
+    ( $thing->SUPER::_parseFile($fn)
+    , filestamp => $filestamp
+    );
 }
 
 
@@ -119,7 +175,7 @@ sub compile($$@)
         $args{ignore_facets} = ! $args{validation};
     }
     else
-    {   exists $args{check_values}   or $args{check_values} = 1; 
+    {   exists $args{check_values}   or $args{check_values} = 1;
         exists $args{check_occurs}   or $args{check_occurs} = 1;
     }
 
@@ -209,9 +265,7 @@ sub template($@)
      );
 
     my $ast = $compiled->();
-# use Data::Dumper;
-# $Data::Dumper::Indent = 1;
-# warn Dumper $ast;
+# use Data::Dumper; $Data::Dumper::Indent = 1; warn Dumper $ast;
 
     if($action eq 'XML')
     {   my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
@@ -231,7 +285,7 @@ sub template($@)
 sub types()
 {   my $nss = shift->namespaces;
     sort map {$_->types}
-          map {$nss->schemas($_)}
+         map {$nss->schemas($_)}
              $nss->list;
 }
 

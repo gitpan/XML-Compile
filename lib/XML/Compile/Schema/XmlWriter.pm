@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.72';
+$VERSION = '0.73';
 
 use strict;
 use warnings;
@@ -523,7 +523,7 @@ sub facets_list
 
           my $v = $r;  # do not test with original
           for(@$early) { defined $v or return (); $v = $_->($v) }
-          $r;
+          defined $v ? $r : ();
         };
 }
 

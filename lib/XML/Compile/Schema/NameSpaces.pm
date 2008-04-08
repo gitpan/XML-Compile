@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.72';
+$VERSION = '0.73';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
@@ -36,11 +36,13 @@ sub namespace($)
 }
 
 
-sub add($)
-{   my ($self, $schema) = @_;
-    my $tns = $schema->targetNamespace;
-    unshift @{$self->{tns}{$tns}}, $schema;
-    $schema;
+sub add(@)
+{   my $self = shift;
+    foreach my $schema (@_)
+    {   my $tns = $schema->targetNamespace;
+        unshift @{$self->{tns}{$tns}}, $schema;
+    }
+    @_;
 }
 
 

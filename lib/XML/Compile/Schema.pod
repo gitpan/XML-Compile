@@ -25,17 +25,33 @@ XML::Compile::Schema - Compile a schema into CODE
  $schema->importDefinitions('http://www.w3.org/2001/XMLSchema');
  $schema->importDefinitions('2001-XMLSchema.xsd');
 
+ # alternatively
+ my @specs  = ('one.xsd', 'two.xsd', $schema_as_string);
+ my $schema = XML::Compile::Schema->new(\@specs); # ARRAY!
+
  # see what types are defined
  $schema->namespaces->printIndex;
 
  # create and use a reader
- my $read   = $schema->compile(READER => '{myns}mytype');
- my $hash   = $read->($xml);
+ use XML::Compile::Util qw/pack_type/;
+ my $elem   = pack_type 'my-namespace', 'my-local-name';
+                # $elem eq "{my-namespace}my-local-name"
+ my $read   = $schema->compile(READER => $elem);
+ my $data   = $read->($xmlnode);
+ my $data   = $read->("filename.xml");
+ 
+ # when you do not know the element type beforehand
+ use XML::Compile::Util qw/type_of_node/;
+ my $elem   = type_of_node $xml->documentElement;
+ my $reader = $reader_cache{$type}               # either exists
+          ||= $schema->compile(READER => $elem); #   or create
+ my $data   = $reader->($xmlmsg);
  
  # create and use a writer
  my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
  my $write  = $schema->compile(WRITER => '{myns}mytype');
  my $xml    = $write->($doc, $hash);
+ my $result = $doc->setDocumentElement($xml);
 
  # show result
  print $xml->toString;
@@ -122,16 +138,21 @@ mainly because it cannot produce valid code.
 
 =head2 Constructors
 
-XML::Compile::Schema-E<gt>B<new>(TOP, OPTIONS)
+XML::Compile::Schema-E<gt>B<new>([XMLDATA], OPTIONS)
 
 =over 4
 
-Collect schema information.  Details about many name-spaces can be
-organized with only a single schema object (actually, the data is
-administered in an internal L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces> object)
+Details about many name-spaces can be organized with only a single
+schema object (actually, the data is administered in an internal
+L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces> object)
 
-When TOP is C<undef>, you will have to call L<importDefinitions()|XML::Compile::Schema/"Accessors"> before
-compiling anything.
+The initial information is extracted from the XMLDATA source.  The XMLDATA
+can be anything what is acceptable by L<importDefinitions()|XML::Compile::Schema/"Accessors">, which is
+everything accepted by L<dataToXML()|XML::Compile/"Read XML"> or an ARRAY of those things.
+
+You can specify the hooks before you define the schemas the hooks
+work on: all schema information and all hooks are only used when
+the readers and writers get compiled.
 
  Option     --Defined in     --Default
  hook                          undef
@@ -193,11 +214,9 @@ $obj-E<gt>B<addSchemas>(XML, OPTIONS)
 
 =over 4
 
-Collect all the schemas defined in the XML data.  Returns is a list of
-all found schema's, a list of L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects.
-
-The XML parameter must be a XML::LibXML node, therefore it is adviced
-to use L<importDefinitions()|XML::Compile::Schema/"Accessors">, which has a much more flexible way to
+Collect all the schemas defined in the XML data.  The XML parameter
+must be a XML::LibXML node, therefore it is adviced to use
+L<importDefinitions()|XML::Compile::Schema/"Accessors">, which has a much more flexible way to
 specify the data.
 
  Option  --Default
@@ -245,12 +264,31 @@ $obj-E<gt>B<importDefinitions>(XMLDATA, OPTIONS)
 
 Import (include) the schema information included in the XMLDATA.  The
 XMLDATA must be acceptable for L<dataToXML()|XML::Compile/"Read XML">.  The resulting node
-and the OPTIONS are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">.  The schema node does
+and the OPTIONS are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">. The schema node does
 not need to be the top element: any schema node found in the data
 will be decoded.
 
 Returned is a list of L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects,
 for each processed schema component.
+
+If your program imports the same string or file definitions multiple
+times, it will re-use the schema information from the first import.
+This removal of dupplications will not work for open files or pre-parsed
+XML structures.
+
+As an extension to the handling L<dataToXML()|XML::Compile/"Read XML"> provides, you can specify an
+ARRAY of things which are acceptable to C<dataToXML>.  This way, you can
+specify multiple resources at once, each of which will be processed with
+the same OPTIONS.
+
+example: of use of importDefinitions
+
+  my $schema = XML::Compile::Schema->new;
+  $schema->importDefinitions('my-spec.xsd');
+
+  my $other = "<schema>...</schema>";  # use 'HERE' documents!
+  my @specs = ('my-spec.xsd', 'types.xsd', $other);
+  $schema->importDefinitions(\@specs, @options);
 
 =back
 
@@ -498,7 +536,7 @@ Can be used to predefine an output namespace (when 'WRITER') for instance
 to reserve common abbreviations like C<soap> for external use.  Each
 entry in the hash has as key the namespace uri.  The value is a hash
 which contains C<uri>, C<prefix>, and C<used> fields.  Pass a reference
-to a private hash to catch this index. An ARRAY with prefix, uri PAIRS
+to a private hash to catch this index.  An ARRAY with prefix, uri PAIRS
 is simpler.
 
 =back
@@ -581,14 +619,15 @@ $obj-E<gt>B<template>('XML'|'PERL', TYPE, OPTIONS)
 
 =over 4
 
-WARNING: under development!  The implementation is far from complete.
-
 Schema's can be horribly complex and unreadible.  Therefore, this template
 method can be called to create an example which demonstrates how data of
 the specified TYPE as XML or Perl is organized in practice.
 
 Some OPTIONS are explained in L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
 There are some extra OPTIONS defined for the final output process.
+
+The templates produced are B<not always correct>.  Please contribute
+improvements.
 
  Option              --Default
  attributes_qualified  <undef>
@@ -711,7 +750,7 @@ same name.
 
 The compiler requires a starting-point.  This can either be an
 element name or an element's id.  The format of the element name
-is C<{namespace-url}local-name>, for instance
+is C<{namespace-uri}localname>, for instance
 
  {http://library}book
 
@@ -719,7 +758,7 @@ You may also start with
 
  http://www.w3.org/2001/XMLSchema#float
 
-as long as this ID refers to a top-level element.
+as long as this ID refers to a top-level element, not a type.
 
 When you use a schema without C<targetNamespace> (which is bad practice,
 but sometimes people really do not understand the beneficial aspects of
@@ -1239,8 +1278,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.72,
-built on March 25, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.73,
+built on April 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 
