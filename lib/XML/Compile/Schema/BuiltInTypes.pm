@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.73';
+$VERSION = '0.74';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -16,7 +16,7 @@ our %builtin_types;
 
 use Log::Report     'xml-compile', syntax => 'SHORT';
 use POSIX           qw/strftime/;
-use Math::BigInt    try => 'GMP';
+use Math::BigInt;
 use Math::BigFloat;
 use MIME::Base64;
 

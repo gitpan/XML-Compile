@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.73';
+$VERSION = '0.74';
 
 use strict;
 use warnings;
