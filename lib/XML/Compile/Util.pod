@@ -119,7 +119,7 @@ Translate an XML::LibXML::Node into a packed type.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.76,
+This module is part of XML-Compile distribution version 0.77,
 built on April 13, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
