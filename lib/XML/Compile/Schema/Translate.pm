@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.74';
+$VERSION = '0.75';
 
 # Errors are either in class 'usage': called with request
 #                         or 'schema': syntax error in schema
@@ -714,7 +714,7 @@ sub particleElement($)
 
         return $self->isTrue($abstract)
           ? $self->particleElementSubst($tree->descend($refnode))
-          : $self->particleElement($tree->descend($refnode, $ref));
+          : $self->particleElement($tree->descend($refnode));
     }
 
     my $name     = $node->getAttribute('name')

@@ -7,15 +7,15 @@ use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.74';
+$VERSION = '0.75';
 use base 'Exporter';
-
 
 our @EXPORT = qw/builtin_facet/;
 
 use Log::Report     'xml-compile', syntax => 'SHORT';
 use Math::BigInt;
 use Math::BigFloat;
+use XML::RegExp;
 
 use constant DBL_MAX_DIG => 15;
 use constant DBL_MAX_EXP => 307;
