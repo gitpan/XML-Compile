@@ -53,7 +53,7 @@ $obj-E<gt>B<find>(KIND, ADDRESS|(URI,NAME))
 =over 4
 
 Lookup the definition for the specified KIND of definition: the name
-of a gloabl element, gloabl attribute, attributeGroup or model group.
+of a global element, global attribute, attributeGroup or model group.
 The ADDRESS is constructed as C< {uri}name > or as seperate URI and NAME.
 
 =back
@@ -135,8 +135,8 @@ must be called explictly.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.77,
-built on April 13, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.78,
+built on April 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

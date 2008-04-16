@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.77';
+$VERSION = '0.78';
 use base 'Exporter';
 
 our @EXPORT = qw/builtin_facet/;
@@ -85,7 +85,7 @@ sub _maybe_big($$$)
     $value =~ s/\s//g;
     if($value =~ m/[.eE]/)
     {   my $c   = $value;
-        my $exp = s/[eE][+-]?(\d+)// ? $1 : 0;
+        my $exp = $c =~ s/[eE][+-]?(\d+)// ? $1 : 0;
         for($c) { s/\.//; s/^[-+]// }
         return Math::BigFloat->new($value)
            if length($c) > DBL_MAX_DIG || $exp > DBL_MAX_EXP;

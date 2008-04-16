@@ -61,6 +61,10 @@ XML::Compile::Schema - Compile a schema into CODE
  my $type   = pack_type 'myns', 'mytype';
  print $type;  # shows  {myns}mytype
 
+ # for debug info, start your script with:
+ use Log::Report;
+ dispatcher PERL => 'default', mode => 3;
+
 =head1 DESCRIPTION
 
 This module collects knowledge about one or more schemas.  The most
@@ -280,6 +284,17 @@ As an extension to the handling L<dataToXML()|XML::Compile/"Read XML"> provides,
 ARRAY of things which are acceptable to C<dataToXML>.  This way, you can
 specify multiple resources at once, each of which will be processed with
 the same OPTIONS.
+
+ Option --Default
+ details  <from XMLDATA>
+
+. details => HASH
+
+=over 4
+
+Overrule the details information about the source of the data.
+
+=back
 
 example: of use of importDefinitions
 
@@ -1279,8 +1294,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.77,
-built on April 13, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.78,
+built on April 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

@@ -3,13 +3,13 @@
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.04.
 
-use warnings;
-use strict;
-
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.77';
+$VERSION = '0.78';
 use base 'XML::Compile';
+
+use warnings;
+use strict;
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util     qw/first/;
@@ -67,7 +67,7 @@ sub addSchemas($@)
     ( $node,
       sub { my $this = shift;
             return 1 unless $this->isa('XML::LibXML::Element')
-                         && $this->localname eq 'schema';
+                         && $this->localName eq 'schema';
 
             my $schema = XML::Compile::Schema::Instance->new($this, @nsopts)
                 or next;
@@ -87,15 +87,17 @@ sub addSchemas($@)
 my (%cacheByFilestamp, %cacheByChecksum);
 
 sub importDefinitions($@)
-{   my ($self, $thing, @options) = @_;
+{   my ($self, $thing, %options) = @_;
     my @data = ref $thing eq 'ARRAY' ? @$thing : $thing;
 
     my @schemas;
     foreach my $data (@data)
     {   defined $data or next;
         my ($xml, %details) = $self->dataToXML($data);
+        %details = %{delete $options{details}} if $options{details};
+
         if(defined $xml)
-        {   my @added = $self->addSchemas($xml, %details, @options);
+        {   my @added = $self->addSchemas($xml, %details, %options);
             if(my $checksum = $details{checksum})
             {    $cacheByChecksum{$checksum} = \@added;
             }
