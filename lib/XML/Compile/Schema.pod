@@ -62,8 +62,7 @@ XML::Compile::Schema - Compile a schema into CODE
  print $type;  # shows  {myns}mytype
 
  # for debug info, start your script with:
- use Log::Report;
- dispatcher PERL => 'default', mode => 3;
+ use Log::Report mode => 'DEBUG';
 
 =head1 DESCRIPTION
 
@@ -650,7 +649,7 @@ improvements.
  elements_qualified    <undef>
  include_namespaces    <true>
  indent                " "
- show                  ALL
+ show_comments         ALL
 
 . attributes_qualified => BOOLEAN
 
@@ -667,7 +666,7 @@ blank.
 
 =back
 
-. show => STRING|'ALL'|'NONE'
+. show_comments => STRING|'ALL'|'NONE'
 
 =over 4
 
@@ -1130,18 +1129,24 @@ knowledge into code explicitly.  Read about the processing of wildcards
 in the manual page for each of the back-ends, because it is different
 in each case.
 
-=head2 Mixed elements
+=head2 ComplexType with "mixed" attribute
 
+[Available since 0.79]
 ComplexType and ComplexContent components can be declared with the
 C<<mixed="true">> attribute.  This implies that text is not limited
-to the content of containers, but also be used inbetween elements.
+to the content of containers, but may also be used inbetween elements.
 Usually, you will only find ignorable white-space between elements.
+
+In this example, the C<a> container will be mixed:
+  <a> before <b>2</b> after </a>
 
 XML::Compile does not have a syntax to express these mixtures of
 information and text, so the only way you can use those, is by providing
 your self-constructed XML::LibXML node for such element.
 
-There is currently no mechanism to warn you for mixed constructs.
+When reading an XML message, the parser will automatically stop on
+a mixed node, and return the whole node.  The writer will expect a
+prepared node.
 
 =head2 Schema hooks
 
@@ -1294,8 +1299,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.78,
-built on April 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.79,
+built on April 18, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 =head1 LICENSE
 

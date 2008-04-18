@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.78';
+$VERSION = '0.79';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -13,7 +13,7 @@ use strict;
 use warnings;
 no warnings 'once';
 
-use XML::Compile::Util qw/odd_elements block_label/;
+use XML::Compile::Util qw/odd_elements block_label unpack_type/;
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
 
@@ -162,14 +162,47 @@ sub tagged_element
 {   my ($path, $args, $tag, $st, $attrs, $attrs_any) = @_;
     my @parts = (odd_elements(@$attrs), @$attrs_any);
 
-    sub { my @attrs = map {$_->()} @parts;
+    my %content =
+     ( tag     => '_'
+     , struct  => 'string content of the container'
+     , example => 'Hello, World!' 
+     );
+
+    sub { my @attrs  = map {$_->()} @parts;
+          my $simple = $st->() || '';
+
           +{ kind    => 'tagged'
            , struct  => "$tag is simple value with attributes"
            , tag     => $tag
            , attrs   => \@attrs
-           , example => ($st->() || '')
+           , elems   => [ \%content ]
            };
-       };
+        };
+}
+
+sub mixed_element
+{   my ($path, $args, $tag, $attrs, $attrs_any) = @_;
+    my @parts = (odd_elements(@$attrs), @$attrs_any);
+
+    my %mixed =
+     ( tag     => '_'
+     , struct  => "mixed content cannot be processed automatically"
+     , example => "XML::LibXML::Element->new($tag)"
+     );
+
+    unless(@parts)   # show simpler alternative
+    {   $mixed{tag} = $tag;
+        return sub { \%mixed };
+    }
+
+    sub { my @attrs = map {$_->()} @parts;
+          +{ kind    => 'mixed'
+           , struct  => "$tag has a mixed content"
+           , tag     => $tag
+           , elems   => [ \%mixed ]
+           , attrs   => \@attrs
+           };
+        };
 }
 
 sub simple_element
@@ -310,7 +343,7 @@ sub hook($$$$$)
 sub toPerl($%)
 {   my ($class, $ast, %args) = @_;
     my $lines = join "\n", perl_any($ast, \%args);
-    $lines =~ s/\,\s*$/\n/;
+    $lines =~ s/\,?\s*$/\n/;
     $lines;
 }
 
@@ -361,7 +394,7 @@ sub perl_any($$)
 
     # XML does not permit difficult tags, but we still check.
     my $tag = $ast->{tag} || '';
-    if(defined $tag && $tag !~ m/^[\w_][\w\d_]+$/)
+    if(defined $tag && $tag !~ m/^[\w_][\w\d_]*$/)
     {   $tag =~ s/\\/\\\\/g;
         $tag =~ s/'/\\'/g;
         $tag = qq{'$tag'};
@@ -390,7 +423,7 @@ sub perl_any($$)
             push @lines, "$tag =>", @subs;
         }
     }
-    elsif($kind eq 'complex')  # empty complex-type
+    elsif($kind eq 'complex' || $kind eq 'mixed')  # empty complex-type
     {   push @lines, "$tag => {}";
     }
     elsif($kind eq 'union')    # union type
@@ -441,6 +474,13 @@ sub xml_any($$$$)
     {   push @comment, map { "  $_->{type}"} @{$ast->{choice}};
     }
 
+    my @attrs = @{$ast->{attrs} || []};
+    foreach my $attr (@attrs)
+    {   push @res, $doc->createAttribute($attr->{tag}, $attr->{example});
+        push @comment, "$attr->{tag}: $attr->{type}"
+            if $args->{show_type};
+    }
+
     my $nest_indent = $indent.$args->{indent};
     if(@comment)
     {   my $comment = ' '.join("$nest_indent   ", @comment) .' ';
@@ -449,17 +489,17 @@ sub xml_any($$$$)
           , $doc->createComment($comment);
     }
 
-    my @childs;
-    push @childs, @{$ast->{attrs}} if $ast->{attrs};
-    push @childs, @{$ast->{elems}} if $ast->{elems};
-
-    foreach my $child (@childs)
-    {   if(ref $child eq 'BLOCK' || ref $child eq 'REP-BLOCK')
-        {   push @res, xml_any($doc, $child, $indent, $args);
+    my @elems = @{$ast->{elems} || []};
+    foreach my $elem (@elems)
+    {   if(ref $elem eq 'BLOCK' || ref $elem eq 'REP-BLOCK')
+        {   push @res, xml_any($doc, $elem, $indent, $args);
+        }
+        elsif($elem->{tag} eq '_')
+        {   push @res, $doc->createTextNode($indent.$elem->{example});
         }
         else
         {   push @res, $doc->createTextNode($indent)
-              , scalar xml_any($doc, $child, $nest_indent, $args);
+              , scalar xml_any($doc, $elem, $nest_indent, $args);
         }
     }
 
@@ -472,7 +512,7 @@ sub xml_any($$$$)
 
     if($ast->{type} && $args->{show_type})
     {   my $full = $ast->{type};
-        my ($ns, $type) = $full =~ m/^\{([^}]*)\}(.*)/ ? ($1,$2) : ('',$full);
+        my ($ns, $type) = unpack_type $full;
         # Don't known how to encode the namespace (yet)
         push @res, $doc->createAttribute(type => $type);
     }
@@ -482,7 +522,7 @@ sub xml_any($$$$)
 
     my $node = $doc->createElement($ast->{tag});
     $node->addChild($_) for @res;
-    $node->appendText($outdent) if @childs;
+    $node->appendText($outdent) if @elems;
     $node;
 }
 

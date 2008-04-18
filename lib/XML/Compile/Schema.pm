@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.78';
+$VERSION = '0.79';
 use base 'XML::Compile';
 
 use warnings;
@@ -219,6 +219,8 @@ sub compile($$@)
     push @hooks, ref $h1 eq 'ARRAY' ? @$h1 : $h1 if $h1;
     push @hooks, ref $h2 eq 'ARRAY' ? @$h2 : $h2 if $h2;
 
+    trace "schema compile $action for $type";
+
     my $impl
      = $action eq 'READER' ? 'XmlReader'
      : $action eq 'WRITER' ? 'XmlWriter'
@@ -242,7 +244,11 @@ sub compile($$@)
 sub template($@)
 {   my ($self, $action, $type, %args) = @_;
 
-    my $show = exists $args{show} ? $args{show} : 'ALL';
+    my $show
+      = exists $args{show_comments} ? $args{show_comments}
+      : exists $args{show} ? $args{show} # pre-0.79 option name 
+      : 'ALL';
+
     $show = 'struct,type,occur,facets' if $show eq 'ALL';
     $show = '' if $show eq 'NONE';
     my @comment = map { ("show_$_" => 1) } split m/\,/, $show;

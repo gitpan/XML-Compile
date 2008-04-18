@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.78';
+$VERSION = '0.79';
 use base 'Exporter';
 
 our @EXPORT = qw/%builtin_types/;
@@ -109,7 +109,7 @@ $builtin_types{negativeInteger} =
 $builtin_types{nonNegativeInteger} =
  { parse   => \&bigint
  , check   => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ }
- , example => 0
+ , example => '17'
  };
 
 
