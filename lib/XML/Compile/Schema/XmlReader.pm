@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.04.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.79';
+$VERSION = '0.80';
 
 use strict;
 use warnings;
@@ -35,6 +35,44 @@ sub tag_unqualified
     $name;
 }
 *tag_qualified = \&tag_unqualified;
+
+sub typemap_to_hooks($$)
+{   my ($hooks, $typemap) = @_;
+    while(my($type, $action) = each %$typemap)
+    {   defined $action or next;
+        my $hook;
+        if(!ref $action)
+        {   my $class = $action;
+            no strict 'refs';
+            keys %{$class.'::'}
+                or error __x"class {pkg} for typemap {type} is not loaded"
+                     , pkg => $class, type => $type;
+
+            $class->can('fromXML')
+                or error __x"class {pkg} does not implement fromXML(), required for typemap {type}"
+                     , pkg => $class, type => $type;
+
+            trace "created reader hook for type $type to class $class";
+            $hook = sub { $class->fromXML($_[1], $type) };
+        }
+        elsif(ref $action eq 'CODE')
+        {   $hook = sub { $action->(READER => $_[1], $type) };
+            trace "created reader hook for type $type to CODE";
+        }
+        else
+        {   my $object = $action;
+            $object->can('fromXML')
+                or error __x"object of class {pkg} does not implement fromXML(), required for typemap {type}"
+                     , pkg => ref($object), type => $type;
+
+            trace "created reader hook for type $type to object";
+            $hook = sub {$object->fromXML($_[1], $type)};
+        }
+
+        push @$hooks, { type => $type, after => $hook };
+    }
+    $hooks;
+}
 
 sub element_wrapper
 {   my ($path, $args, $processor) = @_;

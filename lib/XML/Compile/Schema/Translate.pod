@@ -68,11 +68,12 @@ between Perl datastructures and XML, based on a schema.  Before
 this method is called is the schema already translated into
 a table of types.
 
- Option--Default
- action  <required>
- bricks  <required>
- hooks   <required>
- nss     <required>
+ Option --Default
+ action   <required>
+ bricks   <required>
+ hooks    <required>
+ nss      <required>
+ typemap  {}
 
 . action => 'READER'|'WRITER'
 
@@ -81,6 +82,8 @@ a table of types.
 . hooks => ARRAY
 
 . nss => L<XML::Compile::Schema::NameSpaces>
+
+. typemap => HASH
 
 =back
 
@@ -293,8 +296,17 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.79,
-built on April 18, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.80,
+built on April 21, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+All modules in this suite:
+L</XML::Compile>,
+L</XML::Compile::SOAP>,
+L</XML::Compile::SOAP::Daemon>,
+L</XML::Compile::Dumper>.
+
+Please post questions or ideas to
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
+For life contact with other developers, visit the #xml-compile channal on IRC.
 
 =head1 LICENSE
 

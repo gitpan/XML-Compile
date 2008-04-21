@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.79';
+$VERSION = '0.80';
 
 # Errors are either in class 'usage': called with request
 #                         or 'schema': syntax error in schema
@@ -42,17 +42,23 @@ sub compileTree($@)
     ref $item
         and panic "expecting an item as point to start at $path";
 
-    $self->{bricks}
+    my $bricks = $self->{bricks}
         or panic "no bricks to build";
 
     $self->{nss}
         or panic "no namespace tables";
 
-    $self->{hooks}
+    my $hooks = $self->{hooks}
         or panic "no hooks list defined";
 
     $self->{action}
         or panic "action type is needed";
+
+    my $typemap = $self->{typemap} || {};
+
+    { no strict 'refs';
+      "${bricks}::typemap_to_hooks"->($hooks, $typemap);
+    }
 
     if(my $def = $self->namespaces->findID($item))
     {   my $node = $def->{node};

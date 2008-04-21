@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.79';
+$VERSION = '0.80';
 
 use strict;
 use warnings;
@@ -13,6 +13,7 @@ no warnings 'once';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util    qw/first/;
+use Scalar::Util  qw/blessed/;
 use XML::Compile::Util qw/pack_type unpack_type odd_elements
    block_label type_of_node/;
 
@@ -56,6 +57,66 @@ sub tag_unqualified
 {   my ($path, $args, $node, $name) = @_;
     $name =~ s/.*\://;
     $name;
+}
+
+sub _typemap_class($$)
+{   my ($type, $class) = @_;
+
+    no strict 'refs';
+    keys %{$class.'::'}
+        or error __x"class {pkg} for typemap {type} is not loaded"
+             , pkg => $class, type => $type;
+
+    $class->can('toXML')
+        or error __x"class {pkg} does not implement toXML(), required for typemap {type}"
+             , pkg => $class, type => $type;
+
+    sub { my ($doc, $values, $path) = @_;
+            UNIVERSAL::isa($values, $class)
+          ? $values->toXML($type, $doc)
+          : $values;
+    };
+}
+
+sub _typemap_object($$)
+{   my ($type, $object) = @_;
+
+    $object->can('toXML')
+        or error __x"object of class {pkg} does not implement toXML(), required for typemap {type}"
+             , pkg => ref($object), type => $type;
+
+    sub { my ($doc, $values, $path) = @_;
+          blessed($values) ? $object->toXML($values, $type, $doc) : $values;
+    };
+}
+
+sub typemap_to_hooks($$)
+{   my ($hooks, $typemap) = @_;
+    while(my($type, $action) = each %$typemap)
+    {   defined $action or next;
+        my $hook;
+        if(!ref $action)
+        {   $hook = _typemap_class $type, $action;
+            trace "created writer hook for type $type to class $action";
+        }
+        elsif(ref $action eq 'CODE')
+        {   $hook = sub {
+               my ($doc, $values, $path) = @_;
+                 blessed($values)
+               ? $action->(WRITER => $values, $type, $doc)
+               : $values;
+            };
+            trace "created writer hook for type $type to CODE";
+        }
+        else
+        {   $hook = _typemap_object $type, $action;
+            trace "created reader hook for type $type to object";
+
+        }
+
+        push @$hooks, { type => $type, before => $hook };
+    }
+    $hooks;
 }
 
 sub element_wrapper

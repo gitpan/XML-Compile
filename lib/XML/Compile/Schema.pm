@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.79';
+$VERSION = '0.80';
 use base 'XML::Compile';
 
 use warnings;
@@ -39,6 +39,7 @@ sub init($)
     {   $self->addHooks(ref $h2 eq 'ARRAY' ? @$h2 : $h2);
     }
  
+    $self->{typemap} = $args->{typemap} || {};
     $self;
 }
 
@@ -167,6 +168,17 @@ sub addHooks(@)
 sub hooks() { @{shift->{hooks}} }
 
 
+sub addTypemaps(@)
+{   my $map = shift->{typemap};
+    while(@_ > 1)
+    {   my $k = shift;
+        $map->{$k} = shift;
+    }
+    $map;
+}
+
+#--------------------------------------
+
 sub compile($$@)
 {   my ($self, $action, $type, %args) = @_;
     defined $type or return ();
@@ -219,6 +231,7 @@ sub compile($$@)
     push @hooks, ref $h1 eq 'ARRAY' ? @$h1 : $h1 if $h1;
     push @hooks, ref $h2 eq 'ARRAY' ? @$h2 : $h2 if $h2;
 
+    my %map = ( %{$self->{typemap}}, %{$args{typemap} || {}} );
     trace "schema compile $action for $type";
 
     my $impl
@@ -233,10 +246,11 @@ sub compile($$@)
 
     XML::Compile::Schema::Translate->compileTree
      ( $type, %args
-     , bricks => $bricks
-     , nss    => $self->namespaces
-     , hooks  => \@hooks
-     , action => $action
+     , bricks  => $bricks
+     , nss     => $self->namespaces
+     , hooks   => \@hooks
+     , action  => $action
+     , typemap => \%map
      );
 }
 

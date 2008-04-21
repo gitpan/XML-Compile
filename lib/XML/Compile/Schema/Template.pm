@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.79';
+$VERSION = '0.80';
 
 use XML::Compile::Schema::XmlWriter;
 
@@ -21,6 +21,11 @@ BEGIN {
    no strict 'refs';
    *$_ = *{"XML::Compile::Schema::XmlWriter::$_"}
       for qw/tag_qualified tag_unqualified wrapper_ns/;
+}
+
+sub typemap_to_hooks($$)
+{   my ($hooks, $typemap) = @_;
+    $hooks;
 }
 
 sub element_wrapper
