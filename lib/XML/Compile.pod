@@ -69,6 +69,10 @@ Use SOAP with a WSDL version 1.1 communication specification file.
 
 Create a SOAP daemon, directly from a WSDL file. Implementation in progress.
 
+=item XML::Compile::Tester
+
+Helps you write regression tests.
+
 =item L<XML::Compile::Dumper|XML::Compile::Dumper>
 
 Enables you to save pre-compiled XML handlers, the results of any
@@ -286,12 +290,13 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.80,
-built on April 21, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.81,
+built on April 29, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 All modules in this suite:
 L</XML::Compile>,
 L</XML::Compile::SOAP>,
 L</XML::Compile::SOAP::Daemon>,
+L</XML::Compile::Tester>,
 L</XML::Compile::Dumper>.
 
 Please post questions or ideas to

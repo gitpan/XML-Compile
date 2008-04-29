@@ -157,11 +157,12 @@ You can specify the hooks before you define the schemas the hooks
 work on: all schema information and all hooks are only used when
 the readers and writers get compiled.
 
- Option     --Defined in     --Default
- hook                          undef
- hooks                         []
- schema_dirs  XML::Compile     undef
- typemap                       {}
+ Option            --Defined in     --Default
+ hook                                 undef
+ hooks                                []
+ ignore_unused_tags                   <false>
+ schema_dirs         XML::Compile     undef
+ typemap                              {}
 
 . hook => ARRAY-WITH-HOOKDATA | HOOK
 
@@ -176,6 +177,22 @@ See L<addHook()|XML::Compile::Schema/"Accessors">.  Adds one HOOK (HASH).
 =over 4
 
 See L<addHooks()|XML::Compile::Schema/"Accessors">.
+
+=back
+
+. ignore_unused_tags => BOOLEAN|REGEXP
+
+=over 4
+
+(WRITER) Usually, a C<mistake> warning is produced when a user provides
+a data structure which contains more data than is needed for the XML
+message which is created; this will show structural problems.  However,
+in some cases, you may want to play tricks with the data-structure and
+therefore disable this precausion.
+
+With a REGEXP, you can have more control.  Only keys which do match
+the expression will be ignored silently.  Other keys (usually typos
+and other mistakes) will get reported.  See L</Typemaps>
 
 =back
 
@@ -252,6 +269,14 @@ An indication where this schema data was found.  If you use L<dataToXML()|XML::C
 in LIST context, you get such an indication.
 
 =back
+
+=back
+
+$obj-E<gt>B<addTypemap>(PAIR)
+
+=over 4
+
+Synonym for L<addTypemap()|XML::Compile::Schema/"Accessors">.
 
 =back
 
@@ -401,7 +426,7 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implem
  hook                            undef
  hooks                           undef
  ignore_facets                   <false>
- ignore_used_tags                <false>
+ ignore_unused_tags              <false>
  include_namespaces              <true>
  interpret_nillable_as_optional  <false>
  namespace_reset                 <false>
@@ -518,15 +543,11 @@ data comes from external sources.
 
 =back
 
-. ignore_used_tags => BOOLEAN
+. ignore_unused_tags => BOOLEAN|REGEXP
 
 =over 4
 
-(WRITER) Usually, a C<mistake> warning is produced when a user provides
-a data structure which contains more data than is needed for the XML
-message which is created; this will show structural problems.  However,
-in some cases, you may want to play tricks with the data-structure and
-therefore disable this precausion.
+Overrules what is set with L<new(ignore_unused_tags)|XML::Compile::Schema/"Constructors">.
 
 =back
 
@@ -545,9 +566,9 @@ XML components into one, and add the namespaces later.
 
 =over 4
 
-Found in the wild-life, people who think that nillable means optional.
-Not too hard to fix.  For the WRITER, you still have to state NIL
-explicitly, but the elements are not constructed.  The READER will
+Found in the schema wild-life: people who think that nillable means
+optional.  Not too hard to fix.  For the WRITER, you still have to state
+NIL explicitly, but the elements are not constructed.  The READER will
 output NIL when the nillable elements are missing.
 
 =back
@@ -1341,9 +1362,37 @@ they don't, in which case you will need to write a little wrapper.
   $schema->typemap($t1 => sub { ... });
 
 The implementation of the READER and WRITER differs.  In the READER case,
-the typemap is implemented as an 'after' hook.  The WRITER is a 'before'
-hook.  See respectively the L<XML::Compile::Schema::XmlReader|XML::Compile::Schema::XmlReader> and
+the typemap is implemented as an 'after' hook which calls a C<fromXML>
+method.  The WRITER is a 'before' hook which calls a C<toXML> method.
+See respectively the L<XML::Compile::Schema::XmlReader|XML::Compile::Schema::XmlReader> and
 L<XML::Compile::Schema::XmlWriter|XML::Compile::Schema::XmlWriter>.
+
+=head3 Private variables in objects
+
+When you design a new object, it is possible to store the information
+exactly like the corresponding XML type definition.  The only thing
+the fromXML has to do, is bless the data-structure into its class:
+
+  $schema->typemap($xmltype => 'My::Perl::Class');
+  package My::Perl::Class;
+  sub fromXML { bless $_[1], $_[0] } # for READER
+  sub toXML   { $_[0] }              # for WRITER
+
+However... the object may also need so need some private variables.
+If you store them in the same HASH for your object, you will get
+"unused tags" warnings from the writer.  To avoid that, choose one
+of the following alternatives:
+
+  # never complain about unused tags
+  ::Schema->new(..., ignore_unused_tags => 1);
+
+  # only complain about unused tags not matching regexp
+  my $not_for_xml = qr/^[A-Z]/;  # my XML only has lower-case
+  ::Schema->new(..., ignore_unused_tags => $not_for_xml);
+
+  # only for one compiled WRITER (not used with READER)
+  ::Schema->compile(..., ignore_unused_tags => 1);
+  ::Schema->compile(..., ignore_unused_tags => $not_for_xml);
 
 =head3 Limitations
 
@@ -1384,12 +1433,13 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.80,
-built on April 21, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.81,
+built on April 29, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 All modules in this suite:
 L</XML::Compile>,
 L</XML::Compile::SOAP>,
 L</XML::Compile::SOAP::Daemon>,
+L</XML::Compile::Tester>,
 L</XML::Compile::Dumper>.
 
 Please post questions or ideas to

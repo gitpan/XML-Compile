@@ -4,7 +4,8 @@
 # Pod stripped from pm file by OODoc 1.04.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.80';
+$VERSION = '0.81';
+
 
 use strict;
 use warnings;
@@ -909,8 +910,8 @@ sub hook($$$$$$)
              : $r->($tree->descend($xml));
        @h or return ();
        my $h = @h==1 ? {_ => $h[0]} : $h[1];  # detect simpleType
-       foreach (@after)
-       {   $h = $_->($xml, $h, $path);
+       foreach my $after (@after)
+       {   $h = $after->($xml, $h, $path);
            defined $h or return ();
        }
        $h;

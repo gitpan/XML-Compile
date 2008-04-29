@@ -35,12 +35,13 @@ produce an error.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.80,
-built on April 21, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.81,
+built on April 29, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 All modules in this suite:
 L</XML::Compile>,
 L</XML::Compile::SOAP>,
 L</XML::Compile::SOAP::Daemon>,
+L</XML::Compile::Tester>,
 L</XML::Compile::Dumper>.
 
 Please post questions or ideas to

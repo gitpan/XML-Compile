@@ -5,7 +5,8 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.80';
+$VERSION = '0.81';
+
 use base 'XML::Compile';
 
 use warnings;
@@ -39,7 +40,9 @@ sub init($)
     {   $self->addHooks(ref $h2 eq 'ARRAY' ? @$h2 : $h2);
     }
  
-    $self->{typemap} = $args->{typemap} || {};
+    $self->{typemap}     = $args->{typemap} || {};
+    $self->{unused_tags} = $args->{ignore_unused_tags};
+
     $self;
 }
 
@@ -176,6 +179,7 @@ sub addTypemaps(@)
     }
     $map;
 }
+*addTypemap = \&addTypemaps;
 
 #--------------------------------------
 
@@ -192,6 +196,11 @@ sub compile($$@)
     {   exists $args{check_values}   or $args{check_values} = 1;
         exists $args{check_occurs}   or $args{check_occurs} = 1;
     }
+
+    my $iut = exists $args{ignore_unused_tags} ? $args{ignore_unused_tags}
+      : $self->{unused_tags};
+    $args{ignore_unused_tags}
+      = !defined $iut ? undef : ref $iut eq 'Regexp' ? $iut : qr/^/;
 
     exists $args{include_namespaces} or $args{include_namespaces} = 1;
     $args{sloppy_integers}   ||= 0;
