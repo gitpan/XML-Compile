@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.81';
+$VERSION = '0.82';
 
 use base 'XML::Compile';
 
@@ -285,6 +285,10 @@ sub template($@)
     my $bricks = 'XML::Compile::Schema::Template';
     eval "require $bricks";
     fault $@ if $@;
+
+    # it could be used to add extra comment lines
+    error __x"typemaps not implemented for XML template examples"
+        if $action eq 'XML' && defined $args{typemap} && keys %{$args{typemap}};
 
     my $compiled = XML::Compile::Schema::Translate->compileTree
      ( $type

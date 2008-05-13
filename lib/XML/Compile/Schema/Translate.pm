@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.81';
+$VERSION = '0.82';
 
 
 # Errors are either in class 'usage': called with request
@@ -78,8 +78,11 @@ sub compileTree($@)
 
 sub assertType($$$$)
 {   my ($self, $where, $field, $type, $value) = @_;
-    my $checker = $builtin_types{$type}{check}
-        or die "PANIC: invalid assert type $type";
+    my $checker = $builtin_types{$type}{check};
+    unless(defined $checker)
+    {   mistake "useless assert for type $type";
+        return;
+    }
 
     return if $checker->($value);
 
@@ -273,7 +276,6 @@ sub simpleList($)
             or error __x"list with both itemType and content at {where}"
                  , where => $where, class => 'schema';
 
-        $self->assertType($where, itemType => QName => $type);
         my $typename = $self->rel2abs($where, $node, $type);
         $per_item    = $self->typeByName($tree, $typename);
     }
@@ -316,8 +318,7 @@ sub simpleUnion($)
     my @types;
     if(my $members = $node->getAttribute('memberTypes'))
     {   foreach my $union (split " ", $members)
-        {   $self->assertType($where, memberTypes => QName => $union);
-            my $typename = $self->rel2abs($where, $node, $union);
+        {   my $typename = $self->rel2abs($where, $node, $union);
             my $type = $self->typeByName($tree, $typename);
             my $st   = $type->{st}
                 or error __x"union only of simpleTypes, but {type} is complex at {where}"
@@ -352,8 +353,7 @@ sub simpleRestriction($$)
 
     my $base;
     if(my $basename = $node->getAttribute('base'))
-    {   $self->assertType($where, base => QName => $basename);
-        my $typename = $self->rel2abs($where, $node, $basename);
+    {   my $typename = $self->rel2abs($where, $node, $basename);
         $base        = $self->typeByName($tree, $typename);
     }
     else
@@ -460,7 +460,7 @@ sub element($)
     $self->assertType($tree->path, name => NCName => $name);
     my $fullname = pack_type $self->{tns}, $name;
 
-    my $nodeid   = $node->nodePath;
+    my $nodeid   = $node->nodePath.'#'.$fullname;
     my $already  = $self->{_created}{$nodeid};
     return $already if $already;
 
@@ -490,7 +490,6 @@ sub element($)
             or error __x"no childs expected with attribute `type' at {where}"
                    , where => $where, class => 'schema';
 
-        $self->assertType($where, type => QName => $isa);
         $typename = $self->rel2abs($where, $node, $isa);
         $type     = $self->typeByName($tree, $typename);
     }
@@ -510,7 +509,7 @@ sub element($)
         $type
           = $local eq 'simpleType'  ? $self->simpleType($nest, 0)
           : $local eq 'complexType' ? $self->complexType($nest)
-          : error __x"unexpected element child `{name}' and {where}"
+          : error __x"illegal element child `{name}' at {where}"
                 , name => $local, where => $where, class => 'schema';
     }
 
@@ -614,7 +613,6 @@ sub particleGroup($)
         or error __x"group without ref at {where}"
              , where => $where, class => 'schema';
 
-    $self->assertType($tree, ref => QName => $ref);
     my $typename = $self->rel2abs($where, $node, $ref);
 
     my $dest    = $self->namespaces->find(group => $typename)
@@ -654,11 +652,12 @@ sub findSgMemberNodes($)
 {   my ($self, $type) = @_;
     my @subgrps;
     foreach my $subgrp ($self->namespaces->findSgMembers($type))
-    {   my $node = $subgrp->{node};
-        push @subgrps, $node;
-
+    {   my $node     = $subgrp->{node};
         my $abstract = $node->getAttribute('abstract') || 'false';
-        $self->isTrue($abstract) or next;
+        unless($self->isTrue($abstract))
+        {   push @subgrps, $node;
+            next;
+        }
 
         my $groupname = $node->getAttribute('name')
             or error __x"substitutionGroup element needs name at {where}"
@@ -680,8 +679,6 @@ sub particleElementSubst($)
         or error __x"substitutionGroup element needs name at {where}"
                , where => $tree->path, class => 'schema';
 
-    $self->assertType($where, name => QName => $groupname);
- 
     my $tns     = $self->{tns};
     my $type    = pack_type $tns, $groupname;
     my @subgrps = $self->findSgMemberNodes($type);
@@ -778,9 +775,7 @@ sub attributeOne($)
 
     my($ref, $name, $form, $typeattr);
     if(my $refattr =  $node->getAttribute('ref'))
-    {   $self->assertType($tree, ref => QName => $refattr);
-
-        my $refname = $self->rel2abs($tree, $node, $refattr);
+    {   my $refname = $self->rel2abs($tree, $node, $refattr);
         my $def     = $self->namespaces->find(attribute => $refname)
             or error __x"cannot find attribute {name} at {where}"
                  , name => $refname, where => $tree->path, class => 'schema';
@@ -836,8 +831,6 @@ sub attributeOne($)
 
     my $where = $tree->path.'/@'.$name;
     $self->assertType($where, name => NCName => $name);
-    $self->assertType($where, type => QName => $typeattr)
-        if $typeattr;
 
     unless($type)
     {   my $typename = defined $typeattr
@@ -894,8 +887,6 @@ sub attributeGroup($)
     my $ref   = $node->getAttribute('ref')
         or error __x"attributeGroup use without ref at {where}"
              , where => $tree->path, class => 'schema';
-
-    $self->assertType($where, ref => QName => $ref);
 
     my $typename = $self->rel2abs($where, $node, $ref);
 
@@ -1153,8 +1144,7 @@ sub simpleContentRestriction($$)
 
     my $type;
     if(my $basename = $node->getAttribute('base'))
-    {   $self->assertType($where, base => QName => $basename);
-        my $typename = $self->rel2abs($where, $node, $basename);
+    {   my $typename = $self->rel2abs($where, $node, $basename);
         $type        = $self->typeByName($tree, $typename);
     }
     else
@@ -1193,7 +1183,7 @@ sub complexContent($$)
 
     my $node = $tree->node;
     $mixed ||= $self->isTrue($node->getAttribute('mixed') || 'false');
-    
+  
     $tree->nrChildren == 1
         or error __x"only one complexContent child expected at {where}"
              , where => $tree->path, class => 'schema';

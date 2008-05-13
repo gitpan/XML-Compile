@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.81';
+$VERSION = '0.82';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -181,7 +181,7 @@ sub _collectTypes($)
           , afd  => $afd, efd  => $efd,  schema => $self
           , ref  => $ref, sg   => $sg
           };
-        weaken($self->{schema});
+        weaken($info->{schema});
 
         # Id's can also be set on nested items, but these are ignored
         # for now...
