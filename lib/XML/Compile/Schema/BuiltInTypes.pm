@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.82';
+$VERSION = '0.83';
 
 use base 'Exporter';
 
@@ -452,6 +452,8 @@ $builtin_types{QName} =
            $qname =~ s/\s//g;
            my $prefix = $qname =~ s/^([^:]*)\:// ? $1 : '';
 
+use Carp;
+defined $node or confess "NO NODE;".@_;
            $node  = $node->node if $node->isa('XML::Compile::Iterator');
            my $ns = $node->lookupNamespaceURI($prefix) || '';
            pack_type $ns, $qname;

@@ -235,8 +235,8 @@ selected FILEHANDLE.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.82,
-built on May 13, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.83,
+built on May 14, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 All modules in this suite:
 L</XML::Compile>,
 L</XML::Compile::SOAP>,

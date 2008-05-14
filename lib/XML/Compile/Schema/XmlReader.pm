@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.04.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.82';
+$VERSION = '0.83';
 
 
 use strict;
@@ -647,9 +647,9 @@ sub builtin
       )
 
     : ( defined $parse
-      ? sub { my $value = ref $_[0] ? shift->textContent : $_[0];
+      ? sub { my $value = ref $_[0] ? $_[0]->textContent : $_[0];
               defined $value or return undef;
-              $parse->($value);
+              $parse->($value, $_[0]);
             }
       : sub { ref $_[0] ? shift->textContent : $_[0] }
       );
