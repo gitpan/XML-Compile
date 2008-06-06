@@ -242,18 +242,21 @@ writer considerably.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.83,
-built on May 14, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.84,
+built on June 06, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+
 All modules in this suite:
 L</XML::Compile>,
 L</XML::Compile::SOAP>,
 L</XML::Compile::SOAP::Daemon>,
 L</XML::Compile::Tester>,
+L</XML::Compile::Cache>,
 L</XML::Compile::Dumper>.
 
 Please post questions or ideas to
-F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
-For life contact with other developers, visit the #xml-compile channal on IRC.
+L<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
+For life contact with other developers, visit the C<#xml-compile> channel
+on C<irc.perl.org>.
 
 =head1 LICENSE
 

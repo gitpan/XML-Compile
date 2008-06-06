@@ -10,7 +10,7 @@ use lib '../XMLCompile/lib'  # test environment at home
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.83';
+$VERSION = '0.84';
 
 use base 'Exporter';
 
@@ -20,7 +20,7 @@ use XML::Compile::Tester;
 
 use Test::More;
 use Test::Deep   qw/cmp_deeply/;
-use Log::Report  qw/try/;
+use Log::Report;
 use Data::Dumper qw/Dumper/;
 
 our @EXPORT = qw/

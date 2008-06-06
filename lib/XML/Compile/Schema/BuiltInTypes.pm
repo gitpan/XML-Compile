@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.83';
+$VERSION = '0.84';
 
 use base 'Exporter';
 
@@ -90,6 +90,11 @@ $builtin_types{boolean} =
                   : $_[0] ? 1 : 0 }
  , check   => sub { $_[0] =~ m/^\s*(?:false|true|0|1)\s*$/i }
  , example => 'true'
+ };
+
+
+$builtin_types{pattern} =
+ { example => '*.exe'
  };
 
 
@@ -397,12 +402,27 @@ sub _valid_ncname($)
 }
 
 # better checks needed
+#  NCName matches pattern [\i-[:]][\c-[:]]*
+sub _ncname($) {sub { $_[0] !~ m/\:/ }}
+
+my $ids = 0;
 $builtin_types{ID} =
+ { parse   => \&_collapse
+ , check   => \&_ncname
+ , example => 'id_'.$ids++
+ };
+
 $builtin_types{IDREF} =
+ { parse   => \&_collapse
+ , check   => \&_ncname
+ , example => 'id-ref'
+ };
+
+
 $builtin_types{NCName} =
 $builtin_types{ENTITY} =
  { parse   => \&_collapse
- , check   => sub { $_[0] !~ m/\:/ }
+ , check   => \&_ncname
  , example => 'label'
  };
 

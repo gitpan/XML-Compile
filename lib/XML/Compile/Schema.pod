@@ -7,6 +7,9 @@ XML::Compile::Schema - Compile a schema into CODE
  XML::Compile::Schema
    is a XML::Compile
 
+ XML::Compile::Schema is extended by
+   XML::Compile::Cache
+
 =head1 SYNOPSIS
 
  # compile tree yourself
@@ -30,7 +33,7 @@ XML::Compile::Schema - Compile a schema into CODE
  my $schema = XML::Compile::Schema->new(\@specs); # ARRAY!
 
  # see what types are defined
- $schema->namespaces->printIndex;
+ $schema->printIndex;
 
  # create and use a reader
  use XML::Compile::Util qw/pack_type/;
@@ -61,6 +64,10 @@ XML::Compile::Schema - Compile a schema into CODE
  my $type   = pack_type 'myns', 'mytype';
  print $type;  # shows  {myns}mytype
 
+ # using a compiled routines cache
+ use XML::Compile::Cache;   # seperate distribution
+ my $schema = XML::Compile::Cache->new(...);
+
  # for debug info, start your script with:
  use Log::Report mode => 'DEBUG';
 
@@ -76,7 +83,7 @@ later:
 
 =over 4
 
-=item C<$schema->compile('READER'...)> translates XML to HASH
+=item C<< $schema->compile('READER'...) >> translates XML to HASH
 
 The XML reader produces a HASH from a XML::LibXML::Node tree or an
 XML string.  Those represent the input data.  The values are checked.
@@ -99,7 +106,7 @@ or
  my $hash   = $msgin->($xml_string);
  my $hash   = $msgin->($xml_node);
 
-=item C<$schema->compile('WRITER', ...)> translates HASH to XML
+=item C<< $schema->compile('WRITER', ...) >> translates HASH to XML
 
 The writer produces schema compliant XML, based on a Perl HASH.  To get
 the data encoding correctly, you are required to pass a document object
@@ -116,14 +123,14 @@ alternative
 
  my $write  = $schema->compile(WRITER => 'myns#myid');
 
-=item C<$schema->template('XML', ...)> creates an XML example
+=item C<< $schema->template('XML', ...) >> creates an XML example
 
 Based on the schema, this produces an XML message as example.  Schemas
 are usually so complex that people loose overview.  This example may
 put you back on track, and used as starting point for many creating the
 XML version of the message.
 
-=item C<$schema->template('PERL', ...)> creates an Perl example
+=item C<< $schema->template('PERL', ...) >> creates an Perl example
 
 Based on the schema, this produces an Perl HASH structure (a bit
 like the output by Data::Dumper), which can be used as template
@@ -230,9 +237,9 @@ and L<addHook()|XML::Compile::Schema/"Accessors">. C<undef> values are ignored.
 
 =back
 
-$obj-E<gt>B<addSchemaDirs>(DIRECTORIES|PACKAGE)
+$obj-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
 
-XML::Compile::Schema-E<gt>B<addSchemaDirs>(DIRECTORIES|PACKAGE)
+XML::Compile::Schema-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
 
 =over 4
 
@@ -671,14 +678,6 @@ C<check_occurs>, and C<ignore_facets>.
 
 =back
 
-$obj-E<gt>B<elements>
-
-=over 4
-
-List all elements, defined by all schemas sorted alphabetically.
-
-=back
-
 $obj-E<gt>B<template>('XML'|'PERL', TYPE, OPTIONS)
 
 =over 4
@@ -725,6 +724,27 @@ C<occur>, C<facets>.  A value of C<ALL> will select all available comments.
 The C<NONE> or empty string will exclude all comments.
 
 =back
+
+=back
+
+=head2 Administration
+
+$obj-E<gt>B<elements>
+
+=over 4
+
+List all elements, defined by all schemas sorted alphabetically.
+
+=back
+
+$obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
+
+=over 4
+
+Print all the elements which are defined in the schemas to the FILEHANDLE
+(by default the selected handle).  OPTIONS are passed to
+L<XML::Compile::Schema::NameSpaces::printIndex()|XML::Compile::Schema::NameSpaces/"Accessors"> and
+L<XML::Compile::Schema::Instance::printIndex()|XML::Compile::Schema::Instance/"Index">.
 
 =back
 
@@ -1433,18 +1453,21 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.83,
-built on May 14, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.84,
+built on June 06, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+
 All modules in this suite:
 L</XML::Compile>,
 L</XML::Compile::SOAP>,
 L</XML::Compile::SOAP::Daemon>,
 L</XML::Compile::Tester>,
+L</XML::Compile::Cache>,
 L</XML::Compile::Dumper>.
 
 Please post questions or ideas to
-F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
-For life contact with other developers, visit the #xml-compile channal on IRC.
+L<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
+For life contact with other developers, visit the C<#xml-compile> channel
+on C<irc.perl.org>.
 
 =head1 LICENSE
 

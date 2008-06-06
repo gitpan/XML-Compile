@@ -224,29 +224,55 @@ statements.
 
 =back
 
-$obj-E<gt>B<printIndex>([FILEHANDLE])
+$obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
 
 =over 4
 
 Prints an overview over the defined objects within this schema to the
 selected FILEHANDLE.
 
+ Option       --Default
+ kinds          <all>
+ list_abstract  <true>
+
+. kinds => KIND|ARRAY-of-KIND
+
+=over 4
+
+Which KIND of definitions would you like to see.  Pick from
+C<element>, C<attribute>, C<simpleType>, C<complexType>, C<attributeGroup>,
+and C<group>.
+
+=back
+
+. list_abstract => BOOLEAN
+
+=over 4
+
+Show abstract elements, or skip them (because they cannot be instantiated
+anyway).
+
+=back
+
 =back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.83,
-built on May 14, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.84,
+built on June 06, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+
 All modules in this suite:
 L</XML::Compile>,
 L</XML::Compile::SOAP>,
 L</XML::Compile::SOAP::Daemon>,
 L</XML::Compile::Tester>,
+L</XML::Compile::Cache>,
 L</XML::Compile::Dumper>.
 
 Please post questions or ideas to
-F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
-For life contact with other developers, visit the #xml-compile channal on IRC.
+L<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
+For life contact with other developers, visit the C<#xml-compile> channel
+on C<irc.perl.org>.
 
 =head1 LICENSE
 

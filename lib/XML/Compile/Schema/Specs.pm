@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.83';
+$VERSION = '0.84';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -48,6 +48,7 @@ my @builtin_common = qw/
  nonNegativeInteger
  nonPositiveInteger
  NOTATION
+ pattern
  positiveInteger
  QName
  short

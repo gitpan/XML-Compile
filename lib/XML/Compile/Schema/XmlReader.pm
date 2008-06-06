@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.04.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.83';
+$VERSION = '0.84';
 
 
 use strict;
@@ -502,8 +502,11 @@ sub element_default
     my $def  = $do->($default);
 
     sub { my $tree = shift;
-          defined $tree && $tree->nodeLocal eq $childname
-              or return ($childname => $def);
+          return ($childname => $def)
+              if !defined $tree 
+              || $tree->nodeLocal ne $childname
+              || $tree->node->textContent eq '';
+
           $do->($tree);
         };
 }
@@ -659,10 +662,11 @@ sub builtin
 
 sub list
 {   my ($path, $args, $st) = @_;
-    sub { my $tree = shift or return undef;
-          my $v = $tree->textContent;
+    sub { my $tree = shift;
+          defined $tree or return undef;
+          my $v = ref $tree ? $tree->textContent : $tree;
           my @v = grep {defined} map {$st->($_)} split(" ",$v);
-          \@v;
+          @v ? \@v : undef;
         };
 }
 

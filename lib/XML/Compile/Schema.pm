@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.83';
+$VERSION = '0.84';
 
 use base 'XML::Compile';
 
@@ -330,6 +330,12 @@ sub elements()
     sort map {$_->elements}
          map {$nss->schemas($_)}
              $nss->list;
+}
+
+
+sub printIndex(@)
+{   my $self = shift;
+    $self->namespaces->printIndex(@_);
 }
 
 
