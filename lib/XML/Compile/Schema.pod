@@ -91,7 +91,7 @@ An error produced when a value or the data-structure is not according
 to the specs.
 
 The CODE reference which is returned can be called with anything
-accepted by L<dataToXML()|XML::Compile/"Read XML">.
+accepted by L<dataToXML()|XML::Compile/"Compilers">.
 
 example: create an XML reader
 
@@ -157,8 +157,8 @@ schema object (actually, the data is administered in an internal
 L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces> object)
 
 The initial information is extracted from the XMLDATA source.  The XMLDATA
-can be anything what is acceptable by L<importDefinitions()|XML::Compile::Schema/"Accessors">, which is
-everything accepted by L<dataToXML()|XML::Compile/"Read XML"> or an ARRAY of those things.
+can be anything what is acceptable by L<importDefinitions()|XML::Compile::Schema/"Administration">, which is
+everything accepted by L<dataToXML()|XML::Compile/"Compilers"> or an ARRAY of those things.
 
 You can specify the hooks before you define the schemas the hooks
 work on: all schema information and all hooks are only used when
@@ -253,7 +253,7 @@ $obj-E<gt>B<addSchemas>(XML, OPTIONS)
 
 Collect all the schemas defined in the XML data.  The XML parameter
 must be a XML::LibXML node, therefore it is adviced to use
-L<importDefinitions()|XML::Compile::Schema/"Accessors">, which has a much more flexible way to
+L<importDefinitions()|XML::Compile::Schema/"Administration">, which has a much more flexible way to
 specify the data.
 
  Option  --Default
@@ -272,7 +272,7 @@ Explicitly state from which file the data is coming.
 
 =over 4
 
-An indication where this schema data was found.  If you use L<dataToXML()|XML::Compile/"Read XML">
+An indication where this schema data was found.  If you use L<dataToXML()|XML::Compile/"Compilers">
 in LIST context, you get such an indication.
 
 =back
@@ -295,103 +295,11 @@ Add new XML-Perl type relations.  See L</Typemaps>.
 
 =back
 
-$obj-E<gt>B<findSchemaFile>(FILENAME)
-
-=over 4
-
-See L<XML::Compile/"Accessors">
-
-=back
-
 $obj-E<gt>B<hooks>
 
 =over 4
 
 Returns the LIST of defined hooks (as HASHes).
-
-=back
-
-$obj-E<gt>B<importDefinitions>(XMLDATA, OPTIONS)
-
-=over 4
-
-Import (include) the schema information included in the XMLDATA.  The
-XMLDATA must be acceptable for L<dataToXML()|XML::Compile/"Read XML">.  The resulting node
-and the OPTIONS are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">. The schema node does
-not need to be the top element: any schema node found in the data
-will be decoded.
-
-Returned is a list of L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects,
-for each processed schema component.
-
-If your program imports the same string or file definitions multiple
-times, it will re-use the schema information from the first import.
-This removal of dupplications will not work for open files or pre-parsed
-XML structures.
-
-As an extension to the handling L<dataToXML()|XML::Compile/"Read XML"> provides, you can specify an
-ARRAY of things which are acceptable to C<dataToXML>.  This way, you can
-specify multiple resources at once, each of which will be processed with
-the same OPTIONS.
-
- Option --Default
- details  <from XMLDATA>
-
-. details => HASH
-
-=over 4
-
-Overrule the details information about the source of the data.
-
-=back
-
-example: of use of importDefinitions
-
-  my $schema = XML::Compile::Schema->new;
-  $schema->importDefinitions('my-spec.xsd');
-
-  my $other = "<schema>...</schema>";  # use 'HERE' documents!
-  my @specs = ('my-spec.xsd', 'types.xsd', $other);
-  $schema->importDefinitions(\@specs, @options);
-
-=back
-
-$obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
-
-XML::Compile::Schema-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
-
-=over 4
-
-See L<XML::Compile/"Accessors">
-
-=back
-
-$obj-E<gt>B<namespaces>
-
-=over 4
-
-Returns the L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces> object which is used
-to collect schemas.
-
-=back
-
-=head2 Read XML
-
-$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
-
-=over 4
-
-See L<XML::Compile/"Read XML">
-
-=back
-
-=head2 Filters
-
-$obj-E<gt>B<walkTree>(NODE, CODE)
-
-=over 4
-
-See L<XML::Compile/"Filters">
 
 =back
 
@@ -412,7 +320,7 @@ An alternative is the C<url#id> which refers to an element or type with
 the specific C<id> attribute value.
 
 When a READER is created, a CODE reference is returned which needs
-to be called with XML, as accepted by L<XML::Compile::dataToXML()|XML::Compile/"Read XML">.
+to be called with XML, as accepted by L<XML::Compile::dataToXML()|XML::Compile/"Compilers">.
 Returned is a nested HASH structure which contains the data from
 contained in the XML.  The transformation rules are explained below.
 
@@ -678,6 +586,14 @@ C<check_occurs>, and C<ignore_facets>.
 
 =back
 
+$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+
+=over 4
+
+See L<XML::Compile/"Compilers">
+
+=back
+
 $obj-E<gt>B<template>('XML'|'PERL', TYPE, OPTIONS)
 
 =over 4
@@ -737,6 +653,78 @@ List all elements, defined by all schemas sorted alphabetically.
 
 =back
 
+$obj-E<gt>B<findSchemaFile>(FILENAME)
+
+=over 4
+
+See L<XML::Compile/"Administration">
+
+=back
+
+$obj-E<gt>B<importDefinitions>(XMLDATA, OPTIONS)
+
+=over 4
+
+Import (include) the schema information included in the XMLDATA.  The
+XMLDATA must be acceptable for L<dataToXML()|XML::Compile/"Compilers">.  The resulting node
+and the OPTIONS are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">. The schema node does
+not need to be the top element: any schema node found in the data
+will be decoded.
+
+Returned is a list of L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects,
+for each processed schema component.
+
+If your program imports the same string or file definitions multiple
+times, it will re-use the schema information from the first import.
+This removal of dupplications will not work for open files or pre-parsed
+XML structures.
+
+As an extension to the handling L<dataToXML()|XML::Compile/"Compilers"> provides, you can specify an
+ARRAY of things which are acceptable to C<dataToXML>.  This way, you can
+specify multiple resources at once, each of which will be processed with
+the same OPTIONS.
+
+ Option --Default
+ details  <from XMLDATA>
+
+. details => HASH
+
+=over 4
+
+Overrule the details information about the source of the data.
+
+=back
+
+example: of use of importDefinitions
+
+  my $schema = XML::Compile::Schema->new;
+  $schema->importDefinitions('my-spec.xsd');
+
+  my $other = "<schema>...</schema>";  # use 'HERE' documents!
+  my @specs = ('my-spec.xsd', 'types.xsd', $other);
+  $schema->importDefinitions(\@specs, @options);
+
+=back
+
+$obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+
+XML::Compile::Schema-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+
+=over 4
+
+See L<XML::Compile/"Administration">
+
+=back
+
+$obj-E<gt>B<namespaces>
+
+=over 4
+
+Returns the L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces> object which is used
+to collect schemas.
+
+=back
+
 $obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
 
 =over 4
@@ -756,6 +744,14 @@ List all types, defined by all schemas sorted alphabetically.
 
 =back
 
+$obj-E<gt>B<walkTree>(NODE, CODE)
+
+=over 4
+
+See L<XML::Compile/"Administration">
+
+=back
+
 =head1 DETAILS
 
 =head2 Comparison
@@ -772,7 +768,7 @@ specify other resources for definitions.  In the idea of the XML design
 team, those files should be retrieved automatically via an internet
 connection from the C<schemaLocation>.  However, this is a bad concept; in
 XML::Compile modules you will have to explictly provide filenames on local
-disk using L<importDefinitions()|XML::Compile::Schema/"Accessors"> or L<XML::Compile::WSDL11::addWSDL()|XML::Compile::WSDL11/"Extension">.
+disk using L<importDefinitions()|XML::Compile::Schema/"Administration"> or L<XML::Compile::WSDL11::addWSDL()|XML::Compile::WSDL11/"Extension">.
 
 There are various reasons why I, the author of this module, think the
 dynamic automatic internet imports are a bad idea.  First: you do not
@@ -787,7 +783,7 @@ knowledge.
 So: before you start, you will need to scan (recursively) the initial
 schema or wsdl file for C<import> and C<include> statements, and
 collect all these files from their C<schemaLocation> into files on
-local disk.  In your program, call L<importDefinitions()|XML::Compile::Schema/"Accessors"> on all of
+local disk.  In your program, call L<importDefinitions()|XML::Compile::Schema/"Administration"> on all of
 them -in any order- before you call L<compile()|XML::Compile::Schema/"Compilers">.
 
 =head3 Organizing your definitions
@@ -1453,19 +1449,19 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.84,
-built on June 06, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.85,
+built on June 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
-L</XML::Compile>,
-L</XML::Compile::SOAP>,
-L</XML::Compile::SOAP::Daemon>,
-L</XML::Compile::Tester>,
-L</XML::Compile::Cache>,
-L</XML::Compile::Dumper>.
+L<XML::Compile>,
+L<XML::Compile::SOAP>,
+L<XML::Compile::SOAP::Daemon>,
+L<XML::Compile::Tester>,
+L<XML::Compile::Cache>,
+L<XML::Compile::Dumper>.
 
-Please post questions or ideas to
-L<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
+Please post questions or ideas to the mailinglist at
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
 For life contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 

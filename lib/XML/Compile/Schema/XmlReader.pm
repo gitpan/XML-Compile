@@ -1,10 +1,10 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.04.
+# Pod stripped from pm file by OODoc 1.05.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.84';
+$VERSION = '0.85';
 
 
 use strict;
@@ -316,6 +316,7 @@ sub block_handler
               my @pairs   = try { $process->($tree) };
               if($@->wasFatal(class => 'misfit'))
               {   # error is ok, if nothing consumed
+                  trace "misfit $label (optional) ".$@->wasFatal->message;
                   my $ending = $tree->currentChild;
                   $@->reportAll if !$ending || $ending!=$starter;
                   return ();
@@ -349,6 +350,7 @@ sub block_handler
                   my @pairs   = try { $process->($tree) };
                   if($@->wasFatal(class => 'misfit'))
                   {   # misfit error is ok, if nothing consumed
+                      trace "misfit $label ($min..$max) ".$@->wasFatal->message;
                       my $ending = $tree->currentChild;
                       $@->reportAll if !$ending || $ending!=$starter;
                       last;
@@ -380,6 +382,7 @@ sub block_handler
               my @pairs   = try { $process->($tree) };
               if($@->wasFatal(class => 'misfit'))
               {   # misfit error is ok, if nothing consumed
+                  trace "misfit $label ($min..) ".$@->wasFatal->message;
                   my $ending = $tree->currentChild;
                   $@->reportAll if !$ending || $ending!=$starter;
                   last;
@@ -671,7 +674,7 @@ sub list
 }
 
 sub facets_list
-{   my ($path, $args, $st, $early, $late) = @_;
+{   my ($path, $args, $st, $info, $early, $late) = @_;
     sub { defined $_[0] or return undef;
           my $v = $st->(@_);
           for(@$early) { defined $v or return (); $v = $_->($v) }
@@ -686,7 +689,7 @@ sub facets_list
 }
 
 sub facets
-{   my ($path, $args, $st, @do) = @_;
+{   my ($path, $args, $st, $info, @do) = @_;
     sub { defined $_[0] or return undef;
           my $v = $st->(@_);
           for(@do) { defined $v or return (); $v = $_->($v) }
@@ -784,6 +787,8 @@ sub attribute_fixed_optional
 
 sub substgroup
 {   my ($path, $args, $type, %do) = @_;
+
+    keys %do or return bless sub { () }, 'BLOCK';
 
     bless
     sub { my $tree  = shift;

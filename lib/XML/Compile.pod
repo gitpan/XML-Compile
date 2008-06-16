@@ -41,7 +41,7 @@ will follow the specs closely (unless disabled).
 
 Imports and includes, as used in the schemas, are NOT performed
 automaticly.  Schema's and such are NOT collected from internet
-dynamically; you have to call L<XML::Compile::Schema::importDefinitions()|XML::Compile::Schema/"Accessors">
+dynamically; you have to call L<XML::Compile::Schema::importDefinitions()|XML::Compile::Schema/"Administration">
 explictly with filenames of locally stored copies. Includes do only
 work if they have a targetNamespace defined, which is the same as that
 of the schema it is included into.
@@ -69,7 +69,7 @@ Use SOAP with a WSDL version 1.1 communication specification file.
 
 Create a SOAP daemon, directly from a WSDL file.
 
-=item XML::Compile::Tester
+=item L<XML::Compile::Tester|XML::Compile::Tester>
 
 Helps you write regression tests.
 
@@ -101,7 +101,7 @@ XML::Compile-E<gt>B<new>([XMLDATA], OPTIONS)
 
 =over 4
 
-The XMLDATA is a source of XML. See L<dataToXML()|XML::Compile/"Read XML"> for valid ways,
+The XMLDATA is a source of XML. See L<dataToXML()|XML::Compile/"Compilers"> for valid ways,
 for example as filename, string or C<undef>.
 
 If you have compiled all readers and writers you need, you may simply
@@ -148,7 +148,7 @@ This way, modules can simply add their definitions via C<<
 XML::Compile->addSchemaDirs(__FILE__) >> in a BEGIN block or in main.
 ExtUtils::MakeMaker will install everything what is found in the
 C<lib/> tree, so also your xsd files.  Probably, you also want to use
-L<knownNamespace()|XML::Compile/"Accessors">.
+L<knownNamespace()|XML::Compile/"Administration">.
 
 example: adding xsd's from your own distribution
 
@@ -165,40 +165,7 @@ example: adding xsd's from your own distribution
 
 =back
 
-$obj-E<gt>B<findSchemaFile>(FILENAME)
-
-=over 4
-
-Runs through all defined schema directories (see L<addSchemaDirs()|XML::Compile/"Accessors">)
-in search of the specified FILENAME.  When the FILENAME is absolute,
-that will be used, and no search is needed.  An C<undef> is returned when
-the file is not found, otherwise a full path to the file is returned to
-the caller.
-
-Although the file may be found, it still could be unreadible.
-
-=back
-
-$obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
-
-XML::Compile-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
-
-=over 4
-
-If used with only one NAMESPACE, it returns the filename in the
-distribution (not the full path) which contains the definition.
-
-When PAIRS of NAMESPACE-FILENAME are given, then those get defined.
-This is typically called during the initiation of modules, like
-L<XML::Compile::WSDL11|XML::Compile::WSDL11> and L<XML::Compile::SOAP|XML::Compile::SOAP>.  The definitions
-are global: not related to specific instances.
-
-The FILENAMES are relative to the directories as specified with some
-L<addSchemaDirs()|XML::Compile/"Accessors"> call.
-
-=back
-
-=head2 Read XML
+=head2 Compilers
 
 $obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
 
@@ -232,7 +199,40 @@ example:
 
 =back
 
-=head2 Filters
+=head2 Administration
+
+$obj-E<gt>B<findSchemaFile>(FILENAME)
+
+=over 4
+
+Runs through all defined schema directories (see L<addSchemaDirs()|XML::Compile/"Accessors">)
+in search of the specified FILENAME.  When the FILENAME is absolute,
+that will be used, and no search is needed.  An C<undef> is returned when
+the file is not found, otherwise a full path to the file is returned to
+the caller.
+
+Although the file may be found, it still could be unreadible.
+
+=back
+
+$obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+
+XML::Compile-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+
+=over 4
+
+If used with only one NAMESPACE, it returns the filename in the
+distribution (not the full path) which contains the definition.
+
+When PAIRS of NAMESPACE-FILENAME are given, then those get defined.
+This is typically called during the initiation of modules, like
+L<XML::Compile::WSDL11|XML::Compile::WSDL11> and L<XML::Compile::SOAP|XML::Compile::SOAP>.  The definitions
+are global: not related to specific instances.
+
+The FILENAMES are relative to the directories as specified with some
+L<addSchemaDirs()|XML::Compile/"Accessors"> call.
+
+=back
 
 $obj-E<gt>B<walkTree>(NODE, CODE)
 
@@ -295,19 +295,19 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.84,
-built on June 06, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.85,
+built on June 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
-L</XML::Compile>,
-L</XML::Compile::SOAP>,
-L</XML::Compile::SOAP::Daemon>,
-L</XML::Compile::Tester>,
-L</XML::Compile::Cache>,
-L</XML::Compile::Dumper>.
+L<XML::Compile>,
+L<XML::Compile::SOAP>,
+L<XML::Compile::SOAP::Daemon>,
+L<XML::Compile::Tester>,
+L<XML::Compile::Cache>,
+L<XML::Compile::Dumper>.
 
-Please post questions or ideas to
-L<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile|the mailinglist>
+Please post questions or ideas to the mailinglist at
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
 For life contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 

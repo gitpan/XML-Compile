@@ -1,11 +1,11 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.04.
+# Pod stripped from pm file by OODoc 1.05.
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.84';
+$VERSION = '0.85';
 
 
 use strict;
@@ -663,7 +663,7 @@ sub list
 }
 
 sub facets_list
-{   my ($path, $args, $st, $early, $late) = @_;
+{   my ($path, $args, $st, $info, $early, $late) = @_;
     sub { defined $_[1] or return undef;
           my @el = ref $_[1] eq 'ARRAY' ? (grep {defined} @{$_[1]}) : $_[1];
 
@@ -684,7 +684,7 @@ sub facets_list
 }
 
 sub facets
-{   my ($path, $args, $st, @do) = @_;
+{   my ($path, $args, $st, $info, @do) = @_;
     sub { defined $_[1] or return undef;
           my $v = $st->(@_);
           for(reverse @do)
@@ -709,6 +709,8 @@ sub union
 sub substgroup
 {   my ($path, $args, $type, %do) = @_;
 
+    keys %do or return bless sub { () }, 'BLOCK';
+
     bless
     sub { my ($doc, $values) = @_;
           foreach my $take (keys %do)
@@ -717,10 +719,9 @@ sub substgroup
 
               return $do{$take}->($doc, $subst);
           }
+          ();
         }, 'BLOCK';
 }
-
-
 
 # Attributes
 

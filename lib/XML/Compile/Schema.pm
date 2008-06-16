@@ -1,11 +1,11 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.04.
+# Pod stripped from pm file by OODoc 1.05.
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.84';
+$VERSION = '0.85';
 
 use base 'XML::Compile';
 
@@ -46,8 +46,35 @@ sub init($)
     $self;
 }
 
+#--------------------------------------
 
-sub namespaces() { shift->{namespaces} }
+
+sub addHook(@)
+{   my $self = shift;
+    push @{$self->{hooks}}, @_>=1 ? {@_} : defined $_[0] ? shift : ();
+    $self;
+}
+
+
+sub addHooks(@)
+{   my $self = shift;
+    push @{$self->{hooks}}, grep {defined} @_;
+    $self;
+}
+
+
+sub hooks() { @{shift->{hooks}} }
+
+
+sub addTypemaps(@)
+{   my $map = shift->{typemap};
+    while(@_ > 1)
+    {   my $k = shift;
+        $map->{$k} = shift;
+    }
+    $map;
+}
+*addTypemap = \&addTypemaps;
 
 
 sub addSchemas($@)
@@ -84,104 +111,8 @@ sub addSchemas($@)
     @schemas;
 }
 
-
-# The cache will certainly avoid penalties by the average module user,
-# which does not understand the sharing schema definitions between objects
-# especially in SOAP implementations.
-my (%cacheByFilestamp, %cacheByChecksum);
-
-sub importDefinitions($@)
-{   my ($self, $thing, %options) = @_;
-    my @data = ref $thing eq 'ARRAY' ? @$thing : $thing;
-
-    my @schemas;
-    foreach my $data (@data)
-    {   defined $data or next;
-        my ($xml, %details) = $self->dataToXML($data);
-        %details = %{delete $options{details}} if $options{details};
-
-        if(defined $xml)
-        {   my @added = $self->addSchemas($xml, %details, %options);
-            if(my $checksum = $details{checksum})
-            {    $cacheByChecksum{$checksum} = \@added;
-            }
-            elsif(my $filestamp = $details{filestamp})
-            {   $cacheByFilestamp{$filestamp} = \@added;
-            }
-            push @schemas, @added;
-        }
-        elsif(my $filestamp = $details{filestamp})
-        {   my $cached = $cacheByFilestamp{$filestamp};
-            $self->namespaces->add(@$cached);
-        }
-        elsif(my $checksum = $details{checksum})
-        {   my $cached = $cacheByChecksum{$checksum};
-            $self->namespaces->add(@$cached);
-        }
-    }
-    @schemas;
-}
-
-sub _parseScalar($)
-{   my ($thing, $data) = @_;
-    my $checksum = md5_hex $$data;
-
-    if($cacheByChecksum{$checksum})
-    {   trace "importDefinitions reusing string data with checksum $checksum";
-        return (undef, checksum => $checksum);
-    }
-
-    trace "importDefintions for scalar with checksum $checksum";
-    ( $thing->SUPER::_parseScalar($data)
-    , checksum => $checksum
-    );
-}
-
-sub _parseFile($)
-{   my ($thing, $fn) = @_;
-    my ($mtime, $size) = (stat $fn)[9,7];
-    my $filestamp = basename($fn) . '-'. $mtime . '-' . $size;
-
-    if($cacheByFilestamp{$filestamp})
-    {   trace "importDefinitions reusing schemas from file $filestamp";
-        return (undef, filestamp => $filestamp);
-    }
-
-    trace "importDefinitions for filestamp $filestamp";
-    ( $thing->SUPER::_parseFile($fn)
-    , filestamp => $filestamp
-    );
-}
-
-
-sub addHook(@)
-{   my $self = shift;
-    push @{$self->{hooks}}, @_>=1 ? {@_} : defined $_[0] ? shift : ();
-    $self;
-}
-
-
-sub addHooks(@)
-{   my $self = shift;
-    push @{$self->{hooks}}, grep {defined} @_;
-    $self;
-}
-
-
-sub hooks() { @{shift->{hooks}} }
-
-
-sub addTypemaps(@)
-{   my $map = shift->{typemap};
-    while(@_ > 1)
-    {   my $k = shift;
-        $map->{$k} = shift;
-    }
-    $map;
-}
-*addTypemap = \&addTypemaps;
-
 #--------------------------------------
+
 
 sub compile($$@)
 {   my ($self, $action, $type, %args) = @_;
@@ -300,7 +231,7 @@ sub template($@)
      );
 
     my $ast = $compiled->();
-# use Data::Dumper; $Data::Dumper::Indent = 1; warn Dumper $ast;
+#use Data::Dumper; $Data::Dumper::Indent = 1; warn Dumper $ast;
 
     if($action eq 'XML')
     {   my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
@@ -314,6 +245,80 @@ sub template($@)
 
     error __x"template output is either in XML or PERL layout, not '{action}'"
         , action => $action;
+}
+
+#------------------------------------------
+
+
+sub namespaces() { shift->{namespaces} }
+
+
+# The cache will certainly avoid penalties by the average module user,
+# which does not understand the sharing schema definitions between objects
+# especially in SOAP implementations.
+my (%cacheByFilestamp, %cacheByChecksum);
+
+sub importDefinitions($@)
+{   my ($self, $thing, %options) = @_;
+    my @data = ref $thing eq 'ARRAY' ? @$thing : $thing;
+
+    my @schemas;
+    foreach my $data (@data)
+    {   defined $data or next;
+        my ($xml, %details) = $self->dataToXML($data);
+        %details = %{delete $options{details}} if $options{details};
+
+        if(defined $xml)
+        {   my @added = $self->addSchemas($xml, %details, %options);
+            if(my $checksum = $details{checksum})
+            {    $cacheByChecksum{$checksum} = \@added;
+            }
+            elsif(my $filestamp = $details{filestamp})
+            {   $cacheByFilestamp{$filestamp} = \@added;
+            }
+            push @schemas, @added;
+        }
+        elsif(my $filestamp = $details{filestamp})
+        {   my $cached = $cacheByFilestamp{$filestamp};
+            $self->namespaces->add(@$cached);
+        }
+        elsif(my $checksum = $details{checksum})
+        {   my $cached = $cacheByChecksum{$checksum};
+            $self->namespaces->add(@$cached);
+        }
+    }
+    @schemas;
+}
+
+sub _parseScalar($)
+{   my ($thing, $data) = @_;
+    my $checksum = md5_hex $$data;
+
+    if($cacheByChecksum{$checksum})
+    {   trace "importDefinitions reusing string data with checksum $checksum";
+        return (undef, checksum => $checksum);
+    }
+
+    trace "importDefintions for scalar with checksum $checksum";
+    ( $thing->SUPER::_parseScalar($data)
+    , checksum => $checksum
+    );
+}
+
+sub _parseFile($)
+{   my ($thing, $fn) = @_;
+    my ($mtime, $size) = (stat $fn)[9,7];
+    my $filestamp = basename($fn) . '-'. $mtime . '-' . $size;
+
+    if($cacheByFilestamp{$filestamp})
+    {   trace "importDefinitions reusing schemas from file $filestamp";
+        return (undef, filestamp => $filestamp);
+    }
+
+    trace "importDefinitions for filestamp $filestamp";
+    ( $thing->SUPER::_parseFile($fn)
+    , filestamp => $filestamp
+    );
 }
 
 

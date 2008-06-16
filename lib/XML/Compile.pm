@@ -1,14 +1,14 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.04.
+# Pod stripped from pm file by OODoc 1.05.
 
 use warnings;
 use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.84';
+$VERSION = '0.85';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -64,36 +64,13 @@ sub addSchemaDirs(@)
     defined wantarray ? @schema_dirs : ();
 }
 
-
-my %namespace_file;
-sub knownNamespace($;@)
-{   my $thing = shift;
-    return $namespace_file{ $_[0] } if @_==1;
-
-    while(@_)
-    {  my $ns = shift;
-       $namespace_file{$ns} = shift;
-    }
-    undef;
-}
+#----------------------
 
 
-sub findSchemaFile($)
-{   my ($self, $fn) = @_;
+my $parser = XML::LibXML->new;
+$parser->line_numbers(1);
+$parser->no_network(1);
 
-    return (-f $fn ? $fn : undef)
-        if File::Spec->file_name_is_absolute($fn);
-
-    foreach my $dir (@schema_dirs)
-    {   my $full = File::Spec->catfile($dir, $fn);
-        return $full if -f $full;
-    }
-
-    undef;
-}
-
-
-my $parser = XML::LibXML->new(line_numbers => 1);
 sub dataToXML($)
 {   my ($self, $thing) = @_;
     defined $thing
@@ -188,6 +165,8 @@ sub _parseFileHandle($)
     );
 }
 
+#--------------------------
+
 
 sub walkTree($$)
 {   my ($self, $node, $code) = @_;
@@ -195,6 +174,34 @@ sub walkTree($$)
     {   $self->walkTree($_, $code)
             for $node->getChildNodes;
     }
+}
+
+
+my %namespace_file;
+sub knownNamespace($;@)
+{   my $thing = shift;
+    return $namespace_file{ $_[0] } if @_==1;
+
+    while(@_)
+    {  my $ns = shift;
+       $namespace_file{$ns} = shift;
+    }
+    undef;
+}
+
+
+sub findSchemaFile($)
+{   my ($self, $fn) = @_;
+
+    return (-f $fn ? $fn : undef)
+        if File::Spec->file_name_is_absolute($fn);
+
+    foreach my $dir (@schema_dirs)
+    {   my $full = File::Spec->catfile($dir, $fn);
+        return $full if -f $full;
+    }
+
+    undef;
 }
 
 

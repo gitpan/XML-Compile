@@ -1,13 +1,13 @@
 # Copyrights 2006-2008 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.04.
+# Pod stripped from pm file by OODoc 1.05.
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Translate;
 use vars '$VERSION';
-$VERSION = '0.84';
+$VERSION = '0.85';
 
 
 # Errors are either in class 'usage': called with request
@@ -424,6 +424,8 @@ sub applySimpleFacets($$$)
     return $st
         if $self->{ignore_facets} || !keys %facets;
 
+    my %facets_info = %facets;
+
     #
     # new facets overrule all of the base-class
     #
@@ -448,8 +450,8 @@ sub applySimpleFacets($$$)
             keys %facets;
 
       $in_list
-    ? $self->make(facets_list => $where, $st, \@early, \@late)
-    : $self->make(facets => $where, $st, @early, @late);
+    ? $self->make(facets_list => $where, $st, \%facets_info, \@early, \@late)
+    : $self->make(facets => $where, $st, \%facets_info, @early, @late);
 }
 
 sub element($)
@@ -693,9 +695,11 @@ sub particleElementSubst($)
     my @subgrps = $self->findSgMembers($type);
 
     # at least the base is expected
-    @subgrps
-        or error __x"no substitutionGroups found for {type} at {where}"
-               , type => $type, where => $where, class => 'schema';
+    unless(@subgrps)
+    {   trace __x"no substitutionGroups found for {type} at {where}"
+          , type => $type, where => $where, class => 'schema'
+             unless $self->{nosubst_notice}{$type}++;
+    }
 
     my @elems;
     foreach my $subst (@subgrps)
