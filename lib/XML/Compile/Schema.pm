@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.85';
+$VERSION = '0.86';
 
 use base 'XML::Compile';
 
@@ -132,6 +132,7 @@ sub compile($$@)
       : $self->{unused_tags};
     $args{ignore_unused_tags}
       = !defined $iut ? undef : ref $iut eq 'Regexp' ? $iut : qr/^/;
+    $args{mixed_elements} ||= 'ATTRIBUTES';
 
     exists $args{include_namespaces} or $args{include_namespaces} = 1;
     $args{sloppy_integers}   ||= 0;
@@ -212,6 +213,7 @@ sub template($@)
     my $indent                  = $args{indent} || "  ";
     $args{check_occurs}         = 1;
     $args{include_namespaces} ||= 1;
+    $args{mixed_elements}     ||= 'ATTRIBUTES';
 
     my $bricks = 'XML::Compile::Schema::Template';
     eval "require $bricks";

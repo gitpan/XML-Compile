@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::Template;
 use vars '$VERSION';
-$VERSION = '0.85';
+$VERSION = '0.86';
 
 
 use XML::Compile::Schema::XmlWriter;
@@ -51,6 +51,7 @@ sub typemap_to_hooks($$)
 
         push @$hooks, { type => $type, replace => sub { $details} };
     }
+
     $hooks;
 }
 
@@ -212,7 +213,7 @@ sub tagged_element
 }
 
 sub mixed_element
-{   my ($path, $args, $tag, $attrs, $attrs_any) = @_;
+{   my ($path, $args, $tag, $elems, $attrs, $attrs_any) = @_;
     my @parts = (odd_elements(@$attrs), @$attrs_any);
 
     my %mixed =
@@ -338,18 +339,6 @@ sub attribute_fixed
     sub { +{ kind    => 'attr'
            , tag     => $tag
            , occurs  => "attribute $tag is fixed"
-           , example => $value
-           };
-        };
-}
-
-sub attribute_fixed_optional
-{   my ($path, $args, $ns, $tag, $do, $fixed) = @_;
-    my $value = $fixed->value;
-
-    sub { +{ kind    => 'attr'
-           , tag     => $tag
-           , occurs  => "attribute $tag is fixed optional"
            , example => $value
            };
         };

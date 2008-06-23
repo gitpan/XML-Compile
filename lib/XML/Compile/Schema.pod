@@ -344,6 +344,7 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implem
  ignore_unused_tags              <false>
  include_namespaces              <true>
  interpret_nillable_as_optional  <false>
+ mixed_elements                  'ATTRIBUTES'
  namespace_reset                 <false>
  output_namespaces               {}
  path                            <expanded name of type>
@@ -485,6 +486,16 @@ Found in the schema wild-life: people who think that nillable means
 optional.  Not too hard to fix.  For the WRITER, you still have to state
 NIL explicitly, but the elements are not constructed.  The READER will
 output NIL when the nillable elements are missing.
+
+=back
+
+. mixed_elements => CODE|PREDEFINED
+
+=over 4
+
+(reader) What to do when mixed schema elements are to be processed.  Read
+more in the L<DETAILS> section below, and in the manual page of
+L<XML::Compile::Schema::XmlReader|XML::Compile::Schema::XmlReader>
 
 =back
 
@@ -1196,22 +1207,19 @@ in each case.
 
 =head2 ComplexType with "mixed" attribute
 
-[Available since 0.79]
+[largely improved in 0.86, reader only]
 ComplexType and ComplexContent components can be declared with the
 C<<mixed="true">> attribute.  This implies that text is not limited
 to the content of containers, but may also be used inbetween elements.
 Usually, you will only find ignorable white-space between elements.
 
-In this example, the C<a> container will be mixed:
+In this example, the C<a> container is marked to be mixed:
   <a> before <b>2</b> after </a>
 
-XML::Compile does not have a syntax to express these mixtures of
-information and text, so the only way you can use those, is by providing
-your self-constructed XML::LibXML node for such element.
-
-When reading an XML message, the parser will automatically stop on
-a mixed node, and return the whole node.  The writer will expect a
-prepared node.
+Each back-end has its own way of handling mixed elements.  The
+XML::Compile::Schema subroutine new option mixed_elements currently only modifies the reader's
+behavior; the writer's capabilities are limited.
+See L<XML::Compile::Schema::XmlReader|XML::Compile::Schema::XmlReader>.
 
 =head2 Schema hooks
 
@@ -1346,11 +1354,12 @@ improved in one of the future releases, breaking backwards compatibility.
 
 =head2 Typemaps
 
-Often, XML will be used in object oriented programs, where the facts which
-are transported in the XML message are attributes of Perl objects.  Of course,
-you can always collect the data from each of the Objects into the required
-(huge) HASH, before triggering the reader or writer.  As alternative,
-you can link types in the XML schema with Perl objects and classes.
+Often, XML will be used in object oriented programs, where the facts
+which are transported in the XML message are attributes of Perl objects.
+Of course, you can always collect the data from each of the Objects into
+the required (huge) HASH manually, before triggering the reader or writer.
+As alternative, you can connect types in the XML schema with Perl objects
+and classes, which results in cleaner code.
 
 You can also specify typemaps with L<new(typemap)|XML::Compile::Schema/"Constructors">, L<addTypemaps()|XML::Compile::Schema/"Accessors">, and
 L<compile(typemap)|XML::Compile::Schema/"Compilers">. Each type will only refer to the last map for that
@@ -1449,8 +1458,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.85,
-built on June 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.86,
+built on June 23, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

@@ -131,6 +131,71 @@ The C<minOccurs> and C<maxOccurs> of C<any> are ignored: the amount of
 elements is always unbounded.  Therefore, you will get an array of
 elements back per type. 
 
+=head2 Mixed elements
+
+[available since 0.86]
+ComplexType and ComplexContent components can be declared with the
+C<<mixed="true">> attribute.  This implies that text is not limited
+to the content of containers, but may also be used inbetween elements.
+Usually, you will only find ignorable white-space between elements.
+
+In this example, the C<a> container is marked to be mixed:
+  <a id="5"> before <b>2</b> after </a>
+
+Often the "mixed" option is bending one of both ways: either the element
+is needed as text, or the element should be parsed and the text ignored.
+The reader has various options to avoid the need of processing raw
+XML::LibXML nodes.
+
+With L<XML::Compile::Schema::compile(mixed_elements)|XML::Compile::Schema/"Compilers"> set to
+
+=over 4
+
+=item ATTRIBUTES  (the default)
+
+a HASH is returned, the attributes are processed.  The node is found
+as XML::LibXML::Element with the key '_'.  Above example will
+produce
+  $r = { id => 5, _ => $xmlnode };
+
+=item TEXTUAL
+
+Like the previous, but now the textual representation of the content is
+returned with key '_'.  Above example will produce
+  $r = { id => 5, _ => ' before 2 after '};
+
+=item STRUCTURAL
+
+will remove all mixed-in text, and treat the element as normal element.
+The example will be transformed into
+  $r = { id => 5, b => 2 };
+
+=item XML_NODE
+
+return the XML::LibXML::Node itself.  The example:
+  $r = $xmlnode;
+
+=item XML_STRING
+
+return the mixed node as XML string, just as in the source.  Be warned
+that it is rather expensive: the string was parsed and then stringified
+again, which is costly for large nodes.  Result:
+  $r = '<a id="5"> before <b>2</b> after </a>';
+
+=item CODE reference
+
+the reference is called with the XML::LibXML::Node as first argument.
+When a value is returned (even undef), then the right tag with the value
+will be included in the translators result.  When an empty list is
+returned by the code reference, then nothing is returned (which may
+result in an error if the element is required according to the schema)
+
+=back
+
+When some of your mixed elements need different behavior from other
+elements, then you have to go play with the normal hooks in specific
+cases.
+
 =head2 Schema hooks
 
 =head3 hooks executed before the XML is being processed
@@ -280,8 +345,8 @@ with some extra checks.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.85,
-built on June 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.86,
+built on June 23, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.85';
+$VERSION = '0.86';
 
 
 use strict;
@@ -400,7 +400,7 @@ sub element_fixed
     $fixed   = $fixed->value if ref $fixed;
 
     sub { my ($doc, $value) = @_;
-          my $ret = defined $value ? $do->($doc, $value) : undef;
+          my $ret = defined $value ? $do->($doc, $value) : return;
           return $ret if defined $ret && $ret->textContent eq $fixed;
 
           defined $ret
@@ -548,7 +548,7 @@ sub tagged_element
 #
 
 sub mixed_element
-{   my ($path, $args, $tag, $attrs, $attrs_any) = @_;
+{   my ($path, $args, $tag, $elems, $attrs, $attrs_any) = @_;
     my @attrs = @$attrs;
     my @anya  = @$attrs_any;
 
@@ -757,24 +757,6 @@ sub attribute
 *attribute_default = \&attribute;
 
 sub attribute_fixed
-{   my ($path, $args, $ns, $tag, $do, $fixed) = @_;
-    $fixed   = $fixed->value if ref $fixed;
-
-    sub { my ($doc, $value) = @_;
-          defined $value
-              or error __x"required fixed attribute `{tag}' missing at {path}"
-                   , tag => $tag, path => $path;
-
-
-          $value eq $fixed
-              or error __x"value of attribute `{tag}' is fixed to `{fixed}', not `{got}' at {path}"
-                   , tag => $tag, got => $value, fixed => $fixed, path => $path;
-
-          $doc->createAttributeNS($ns, $tag, $fixed);
-        };
-}
-
-sub attribute_fixed_optional
 {   my ($path, $args, $ns, $tag, $do, $fixed) = @_;
     $fixed   = $fixed->value if ref $fixed;
 
