@@ -188,7 +188,7 @@ options to interfere.
 
 =over 4
 
-=item output_namespaces HASH|ARRAY-of-PAIRS
+=item prefixes HASH|ARRAY-of-PAIRS
 
 The translator will create XML elements (WRITER) which use name-spaces,
 based on its own name-space/prefix mapping administration.  This is
@@ -212,13 +212,13 @@ The HASH structure looks like this:
 
   my $make = $schema->compile
     ( WRITER => ...
-    , output_namespaces => \%namespaces
+    , prefixes => \%namespaces
     );
 
   # share the same namespace defs with an other component
   my $other = $schema->compile
     ( WRITER => ...
-    , output_namespaces => \%namespaces
+    , prefixes => \%namespaces
     );
 
 When used is specified and larger than 0, then the namespace will
@@ -227,7 +227,7 @@ is false).
 
 Initializing using an ARRAY is a little simpler:
 
- output_namespaces => [ mypref => 'myns', ... => ... ];
+ prefixes => [ mypref => 'myns', ... => ... ];
 
 However, be warned that this does not work well with a false value
 for C<include_namespaces>: detected namespaces are added to an
@@ -264,7 +264,7 @@ nice namespace qualified elements.  In such situations, namespace the
 qualified-but-default prefix (i.e., no prefix) is confusing.  Therefore,
 the option defaults to false: do not use the invisible prefix.
 
-You may explicitly specify a blank prefix with C<output_namespaces>,
+You may explicitly specify a blank prefix with C<prefixes>,
 which will be used when applicable.
 
 =back
@@ -296,8 +296,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.86,
-built on June 23, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.87,
+built on July 04, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

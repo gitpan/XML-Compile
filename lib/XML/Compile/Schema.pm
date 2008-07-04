@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.86';
+$VERSION = '0.87';
 
 use base 'XML::Compile';
 
@@ -40,6 +40,11 @@ sub init($)
     {   $self->addHooks(ref $h2 eq 'ARRAY' ? @$h2 : $h2);
     }
  
+    $self->{key_rewrite} = [];
+    if(my $kr = $args->{key_rewrite})
+    {   $self->addKeyRewrite(ref $kr eq 'ARRAY' ? @$kr : $kr);
+    }
+
     $self->{typemap}     = $args->{typemap} || {};
     $self->{unused_tags} = $args->{ignore_unused_tags};
 
@@ -111,6 +116,13 @@ sub addSchemas($@)
     @schemas;
 }
 
+
+sub addKeyRewrite(@)
+{   my $self = shift;
+    unshift @{$self->{key_rewrite}}, @_;
+    @{$self->{key_rewrite}};
+}
+
 #--------------------------------------
 
 
@@ -146,23 +158,23 @@ sub compile($$@)
             if $@;
     }
 
-    my $outns = $args{output_namespaces} ||= {};
-    if(ref $outns eq 'ARRAY')
-    {   my @ns = @$outns;
-        $outns = $args{output_namespaces} = {};
+    my $prefs = $args{prefixes} ||= $args{output_namespaces} || {};
+    if(ref $prefs eq 'ARRAY')
+    {   my @ns = @$prefs;
+        $prefs = $args{prefixes} = {};
         while(@ns)
         {   my ($prefix, $uri) = (shift @ns, shift @ns);
-            $outns->{$uri} = { uri => $uri, prefix => $prefix };
+            $prefs->{$uri} = { uri => $uri, prefix => $prefix };
         }
     }
 
     my $saw_default = 0;
-    foreach (values %$outns)
+    foreach (values %$prefs)
     {   $_->{used} = 0 if $args{namespace_reset};
         $saw_default ||= $_->{prefix} eq '';
     }
 
-    $outns->{''} = {uri => '', prefix => '', used => 0}
+    $prefs->{''} = {uri => '', prefix => '', used => 0}
         if !$saw_default && !$args{use_default_prefix};
 
     my $nss   = $self->namespaces;
@@ -174,6 +186,10 @@ sub compile($$@)
 
     my %map = ( %{$self->{typemap}}, %{$args{typemap} || {}} );
     trace "schema compile $action for $type";
+
+    my @rewrite = @{$self->{key_rewrite}};
+    my $kw = delete $args{key_rewrite} || [];
+    unshift @rewrite, ref $kw eq 'ARRAY' ? @$kw : $kw;
 
     my $impl
      = $action eq 'READER' ? 'XmlReader'
@@ -192,6 +208,7 @@ sub compile($$@)
      , hooks   => \@hooks
      , action  => $action
      , typemap => \%map
+     , rewrite => \@rewrite
      );
 }
 

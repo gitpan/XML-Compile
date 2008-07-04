@@ -417,7 +417,7 @@ C<prefix:type> will be translated into the C<{$ns}type> notation.
 For writers, this translation can only happen when the C<$ns> is also
 in use on some other place in the message: the name-space declaration
 can not be added at run-time.  In other cases, you will get a run-time
-error.  Play with L<XML::Compile::Schema::compile(output_namespaces)|XML::Compile::Schema/"Compilers">,
+error.  Play with L<XML::Compile::Schema::compile(prefixes)|XML::Compile::Schema/"Compilers">,
 predefining evenything what may be used, setting the C<used> count to C<1>.
 
 =back
@@ -471,8 +471,8 @@ $builtin_types{recurringDuration} = ??
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.86,
-built on June 23, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.87,
+built on July 04, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
