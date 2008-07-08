@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.87';
+$VERSION = '0.88';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -75,10 +75,15 @@ sub types()           { ($_[0]->simpleTypes, $_[0]->complexTypes) }
 sub substitutionGroups() { keys %{shift->{sgs}} }
 
 
-sub substitutionGroupMembers($)
-{   my $sgs = shift->{sgs}      or return ();
-    my $sg  = $sgs->{ (shift) } or return ();
-    @$sg;
+sub substitutionGroupMembers($) { @{ $_[0]->{sgs}{ $_[1] } || [] }; }
+
+
+# Fast!
+sub mergeSubstGroupsInto($)
+{   my ($self, $h) = @_;
+    while( my($type, $members) = each %{$self->{sgs}})
+    {   push @{$h->{$type}}, @$members;
+    }
 }
 
 
@@ -170,6 +175,7 @@ sub _collectTypes($)
         }
 
         my $abstract = $node->getAttribute('abstract') || 'false';
+        my $final    = $node->getAttribute('final')    || 'false';
 
         unless($defkinds{$local})
         {   mistake __x"ignoring unknown definition-type {local}", type => $local;
@@ -177,12 +183,12 @@ sub _collectTypes($)
         }
 
         my $info  = $self->{$local}{$label} =
-          { type => $local, id => $id,   node => $node
-          , full => pack_type($ns, $name)
-          , ns   => $ns,  name => $name, prefix => $prefix
-          , afd  => $afd, efd  => $efd,  schema => $self
-          , ref  => $ref, sg   => $sg
+          { type => $local, id => $id, node => $node
+          , full => pack_type($ns, $name), ref => $ref, sg => $sg
+          , ns => $ns,  name => $name, prefix => $prefix
+          , afd => $afd, efd => $efd, schema => $self
           , abstract => ($abstract eq 'true' || $abstract eq '1')
+          , final => ($final eq 'true' || $final eq '1')
           };
         weaken($info->{schema});
 
@@ -238,7 +244,8 @@ sub printIndex(;$)
         foreach (sort {$a->{name} cmp $b->{name}} values %$table)
         {   next if $_->{abstract} && ! $list_abstract;
             my $abstract = $_->{abstract} ? ' [abstract]' : '';
-            $fh->print("    $_->{name}$abstract\n");
+            my $final    = $_->{final}    ? ' [final]' : '';
+            $fh->print("    $_->{name}$abstract$final\n");
         }
     }
 }

@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '0.87';
+$VERSION = '0.88';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -24,6 +24,7 @@ sub new($@)
 sub init($)
 {   my ($self, $args) = @_;
     $self->{tns} = {};
+    $self->{sgs} = {};
     $self;
 }
 
@@ -40,8 +41,8 @@ sub namespace($)
 sub add(@)
 {   my $self = shift;
     foreach my $schema (@_)
-    {   my $tns = $schema->targetNamespace;
-        unshift @{$self->{tns}{$tns}}, $schema;
+    {   unshift @{$self->{tns}{$schema->targetNamespace}}, $schema;
+        $schema->mergeSubstGroupsInto($self->{sgs});
     }
     @_;
 }
@@ -74,12 +75,8 @@ sub find($$;$)
 
 sub findSgMembers($;$)
 {   my $self = shift;
-    my ($label, $ns, $name)
-      = @_==1 ? ($_[0], unpack_type $_[0]) : (pack_type($_[0], $_[1]), @_);
-    defined $ns or return undef;
-
-    map {$_->substitutionGroupMembers($label)}
-        $self->allSchemas;
+    my $type = @_==2 ? pack_type(@_) : shift;
+    @{ $self->{sgs}{$type} || [] };
 }
 
 

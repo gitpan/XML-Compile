@@ -67,13 +67,13 @@ C< uri#id > or as seperate URI and ID.
 
 =back
 
-$obj-E<gt>B<findSgMembers>(ADDRESS|(URI,NAME))
+$obj-E<gt>B<findSgMembers>(TYPE|(URI,NAME))
 
 =over 4
 
-Lookup the substitutionGroup alternatives for a specific element,
-which is an ADDRESS of form C< {uri}name > or as seperate URI and NAME.
-Returned is a list of parse nodes (HASHes)
+Lookup the substitutionGroup alternatives for a specific element, which
+is an TYPE (element full name) of form C< {uri}name > or as seperate
+URI and NAME.  Returned is a list of node info objects (HASHes)
 
 =back
 
@@ -136,8 +136,8 @@ must be called explictly.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.87,
-built on July 04, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.88,
+built on July 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

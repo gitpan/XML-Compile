@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.87';
+$VERSION = '0.88';
 
 use base 'XML::Compile';
 
@@ -240,12 +240,17 @@ sub template($@)
     error __x"typemaps not implemented for XML template examples"
         if $action eq 'XML' && defined $args{typemap} && keys %{$args{typemap}};
 
+    my @rewrite = @{$self->{key_rewrite}};
+    my $kw = delete $args{key_rewrite} || [];
+    unshift @rewrite, ref $kw eq 'ARRAY' ? @$kw : $kw;
+
     my $compiled = XML::Compile::Schema::Translate->compileTree
      ( $type
-     , bricks => $bricks
-     , nss    => $self->namespaces
-     , hooks  => []
-     , action => 'READER'
+     , bricks  => $bricks
+     , nss     => $self->namespaces
+     , hooks   => []
+     , action  => 'READER'
+     , rewrite => \@rewrite
      , %args
      );
 
