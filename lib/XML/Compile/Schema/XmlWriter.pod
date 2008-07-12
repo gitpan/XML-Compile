@@ -44,8 +44,7 @@ example: specify anyAttribute
 
 =head2 Mixed elements
 
-[Available since 0.79]
-ComplexType and ComplexContent components can be declared with the
+[0.79] ComplexType and ComplexContent components can be declared with the
 C<<mixed="true">> attribute.
 
 XML::Compile does not have a way to express these mixtures of information
@@ -56,6 +55,21 @@ You may provide a XML::LibXML::Element, which is complete, or a
 HASH which contains attributes values and an XML node with key '_'.
 When '_' contains a string, it will be translated into an XML text
 node.
+
+L<XML::Compile::Schema::compile(mixed_elements)|XML::Compile::Schema/"Compilers"> can be set to
+
+=over 4
+
+=item ATTRIBUTES (default)
+
+Add attributes to the provided node.
+
+=item STRUCTURAL
+
+[0.89] behaves as if the attribute is not there: a data-structure can be
+used or an XML node.
+
+=back
 
 =head2 Schema hooks
 
@@ -257,8 +271,8 @@ writer considerably.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.88,
-built on July 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.89,
+built on July 12, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

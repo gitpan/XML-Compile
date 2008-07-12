@@ -24,7 +24,7 @@ permitted by C<any> and C<anyAttribute> specifications in the schema,
 you have to implement that yourself.  The problem is C<XML::Compile>
 has less knowledge than you about the possible data.
 
-=head3 anyAttribute
+=head3 option any_attribute
 
 By default, the C<anyAttribute> specification is ignored.  When C<TAKE_ALL>
 is given, all attributes which are fulfilling the name-space requirement
@@ -36,7 +36,7 @@ covered by the name-spaces permitted by the anyAttribute definition,
 then it will also appear in that list (and hence the handler will
 be called as well).
 
-Use L<XML::Compile::Schema::compile(anyAttribute)|XML::Compile::Schema/"Compilers"> to write your
+Use L<XML::Compile::Schema::compile(any_attribute)|XML::Compile::Schema/"Compilers"> to write your
 own handler, to influence the behavior.  The handler will be called for
 each attribute, and you must return list of pairs of derived information.
 When the returned is empty, the attribute data is lost.  The value may
@@ -120,7 +120,7 @@ Which will result in
 The filter will be called twice, but return nothing in the first
 case.  You can implement any kind of complex processing in the filter.
 
-=head3 any element
+=head3 option any_element
 
 By default, the C<any> definition in a schema will ignore all elements
 from the container which are not used.  Also in this case C<TAKE_ALL>
@@ -232,8 +232,8 @@ L<XML::LibXML::Simple|XML::LibXML::Simple> to translate a part of your tree.  Si
  $schema->addHook
    ( type    => ...bad-type-definition...
    , replace =>
-       sub { my ($xml, $args, $path, $local) = @_;
-             ($local => XMLin($xml, ...));
+       sub { my ($xml, $args, $path, $type) = @_;
+             ($type => XMLin($xml, ...));
            }
    );
 
@@ -345,8 +345,8 @@ with some extra checks.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.88,
-built on July 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.89,
+built on July 12, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.88';
+$VERSION = '0.89';
 
 use base 'XML::Compile';
 
@@ -144,7 +144,6 @@ sub compile($$@)
       : $self->{unused_tags};
     $args{ignore_unused_tags}
       = !defined $iut ? undef : ref $iut eq 'Regexp' ? $iut : qr/^/;
-    $args{mixed_elements} ||= 'ATTRIBUTES';
 
     exists $args{include_namespaces} or $args{include_namespaces} = 1;
     $args{sloppy_integers}   ||= 0;
@@ -190,6 +189,12 @@ sub compile($$@)
     my @rewrite = @{$self->{key_rewrite}};
     my $kw = delete $args{key_rewrite} || [];
     unshift @rewrite, ref $kw eq 'ARRAY' ? @$kw : $kw;
+
+    $args{mixed_elements} ||= 'ATTRIBUTES';
+
+    # Option rename in 0.88
+    $args{any_element}    ||= delete $args{anyElement};
+    $args{any_attribute}  ||= delete $args{anyAttribute};
 
     my $impl
      = $action eq 'READER' ? 'XmlReader'
@@ -269,6 +274,13 @@ sub template($@)
 
     error __x"template output is either in XML or PERL layout, not '{action}'"
         , action => $action;
+}
+
+sub beautify(@)
+{   my $self = shift;
+    eval "require XML::Compile::Schema::Beautify";
+    panic "cannot load beautifier: $@" if $@;
+    $self->beautify(@_);
 }
 
 #------------------------------------------

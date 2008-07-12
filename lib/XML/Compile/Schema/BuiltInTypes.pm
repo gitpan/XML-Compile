@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.88';
+$VERSION = '0.89';
 
 use base 'Exporter';
 
@@ -432,6 +432,7 @@ $builtin_types{ENTITIES} =
  , format  => sub { my $v = shift; ref $v eq 'ARRAY' ? join(' ',@$v) : $v }
  , check   => sub { $_[0] !~ m/\:/ }
  , example => 'labels'
+ , is_list => 1
  };
 
 
@@ -452,6 +453,7 @@ $builtin_types{NMTOKENS} =
  { parse   => sub { [ split ' ', shift ] }
  , format  => sub { my $v = shift; ref $v eq 'ARRAY' ? join(' ',@$v) : $v }
  , example => 'tokens'
+ , is_list => 1
  };
 
 

@@ -71,6 +71,9 @@ t/41choice.t
 t/42all.t
 t/43group.t
 t/44ctext.t
+t/44stres.t
+t/45ctcext.t
+t/45ctcres.t
 t/45stres.t
 t/46ctsext.t
 t/47ctsres.t

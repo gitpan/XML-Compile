@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Util;
 use vars '$VERSION';
-$VERSION = '0.88';
+$VERSION = '0.89';
 
 use base 'Exporter';
 
@@ -56,7 +56,7 @@ sub block_label($$)
     return $label if $kind eq 'element';
 
     $label =~ s/^(?:seq|cho|all|gr)_//;
-    $block_abbrev{$kind} . $label;
+    $block_abbrev{$kind} . (unpack_type $label)[1];
 }
 
 

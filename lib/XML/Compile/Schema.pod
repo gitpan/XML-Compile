@@ -353,8 +353,8 @@ Most options below are B<explained in more detailed> in the manual-page
 L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implements the compilation.
 
  Option                        --Default
- anyAttribute                    undef
- anyElement                      undef
+ any_attribute                   undef
+ any_element                     undef
  attributes_qualified            <undef>
  check_occurs                    <true>
  check_values                    <true>
@@ -377,25 +377,29 @@ L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implem
  use_default_prefix              <false>
  validation                      <true>
 
-. anyAttribute => CODE
+. any_attribute => CODE
 
 =over 4
 
-In general, C<anyAttribute> schema components cannot be handled
+[0.89] In general, C<anyAttribute> schema components cannot be handled
 automatically.  If  you need to create or process anyAttribute
 information, then read about wildcards in the DETAILS chapter of the
 manual-page for the specific back-end.
+Before release 0.89 this option was named C<anyElement>, which will
+still work.
 
 =back
 
-. anyElement => CODE
+. any_element => CODE
 
 =over 4
 
-In general, C<any> schema components cannot be handled automatically.
+[0.89] In general, C<any> schema components cannot be handled automatically.
 If  you need to create or process any information, then read about
 wildcards in the DETAILS chapter of the manual-page for the specific
 back-end.
+Before release 0.89 this option was named C<anyElement>, which will
+still work.
 
 =back
 
@@ -525,9 +529,8 @@ L<new(key_rewrite)|XML::Compile::Schema/"Constructors"> and L<addKeyRewrite()|XM
 
 =over 4
 
-(reader) What to do when mixed schema elements are to be processed.  Read
-more in the L</DETAILS> section below, and in the manual page of
-L<XML::Compile::Schema::XmlReader|XML::Compile::Schema::XmlReader>
+What to do when mixed schema elements are to be processed.  Read
+more in the L</DETAILS> section below.
 
 =back
 
@@ -1028,7 +1031,7 @@ beforehand.
 When the maxOccurs larger than 1 is specified for an element, an ARRAY
 of those elements is produced.  When it is specified for a block (sequence,
 choice, all, group), then an ARRAY of HASHes is returned.  See the special
-section about the subject.
+section about this subject.
 
 An error is produced when the number of elements found is less than
 C<minOccurs> (defaults to 1) or more than C<maxOccurs> (defaults to 1),
@@ -1646,8 +1649,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.88,
-built on July 08, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.89,
+built on July 12, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

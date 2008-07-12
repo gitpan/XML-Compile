@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.05.
 package XML::Compile::Schema::XmlReader;
 use vars '$VERSION';
-$VERSION = '0.88';
+$VERSION = '0.89';
 
 
 use strict;
@@ -633,7 +633,7 @@ sub mixed_element
           }
     : $mixed eq 'STRUCTURAL'
     ? panic "mixed structural handled as normal element"
-    : panic "unknown mixed_elements value $mixed";
+    : error __x"unknown mixed_elements value `{value}'", value => $mixed;
 }
 
 #
@@ -695,8 +695,12 @@ sub facets_list
 {   my ($path, $args, $st, $info, $early, $late) = @_;
     sub { defined $_[0] or return undef;
           my $v = $st->(@_);
-          for(@$early) { defined $v or return (); $v = $_->($v) }
-          my @v = defined $v ? split(" ",$v) : ();
+          my @v;
+          if(ref $v eq 'ARRAY') { @v = @$v } # no early limits for extension
+          else
+          {   for(@$early) { defined $v or return (); $v = $_->($v) }
+              @v = defined $v ? split(" ",$v) : ();
+          }
           my @r;
       EL: for my $e (@v)
           {   for(@$late) { defined $e or next EL; $e = $_->($e) }

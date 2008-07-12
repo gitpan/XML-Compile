@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema::XmlWriter;
 use vars '$VERSION';
-$VERSION = '0.88';
+$VERSION = '0.89';
 
 
 use strict;
@@ -559,6 +559,14 @@ sub mixed_element
     my @attrs = @$attrs;
     my @anya  = @$attrs_any;
 
+    my $mixed = $args->{mixed_elements};
+    if($mixed eq 'ATTRIBUTES') { ; }
+    elsif($mixed eq 'STRUCTURAL')
+    {   # mixed_element eq STRUCTURAL is handled earlier
+        panic "mixed structural handled as normal element";
+    }
+    else { error __x"unknown mixed_elements value `{value}'", value => $mixed }
+
     if(!@attrs && !@anya)
     {   return
         sub { my ($doc, $data) = @_;
@@ -787,7 +795,7 @@ sub _split_any_list($$$)
     my (@attrs, @elems);
 
     foreach my $node (@nodes)
-    {   ref $node && !$node->isa('XML::LibXML')
+    {   ref $node && !UNIVERSAL::isa($node, 'XML::LibXML')
             or error __x"elements for 'any' are XML::LibXML nodes, not {string} at {path}"
                   , string => $node, path => $path;
 
