@@ -1,19 +1,24 @@
 =head1 NAME
 
-XML::Compile::Schema::Translate - create an XML data parser
+XML::Compile::Translate - create an XML data parser
 
 =head1 INHERITANCE
+
+ XML::Compile::Translate is extended by
+   XML::Compile::Translate::Reader
+   XML::Compile::Translate::Template
+   XML::Compile::Translate::Writer
 
 =head1 SYNOPSIS
 
  # for internal use only
- my $code = XML::Compile::Schema::Translate->compileTree(...);
+ my $code = XML::Compile::Translate->compile(...);
 
 =head1 DESCRIPTION
 
 This module converts a schema type definition into a code
 reference which can be used to interpret a schema.  The sole public
-function in this package is L<compileTree()|XML::Compile::Schema::Translate/"METHODS">, and is called by
+function in this package is XML::Compile::Translate subroutine compileTree, and is called by
 L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">, which does a lot of set-ups.
 Please do not try to use this package directly!
 
@@ -56,7 +61,43 @@ See chapter L</DETAILS> for more on how the tune the translator.
 
 =head1 METHODS
 
-XML::Compile::Schema::Translate-E<gt>B<compileTree>(ELEMENT|ATTRIBUTE|TYPE, OPTIONS)
+=head2 Constructors
+
+$obj-E<gt>B<new>(TRANSLATOR, OPTIONS)
+
+=over 4
+
+The OPTIONS are described in L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">.  Those
+descriptions will probably move here, eventually.
+
+ Option--Default
+ nss     <required>
+
+. nss => L<XML::Compile::Schema::NameSpaces>
+
+=back
+
+$obj-E<gt>B<register>(NAME)
+
+XML::Compile::Translate-E<gt>B<register>(NAME)
+
+=over 4
+
+Register a new back-end.
+
+example: 
+
+ use XML::Compile::Translate::SomeBackend;
+ XML::Compile::Translate::SomeBackend->register('SomeNAME');
+ my $coderef = $schemas->compile('SomeNAME' => ...);
+
+=back
+
+=head2 Attributes
+
+=head2 Handlers
+
+XML::Compile::Translate-E<gt>B<compile>(ELEMENT|ATTRIBUTE|TYPE, OPTIONS)
 
 =over 4
 
@@ -67,23 +108,6 @@ This function returns a CODE reference, which can translate
 between Perl datastructures and XML, based on a schema.  Before
 this method is called is the schema already translated into
 a table of types.
-
- Option --Default
- action   <required>
- bricks   <required>
- hooks    <required>
- nss      <required>
- typemap  {}
-
-. action => 'READER'|'WRITER'
-
-. bricks => CLASS
-
-. hooks => ARRAY
-
-. nss => L<XML::Compile::Schema::NameSpaces>
-
-. typemap => HASH
 
 =back
 

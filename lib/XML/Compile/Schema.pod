@@ -350,7 +350,7 @@ to be called with an XML::LibXML::Document object and a HASH, and
 returns a XML::LibXML::Node.
 
 Most options below are B<explained in more detailed> in the manual-page
-L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>, which implements the compilation.
+XML::Compile::Schema::Translate, which implements the compilation.
 
  Option                        --Default
  any_attribute                   undef
@@ -656,7 +656,7 @@ Schema's can be horribly complex and unreadible.  Therefore, this template
 method can be called to create an example which demonstrates how data of
 the specified TYPE as XML or Perl is organized in practice.
 
-Some OPTIONS are explained in L<XML::Compile::Schema::Translate|XML::Compile::Schema::Translate>.
+Some OPTIONS are explained in XML::Compile::Schema::Translate.
 There are some extra OPTIONS defined for the final output process.
 
 The templates produced are B<not always correct>.  Please contribute
@@ -1262,7 +1262,7 @@ In this example, the C<a> container is marked to be mixed:
 Each back-end has its own way of handling mixed elements.  The
 L<compile(mixed_elements)|XML::Compile::Schema/"Compilers"> currently only modifies the reader's
 behavior; the writer's capabilities are limited.
-See L<XML::Compile::Schema::XmlReader|XML::Compile::Schema::XmlReader>.
+See XML::Compile::Schema::Template::Reader.
 
 =head2 Schema hooks
 
@@ -1432,8 +1432,8 @@ they don't, in which case you will need to write a little wrapper.
 The implementation of the READER and WRITER differs.  In the READER case,
 the typemap is implemented as an 'after' hook which calls a C<fromXML>
 method.  The WRITER is a 'before' hook which calls a C<toXML> method.
-See respectively the L<XML::Compile::Schema::XmlReader|XML::Compile::Schema::XmlReader> and
-L<XML::Compile::Schema::XmlWriter|XML::Compile::Schema::XmlWriter>.
+See respectively the L<XML::Compile::Translate::Reader|XML::Compile::Translate::Reader> and
+L<XML::Compile::Translate::Writer|XML::Compile::Translate::Writer>.
 
 =head3 Private variables in objects
 
@@ -1649,8 +1649,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.89,
-built on July 12, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.90,
+built on July 18, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

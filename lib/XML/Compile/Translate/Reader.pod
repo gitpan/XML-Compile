@@ -1,8 +1,11 @@
 =head1 NAME
 
-XML::Compile::Schema::XmlReader - bricks to translate XML to HASH
+XML::Compile::Translate::Reader - translate XML to HASH
 
 =head1 INHERITANCE
+
+ XML::Compile::Translate::Reader
+   is a XML::Compile::Translate
 
 =head1 SYNOPSIS
 
@@ -15,7 +18,13 @@ The translator understands schemas, but does not encode that into
 actions.  This module implements those actions to translate from XML
 into a (nested) Perl HASH structure.
 
+=head2 Unsupported features
+
+=head1 METHODS
+
 =head1 DETAILS
+
+=head2 Translator options
 
 =head2 Processing Wildcards
 
@@ -42,7 +51,7 @@ each attribute, and you must return list of pairs of derived information.
 When the returned is empty, the attribute data is lost.  The value may
 be a complex structure.
 
-example: anyAttribute in XmlReader
+example: anyAttribute in a READER
 
 Say your schema looks like this:
 
@@ -101,7 +110,7 @@ extra attribute is always of type C<non-empty>, then you can do
   ( READER => '{http://mine}non-empty'
   );
 
- sub filter($$$$)
+ sub makeFilter($$$$)
  {   my ($fqn, $xml, $path, $translator) = @_;
      return () if $fqn ne '{http://mine}b';
      (b => $anyAttRead->($xml));
@@ -265,7 +274,7 @@ implements the C<fromXML> method as constructor.
 
  package My::Perl::Class;
  ...
- sub fromXML
+ sub makeFromXML
  {   my ($class, $data, $xmltype) = @_;
      my $self = $class->new($data);
      ...
@@ -281,13 +290,13 @@ In the simpelest implementation, the class stores its data exactly as
 the XML structure:
 
  package My::Perl::Class;
- sub fromXML
+ sub makeFromXML
  {   my ($class, $data, $xmltype) = @_;
      bless $data, $class;
  }
 
  # The same, even shorter:
- sub fromXML { bless $_[1], $_[0] }
+ sub makeFromXML { bless $_[1], $_[0] }
 
 =head3 Typemap to Object
 
@@ -299,7 +308,7 @@ to have one object spawning many different other objects.
  $schema->typemap($sometype => $object);
 
  package My::Perl::Class;
- sub fromXML
+ sub makeFromXML
  {   my ($object, $xmltype, $data) = @_;
      return Some::Other::Class->new($data);
  }
@@ -313,7 +322,7 @@ add the C<fromXML> method.
 The light version of an object factory works with CODE references.
 
  $schema->typemap($t1 => \&myhandler);
- sub myhandler
+ sub makeMyhandler
  {   my ($backend, $data, $type) = @_;
      return My::Perl::Class->new($data)
          if $backend eq 'READER';

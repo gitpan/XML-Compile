@@ -1,8 +1,11 @@
 =head1 NAME
 
-XML::Compile::Schema::XmlWriter - bricks to translate HASH to XML
+XML::Compile::Translate::Writer - translate HASH to XML
 
 =head1 INHERITANCE
+
+ XML::Compile::Translate::Writer
+   is a XML::Compile::Translate
 
 =head1 SYNOPSIS
 
@@ -15,7 +18,13 @@ The translator understands schemas, but does not encode that into
 actions.  This module implements those actions to translate from
 a (nested) Perl HASH structure onto XML.
 
+=head2 Unsupported features
+
+=head1 METHODS
+
 =head1 DETAILS
+
+=head2 Translator options
 
 =head2 Processing Wildcards
 
@@ -25,7 +34,7 @@ processing those constructs.  The use of both schema components should
 be avoided: please specify your data-structures explicit by clean type
 extensions.
 
-The procedure for the XmlWriter is simple: add key-value pairs to your
+The procedure for the WRITER is simple: add key-value pairs to your
 hash, in which the value is a fully prepared XML::LibXML::Attr
 or XML::LibXML::Element.  The keys have the form C<{namespace}type>.
 The I<namespace> component is important, because only spec conformant
@@ -93,7 +102,7 @@ On the moment, the only predefined C<before> hook is C<PRINT_PATH>.
 
 example: before hook on user-provided HASH.
 
- sub before_on_complex($$$)
+ sub makeBeforeOnComplex($$$)
  {   my ($doc, $values, $path) = @_;
 
      my %copy = %$values;
@@ -105,14 +114,14 @@ example: before hook on user-provided HASH.
 
 example: before hook on simpleType data
 
- sub before_on_simple($$$)
+ sub makeBeforeOnSimple($$$)
  {   my ($doc, $value, $path) = @_;
      $value *= 100;    # convert euro to euro-cents
  }
 
 example: before hook with object for complexType
 
- sub before_on_object($$$)
+ sub makeBeforeOnObject($$$)
  {   my ($doc, $obj, $path) = @_;
 
      +{ name     => $obj->name
@@ -132,7 +141,7 @@ On the moment, the only predefined C<replace> hook is C<SKIP>.
 
 example: replace hook
 
- sub replace($$$)
+ sub makeReplace($$$)
  {  my ($doc, $values, $path, $tag) = @_
     my $node = $doc->createElement($tag);
     $node->appendText($values->{text});
@@ -149,7 +158,7 @@ On the moment, the only predefined C<after> hook is C<PRINT_PATH>.
 
 example: add an extra sibbling after the usual process
 
- sub after($$$$)
+ sub makeAfter($$$$)
  {   my ($doc, $node, $path) = @_;
      my $child = $doc->createAttributeNS($myns, earth => 42);
      $node->addChild($child);
@@ -165,14 +174,14 @@ example: creating nodes with text
 
  {  my $text;
 
-    sub before($$$)
+    sub makeBefore($$$)
     {   my ($doc, $values, $path) = @_;
         my %copy = %$values;
         $text = delete $copy{text};
         \%copy;
     }
 
-    sub after($$$)
+    sub makeAfter($$$)
     {   my ($doc, $node, $path) = @_;
         $node->addChild($doc->createTextNode($text));
         $node;
@@ -212,7 +221,7 @@ C<toXML>method.
 
  package My::Perl::Class;
  ...
- sub toXML
+ sub makeToXML
  {   my ($self, $xmltype, $doc) = @_;
      ...
      { a => { b => 42 }, c => 'aaa' };
@@ -236,7 +245,7 @@ an interface.
  $schema->typemap($sometype => $object);
 
  package My::Perl::Class;
- sub toXML
+ sub makeToXML
  {   my ($self, $object, $xmltype, $doc) = @_;
      ...
  }
@@ -254,7 +263,7 @@ to the expectation.
 
  $schema->typemap($t1 => \&myhandler);
 
- sub myhandler
+ sub makeMyhandler
  {   my ($backend, $object, $xmltype, $doc) = @_;
      ...
  }

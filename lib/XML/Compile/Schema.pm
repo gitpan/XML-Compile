@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.89';
+$VERSION = '0.90';
 
 use base 'XML::Compile';
 
@@ -20,9 +20,10 @@ use File::Basename qw/basename/;
 use Digest::MD5    qw/md5_hex/;
 
 use XML::Compile::Schema::Specs;
-use XML::Compile::Schema::Translate      ();
 use XML::Compile::Schema::Instance;
 use XML::Compile::Schema::NameSpaces;
+
+use XML::Compile::Translate      ();
 
 
 sub init($)
@@ -196,22 +197,14 @@ sub compile($$@)
     $args{any_element}    ||= delete $args{anyElement};
     $args{any_attribute}  ||= delete $args{anyAttribute};
 
-    my $impl
-     = $action eq 'READER' ? 'XmlReader'
-     : $action eq 'WRITER' ? 'XmlWriter'
-     : error __x"create only READER, WRITER, not '{action}'"
-           , action => $action;
-
-    my $bricks = "XML::Compile::Schema::$impl";
-    eval "require $bricks";
-    fault $@ if $@;
-
-    XML::Compile::Schema::Translate->compileTree
-     ( $type, %args
-     , bricks  => $bricks
+    my $transl = XML::Compile::Translate->new
+     ( $action
      , nss     => $self->namespaces
+     );
+
+    $transl->compile
+     ( $type, %args
      , hooks   => \@hooks
-     , action  => $action
      , typemap => \%map
      , rewrite => \@rewrite
      );
@@ -237,10 +230,6 @@ sub template($@)
     $args{include_namespaces} ||= 1;
     $args{mixed_elements}     ||= 'ATTRIBUTES';
 
-    my $bricks = 'XML::Compile::Schema::Template';
-    eval "require $bricks";
-    fault $@ if $@;
-
     # it could be used to add extra comment lines
     error __x"typemaps not implemented for XML template examples"
         if $action eq 'XML' && defined $args{typemap} && keys %{$args{typemap}};
@@ -249,12 +238,13 @@ sub template($@)
     my $kw = delete $args{key_rewrite} || [];
     unshift @rewrite, ref $kw eq 'ARRAY' ? @$kw : $kw;
 
-    my $compiled = XML::Compile::Schema::Translate->compileTree
-     ( $type
-     , bricks  => $bricks
+    my $transl = XML::Compile::Translate->new
+     ( 'TEMPLATE'
      , nss     => $self->namespaces
-     , hooks   => []
-     , action  => 'READER'
+     );
+
+    my $compiled = $transl->compile
+     ( $type
      , rewrite => \@rewrite
      , %args
      );
@@ -264,23 +254,22 @@ sub template($@)
 
     if($action eq 'XML')
     {   my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
-        my $node = $bricks->toXML($doc,$ast, @comment, indent => $indent);
+        my $node = $transl->toXML($doc,$ast, @comment, indent => $indent);
         return $node->toString(1);
     }
 
-    if($action eq 'PERL')
-    {   return $bricks->toPerl($ast, @comment, indent => $indent);
-    }
+    return $transl->toPerl($ast, @comment, indent => $indent)
+        if $action eq 'PERL';
 
     error __x"template output is either in XML or PERL layout, not '{action}'"
         , action => $action;
 }
 
-sub beautify(@)
+sub rewrite(@)
 {   my $self = shift;
-    eval "require XML::Compile::Schema::Beautify";
-    panic "cannot load beautifier: $@" if $@;
-    $self->beautify(@_);
+    eval "require XML::Compile::Schema::Rewrite";
+    panic "cannot load rewrite: $@" if $@;
+    $self->rewrite(@_);
 }
 
 #------------------------------------------
