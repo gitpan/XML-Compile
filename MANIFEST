@@ -38,14 +38,6 @@ lib/XML/Compile/Schema/NameSpaces.pm
 lib/XML/Compile/Schema/NameSpaces.pod
 lib/XML/Compile/Schema/Specs.pm
 lib/XML/Compile/Schema/Specs.pod
-lib/XML/Compile/Schema/Template.pm
-lib/XML/Compile/Schema/Template.pod
-lib/XML/Compile/Schema/Translate.pm
-lib/XML/Compile/Schema/Translate.pod
-lib/XML/Compile/Schema/XmlReader.pm
-lib/XML/Compile/Schema/XmlReader.pod
-lib/XML/Compile/Schema/XmlWriter.pm
-lib/XML/Compile/Schema/XmlWriter.pod
 lib/XML/Compile/Translate.pm
 lib/XML/Compile/Translate.pod
 lib/XML/Compile/Translate/Reader.pm
@@ -78,11 +70,9 @@ t/40seq.t
 t/41choice.t
 t/42all.t
 t/43group.t
-t/44ctext.t
 t/44stres.t
 t/45ctcext.t
 t/45ctcres.t
-t/45stres.t
 t/46ctsext.t
 t/47ctsres.t
 t/48subst.t
@@ -103,6 +93,7 @@ t/70templ.t
 t/71nons.t
 t/72typemap.t
 t/73rewrite.t
+t/74qname.t
 t/81-2000.t
 t/TestTools.pm
 t/pod.t

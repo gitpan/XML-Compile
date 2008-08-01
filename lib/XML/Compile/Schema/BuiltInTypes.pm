@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.90';
+$VERSION = '0.91';
 
 use base 'Exporter';
 
@@ -463,9 +463,9 @@ $builtin_types{NMTOKENS} =
 #    check   => sub { $_[0] =~ $RE{URI} }
 
 $builtin_types{anyURI} =
- { parse   => \&_collapse
- , example => 'http://example.com'
- };
+  { parse   => \&_collapse
+  , example => 'http://example.com'
+  };
 
 
 $builtin_types{QName} =
@@ -474,8 +474,6 @@ $builtin_types{QName} =
            $qname =~ s/\s//g;
            my $prefix = $qname =~ s/^([^:]*)\:// ? $1 : '';
 
-use Carp;
-defined $node or confess "NO NODE;".@_;
            $node  = $node->node if $node->isa('XML::Compile::Iterator');
            my $ns = $node->lookupNamespaceURI($prefix) || '';
            pack_type $ns, $qname;
@@ -483,13 +481,15 @@ defined $node or confess "NO NODE;".@_;
  , format  =>
     sub { my ($type, $trans) = @_;
           my ($ns, $local) = unpack_type $type;
-          defined $ns or return $local;
+          length $ns or return $local;
 
           my $def = $trans->{$ns};
-          if(!$def || !$def->{used})
-          {   error __x"QNAME formatting only works if the namespace is used elsewhere, not {ns}", ns => $ns;
-          }
-          "$def->{prefix}:$local";
+          # let's hope that the namespace will get used somewhere else as
+          # well, to make it into the xmlns.
+          defined $def && $def->{used}
+              or error __x"QName formatting only works if the namespace is used for an element, not found {ns}", ns => $ns;
+
+          length $def->{prefix} ? "$def->{prefix}:$local" : $local;
         }
  , example => 'myns:local'
  };

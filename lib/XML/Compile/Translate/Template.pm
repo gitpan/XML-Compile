@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '0.90';
+$VERSION = '0.91';
 
 use base 'XML::Compile::Translate';
 
@@ -15,7 +15,7 @@ use strict;
 use warnings;
 no warnings 'once';
 
-use XML::Compile::Util qw/odd_elements block_label unpack_type/;
+use XML::Compile::Util qw/odd_elements unpack_type/;
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
 
@@ -92,7 +92,7 @@ sub makeChoice   { my $self = shift; $self->_block(choice   => @_) }
 sub makeAll      { my $self = shift; $self->_block(all      => @_) }
 
 sub makeBlockHandler
-{   my ($self, $path, $label, $min, $max, $proc, $kind) = @_;
+{   my ($self, $path, $label, $min, $max, $proc, $kind, $multi) = @_;
 
     my $code =
     sub { my $data = $proc->();
@@ -107,7 +107,7 @@ sub makeBlockHandler
           {   bless $data, 'BLOCK';
           }
           else
-          {   $data->{tag}      = block_label $kind, $label;
+          {   $data->{tag}      = $multi;
               $data->{is_array} = 1;
               bless $data, 'REP-BLOCK';
           }

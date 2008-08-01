@@ -25,8 +25,11 @@ XML::Compile::Schema - Compile a schema into CODE
 
  # adding schemas
  $schema->addSchemas($tree);
+
+ # three times the same: well-known url, filename in schemadir, url
  $schema->importDefinitions('http://www.w3.org/2001/XMLSchema');
  $schema->importDefinitions('2001-XMLSchema.xsd');
+ $schema->importDefinitions(SCHEMA2001);  # from ::Util
 
  # alternatively
  my @specs  = ('one.xsd', 'two.xsd', $schema_as_string);
@@ -350,7 +353,7 @@ to be called with an XML::LibXML::Document object and a HASH, and
 returns a XML::LibXML::Node.
 
 Most options below are B<explained in more detailed> in the manual-page
-XML::Compile::Schema::Translate, which implements the compilation.
+L<XML::Compile::Translate|XML::Compile::Translate>, which implements the compilation.
 
  Option                        --Default
  any_attribute                   undef
@@ -358,6 +361,7 @@ XML::Compile::Schema::Translate, which implements the compilation.
  attributes_qualified            <undef>
  check_occurs                    <true>
  check_values                    <true>
+ default_values                  <depends on backend>
  elements_qualified              <undef>
  hook                            undef
  hooks                           undef
@@ -374,10 +378,10 @@ XML::Compile::Schema::Translate, which implements the compilation.
  prefixes                        {}
  sloppy_integers                 <false>
  typemap                         {}
- use_default_prefix              <false>
+ use_default_namespace           <false>
  validation                      <true>
 
-. any_attribute => CODE
+. any_attribute => CODE|'TAKE_ALL'|'SKIP_ALL'
 
 =over 4
 
@@ -390,7 +394,7 @@ still work.
 
 =back
 
-. any_element => CODE
+. any_element => CODE|'TAKE_ALL'|'SKIP_ALL'
 
 =over 4
 
@@ -435,6 +439,19 @@ the expected data format.
 Turning this off will improve the processing speed significantly, but is
 (of course) much less safe.  Do not set it off when you expect data from
 external sources: validation is a crucial requirement for XML.
+
+=back
+
+. default_values => 'MINIMAL'|'IGNORE'|'EXTEND'
+
+=over 4
+
+How to treat default values as provided by the schema.
+With C<IGNORE> (the writer default), you will see exactly what is
+specified in the XML or HASH.  With C<EXTEND> (the reader default) will
+show the default and fixed values in the result.  C<MINIMAL> does remove
+all fields which are the same as the default setting: simplifies.
+See L</Default Values>.
 
 =back
 
@@ -582,6 +599,13 @@ The value is a hash which contains C<uri>, C<prefix>, and C<used> fields.
 Pass a reference to a private hash to catch this index.  An ARRAY with
 prefix, uri PAIRS is simpler.
 
+ prefixes => [ mine => $myns, two => $twons ]
+ prefixes => { $myns => 'mine', $twons => 'two' }
+
+ # the previous is short for:
+ prefixes => { $myns => [ uri => $myns, prefix => 'mine', used => 0 ]
+             , $twons => [ uri => $twons, prefix => 'two', ...] };
+
 =back
 
 . sloppy_integers => BOOLEAN
@@ -617,13 +641,13 @@ L<addTypemaps()|XML::Compile::Schema/"Accessors">
 
 =back
 
-. use_default_prefix => BOOLEAN
+. use_default_namespace => BOOLEAN
 
 =over 4
 
-When mixing qualified and unqualified namespaces, then the use of
-a default prefix can be quite confusing.  Therefore, by default, all
-qualified elements will have an explicit prefix.
+[0.91] When mixing qualified and unqualified namespaces, then the use of
+a default namespace can be quite confusing: a name-space without prefix.
+Therefore, by default, all qualified elements will have an explicit prefix.
 
 =back
 
@@ -656,7 +680,7 @@ Schema's can be horribly complex and unreadible.  Therefore, this template
 method can be called to create an example which demonstrates how data of
 the specified TYPE as XML or Perl is organized in practice.
 
-Some OPTIONS are explained in XML::Compile::Schema::Translate.
+Some OPTIONS are explained in L<XML::Compile::Translate|XML::Compile::Translate>.
 There are some extra OPTIONS defined for the final output process.
 
 The templates produced are B<not always correct>.  Please contribute
@@ -1125,7 +1149,7 @@ the repeated block.  This array needs to have a name, because more of
 these blocks may appear together in a construct.  The B<name of the
 block> is derived from the I<type of block> and the name of the I<first
 element> in the block, regardless whether that element is present in
-the data or not.  See L<XML::Compile::Util::block_label()|XML::Compile::Util/"Other">.
+the data or not.
 
 So, our example data is translated into (and vice versa)
 
@@ -1262,7 +1286,7 @@ In this example, the C<a> container is marked to be mixed:
 Each back-end has its own way of handling mixed elements.  The
 L<compile(mixed_elements)|XML::Compile::Schema/"Compilers"> currently only modifies the reader's
 behavior; the writer's capabilities are limited.
-See XML::Compile::Schema::Template::Reader.
+See L<XML::Compile::Translate::Reader|XML::Compile::Translate::Reader>.
 
 =head2 Schema hooks
 
@@ -1309,8 +1333,8 @@ example: of HOOKs:
             , replace => 'SKIP'
             };
 
- # path contains "(volume)" or id is 'aap' or id is 'noot'
- my $hook = { path    => qr/\(volume\)/
+ # path contains "volume" or id is 'aap' or id is 'noot'
+ my $hook = { path    => qr/\bvolume\b/
             , id      => [ 'aap', 'noot' ]
             , before  => [ sub {...}, sub { ... } ]
             , after   => sub { ... }
@@ -1629,6 +1653,89 @@ surrounding blanks.
 
 =back
 
+=head2 Default Values
+
+[0.91]
+With L<compile(default_values)|XML::Compile::Schema/"Compilers"> you can control how much information about
+default values defined by the schema will be passed into your program.
+
+The choices, available for both READER and WRITER, are:
+
+=over 4
+
+=item C<IGNORE>   (the WRITER's standard behavior)
+
+Only include element and attribute values in the result if they are in
+the XML message.  Behaviorally, this treats elements with default values
+as if they are just optional.  The WRITER does not try to be smarter than
+you.
+
+=item C<EXTEND>   (the READER's standard behavior)
+
+If some element or attribute is not in the source but has a default in
+the schema, that value will be produced.  This is very convenient for the
+READER, because your application does not have to hard-code the same
+constant values as defaults as well.
+
+=item C<MINIMAL>
+
+Only produce the values which differ from the defaults.  This choice is
+useful when producing XML, to reduce the size of the output.
+
+=back
+
+example: use of default_values EXTEND
+
+Let us process a schema using the schema schema.  A schema file can
+contain lines like this:  
+
+ <element minOccurs="0" ref="myelem"/>
+
+In mode C<EXTEND> (the READER default), this gets translated into:
+
+ element => { ref => 'myelem', maxOccurs => 1
+            , minOccurs => 0, nillable => 0 };
+
+With C<EXTEND> in the READER, all schema information is used to provide
+a complete overview of available information.  Your code does not need
+to check whether the attributes were available or not: attributes with
+defaults or fixed values are automatically added.
+
+Again mode C<EXTEND>, now for the writer:
+
+ element => { ref => 'myelem', minOccurs => 0 };
+ <element minOccurs="0" maxOccurs="1" ref="myelem" nillable="0"/>
+
+example: use of default_values IGNORE
+
+With option C<default_values> set to C<IGNORE> (the WRITER default), you
+would get
+
+ element => { ref => 'myelem', maxOccurs => 1, minOccurs => 0 }
+ <element minOccurs="0" maxOccurs="1" ref="myelem"/>
+
+The same in both translation directions.
+The nillable attribute is not used, so will not be shown by the READER.  The
+writer does not try to be smart, so does not add the nillable default.
+
+example: use of default_values MINIMAL
+
+With option C<default_values> set to C<MINIMAL>, the READER would do this:
+
+ <element minOccurs="0" maxOccurs="1" ref="myelem"/>
+ element => { ref => 'myelem', minOccurs => 0 }
+
+The maxOccurs default is "1", so will not be included, minimalizing the
+size of the HASH.
+
+For the WRITER:
+
+ element => { ref => 'myelem', minOccurs => 0, nillable => 0 }
+ <element minOccurs="0" ref="myelem"/>
+
+because the default value for nillable is '0', it will not show as attribute
+value.
+
 =head1 DIAGNOSTICS
 
 Error: cannot find pre-installed name-space files
@@ -1649,8 +1756,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.90,
-built on July 18, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.91,
+built on August 01, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
@@ -1658,6 +1765,7 @@ L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
+L<XML::Rewrite>,
 L<XML::Compile::Dumper>.
 
 Please post questions or ideas to the mailinglist at

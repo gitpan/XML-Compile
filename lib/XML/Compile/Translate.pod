@@ -18,7 +18,7 @@ XML::Compile::Translate - create an XML data parser
 
 This module converts a schema type definition into a code
 reference which can be used to interpret a schema.  The sole public
-function in this package is XML::Compile::Translate subroutine compileTree, and is called by
+function in this package is L<compile()|XML::Compile::Translate/"Handlers">, and is called by
 L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">, which does a lot of set-ups.
 Please do not try to use this package directly!
 
@@ -49,12 +49,10 @@ to interpret the message if you need them.
 
 A few nuts are still to crack:
  any* processContents always interpreted as lax
- schema version
  openContent
  attribute limitiations (facets) on dates
  full understanding of patterns (now limited)
  final is not protected
- QName writer namespace to prefix translation
 
 Of course, the latter list is all fixed in next release ;-)
 See chapter L</DETAILS> for more on how the tune the translator.
@@ -302,15 +300,22 @@ Therefore, if you use them then you need to process that parts of
 XML yourself.  See the various backends on how to create or process
 these elements.
 
+Automatic decoding is problematic: you do not know what to expect, so
+cannot prepare for these data-structures compile-time.  However,
+L<XML::Compile::Cache|XML::Compile::Cache> offers a way out: you can declare the handlers
+for these "any" components and therewith be prepared for them.  With
+C<XML::Compile::Cache::new(allow_undeclared)>, you can permit run-time
+compilation of  the found components.
+
 =over 4
 
-=item any_element CODE|'TAKE_ALL'
+=item any_element CODE|'TAKE_ALL'|'SKIP_ALL'
 
 [0.89] This will be called when the type definition contains an C<any>
 definition, after processing the other element components.  By
 default, all C<any> specifications will be ignored.
 
-=item any_attribute CODE|'TAKE_ALL'
+=item any_attribute CODE|'TAKE_ALL'|'SKIP_ALL'
 
 [0.89] This will be called when the type definitions contains an
 C<anyAttribute> definition, after processing the other attributes.
@@ -320,8 +325,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.90,
-built on July 18, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.91,
+built on August 01, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
@@ -329,6 +334,7 @@ L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
+L<XML::Rewrite>,
 L<XML::Compile::Dumper>.
 
 Please post questions or ideas to the mailinglist at

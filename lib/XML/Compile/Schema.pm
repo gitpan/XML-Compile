@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.90';
+$VERSION = '0.91';
 
 use base 'XML::Compile';
 
@@ -158,24 +158,12 @@ sub compile($$@)
             if $@;
     }
 
-    my $prefs = $args{prefixes} ||= $args{output_namespaces} || {};
-    if(ref $prefs eq 'ARRAY')
-    {   my @ns = @$prefs;
-        $prefs = $args{prefixes} = {};
-        while(@ns)
-        {   my ($prefix, $uri) = (shift @ns, shift @ns);
-            $prefs->{$uri} = { uri => $uri, prefix => $prefix };
-        }
-    }
-
-    my $saw_default = 0;
-    foreach (values %$prefs)
-    {   $_->{used} = 0 if $args{namespace_reset};
-        $saw_default ||= $_->{prefix} eq '';
-    }
-
-    $prefs->{''} = {uri => '', prefix => '', used => 0}
-        if !$saw_default && !$args{use_default_prefix};
+    my $prefs = $args{prefixes} = $self->_namespaceTable
+       ( ($args{prefixes} || $args{output_namespaces})
+       , $args{namespace_reset}
+       , !($args{use_default_namespace} || $args{use_default_prefix})
+         # use_default_prefix renamed in 0.90
+       );
 
     my $nss   = $self->namespaces;
 
@@ -192,6 +180,7 @@ sub compile($$@)
     unshift @rewrite, ref $kw eq 'ARRAY' ? @$kw : $kw;
 
     $args{mixed_elements} ||= 'ATTRIBUTES';
+    $args{default_values} ||= $action eq 'READER' ? 'EXTEND' : 'IGNORE';
 
     # Option rename in 0.88
     $args{any_element}    ||= delete $args{anyElement};
@@ -208,6 +197,24 @@ sub compile($$@)
      , typemap => \%map
      , rewrite => \@rewrite
      );
+}
+
+# also used in ::Cache init()
+sub _namespaceTable($;$$)
+{   my ($self, $table, $reset_count, $block_default) = @_;
+    $table = { reverse @$table }
+        if ref $table eq 'ARRAY';
+
+    $table->{$_} = { uri => $_, prefix => $table->{$_} }
+        for grep {ref $table->{$_} ne 'HASH'} keys %$table;
+
+    do { $_->{used} = 0 for values %$table }
+        if $reset_count;
+
+    $table->{''} = {uri => '', prefix => '', used => 0}
+        if $block_default && !grep {$_->{prefix} eq ''} values %$table;
+
+    $table;
 }
 
 
@@ -229,6 +236,7 @@ sub template($@)
     $args{check_occurs}         = 1;
     $args{include_namespaces} ||= 1;
     $args{mixed_elements}     ||= 'ATTRIBUTES';
+    $args{default_values}     ||= 'EXTEND';
 
     # it could be used to add extra comment lines
     error __x"typemaps not implemented for XML template examples"
@@ -265,13 +273,6 @@ sub template($@)
         , action => $action;
 }
 
-sub rewrite(@)
-{   my $self = shift;
-    eval "require XML::Compile::Schema::Rewrite";
-    panic "cannot load rewrite: $@" if $@;
-    $self->rewrite(@_);
-}
-
 #------------------------------------------
 
 
@@ -281,7 +282,7 @@ sub namespaces() { shift->{namespaces} }
 # The cache will certainly avoid penalties by the average module user,
 # which does not understand the sharing schema definitions between objects
 # especially in SOAP implementations.
-my (%cacheByFilestamp, %cacheByChecksum);
+my (%schemaByFilestamp, %schemaByChecksum);
 
 sub importDefinitions($@)
 {   my ($self, $thing, %options) = @_;
@@ -296,19 +297,19 @@ sub importDefinitions($@)
         if(defined $xml)
         {   my @added = $self->addSchemas($xml, %details, %options);
             if(my $checksum = $details{checksum})
-            {    $cacheByChecksum{$checksum} = \@added;
+            {   $schemaByChecksum{$checksum} = \@added;
             }
             elsif(my $filestamp = $details{filestamp})
-            {   $cacheByFilestamp{$filestamp} = \@added;
+            {   $schemaByFilestamp{$filestamp} = \@added;
             }
             push @schemas, @added;
         }
         elsif(my $filestamp = $details{filestamp})
-        {   my $cached = $cacheByFilestamp{$filestamp};
+        {   my $cached = $schemaByFilestamp{$filestamp};
             $self->namespaces->add(@$cached);
         }
         elsif(my $checksum = $details{checksum})
-        {   my $cached = $cacheByChecksum{$checksum};
+        {   my $cached = $schemaByChecksum{$checksum};
             $self->namespaces->add(@$cached);
         }
     }
@@ -319,7 +320,7 @@ sub _parseScalar($)
 {   my ($thing, $data) = @_;
     my $checksum = md5_hex $$data;
 
-    if($cacheByChecksum{$checksum})
+    if($schemaByChecksum{$checksum})
     {   trace "importDefinitions reusing string data with checksum $checksum";
         return (undef, checksum => $checksum);
     }
@@ -335,7 +336,7 @@ sub _parseFile($)
     my ($mtime, $size) = (stat $fn)[9,7];
     my $filestamp = basename($fn) . '-'. $mtime . '-' . $size;
 
-    if($cacheByFilestamp{$filestamp})
+    if($schemaByFilestamp{$filestamp})
     {   trace "importDefinitions reusing schemas from file $filestamp";
         return (undef, filestamp => $filestamp);
     }

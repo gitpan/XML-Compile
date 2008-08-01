@@ -7,14 +7,14 @@ use strict;
 
 package XML::Compile::Util;
 use vars '$VERSION';
-$VERSION = '0.90';
+$VERSION = '0.91';
 
 use base 'Exporter';
 
 my @constants  = qw/XMLNS SCHEMA1999 SCHEMA2000 SCHEMA2001 SCHEMA2001i/;
 our @EXPORT    = qw/pack_type unpack_type/;
 our @EXPORT_OK =
-  ( qw/pack_id unpack_id odd_elements block_label type_of_node/
+  ( qw/pack_id unpack_id odd_elements type_of_node/
   , @constants
   );
 our %EXPORT_TAGS = (constants => \@constants);
@@ -47,16 +47,6 @@ sub unpack_id($) { split /\#/, $_[0], 2 }
 sub odd_elements(@)
 {   my $i = 0;
     map {$i++ % 2 ? $_ : ()} @_;
-}
-
-
-my %block_abbrev = qw/sequence seq_  choice cho_  all all_  group gr_/;
-sub block_label($$)
-{   my ($kind, $label) = @_;
-    return $label if $kind eq 'element';
-
-    $label =~ s/^(?:seq|cho|all|gr)_//;
-    $block_abbrev{$kind} . (unpack_type $label)[1];
 }
 
 
