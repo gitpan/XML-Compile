@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                XML-Compile
-version:             0.91
+version:             0.92
 abstract:            Compilation based XML processing
 license:             perl
 author:              

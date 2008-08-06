@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '0.91';
+$VERSION = '0.92';
 
 use base 'XML::Compile::Translate';
 
@@ -270,9 +270,9 @@ sub makeElementHandler
         sub { my ($doc, $values) = @_;
               my @values = ref $values eq 'ARRAY' ? @$values
                          : defined $values ? $values : ();
-              ( (map { $required->($doc, shift @values) } 1..$min)
-              , (map { $optional->($doc, $_) } @values)
-              );
+              my @d = ( (map { $required->($doc, shift @values) } 1..$min)
+                      , (map { $optional->($doc, $_) } @values) );
+              @d ? @d : (undef);
             };
     }
 
@@ -287,9 +287,9 @@ sub makeElementHandler
           my @values = ref $values eq 'ARRAY' ? @$values
                      : defined $values ? $values : ();
 
-          ( (map { $required->($doc, shift @values) } 1..$min)
-          , (map { $optional->($doc, shift @values) } 1..$opt)
-          );
+          my @d = ( (map { $required->($doc, shift @values) } 1..$min)
+                  , (map { $optional->($doc, shift @values) } 1..$opt) );
+          @d ? @d : (undef);
         };
 }
 
@@ -976,7 +976,7 @@ sub makeHook($$$$$$)
        defined $xml or return ();
 
        foreach (@after)
-       {   $xml = $_->($doc, $xml, $path);
+       {   $xml = $_->($doc, $xml, $path, $val);
            defined $xml or return ();
        }
 
