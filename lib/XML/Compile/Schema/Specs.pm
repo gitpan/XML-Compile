@@ -1,21 +1,29 @@
-# Copyrights 2006-2008 by Mark Overmeer.
-#  For other contributors see ChangeLog.
-# See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.05.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Specs;
-use vars '$VERSION';
-$VERSION = '0.92';
-
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
 use XML::Compile::Schema::BuiltInTypes   qw/%builtin_types/;
 use XML::Compile::Util qw/SCHEMA1999 SCHEMA2000 SCHEMA2001 unpack_type/;
 
+=chapter NAME
+
+XML::Compile::Schema::Specs - Predefined Schema Information
+
+=chapter SYNOPSIS
+
+ # not for end-users
+ use XML::Compile::Schema::Specs;
+
+=chapter DESCRIPTION
+This package defines the various schema-specifications.
+
+=chapter METHODS
+
+=cut
 
 ### Who will extend this?
 # everything which is not caught by a special will need to pass through
@@ -141,12 +149,31 @@ my %schema_2001 =
 my %schemas = map { ($_->{uri_xsd} => $_) }
  \%schema_1999, \%schema_2000, \%schema_2001;
 
+=c_method predefinedSchemas
+Returns the uri of all predefined schemas.
+=cut
 
 sub predefinedSchemas() { keys %schemas }
 
+=c_method predefinedSchema URI
+Return a HASH which contains the schema information for the specified
+URI (or undef if it doesn't exist).
+=cut
 
 sub predefinedSchema($) { defined $_[1] ? $schemas{$_[1]} : () }
 
+=c_method builtInType (NODE|undef), EXPANDED | (URI,LOCAL), OPTIONS
+Provide an EXPANDED (full) type name or an namespace URI and a LOCAL node
+name.  Returned is a HASH with process information or C<undef> if not
+found.
+
+=option  sloppy_integers BOOLEAN
+=default sloppy_integers <false>
+the <decimal> and <integer> types must accept huge integers, which
+require C<Math::Big*> objects to process.  But often, Perl's normal
+signed 32bit integers suffice... which is good for performance, but not
+standard compliant.
+=cut
 
 sub builtInType($$;$@)
 {   my ($class, $node, $ns) = (shift, shift, shift);

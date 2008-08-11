@@ -1,7 +1,3 @@
-# Copyrights 2006-2008 by Mark Overmeer.
-#  For other contributors see ChangeLog.
-# See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.05.
 use warnings;
 use strict;
 
@@ -9,9 +5,6 @@ use lib '../XMLCompile/lib'  # test environment at home
       , '../XMLTester/lib';
 
 package TestTools;
-use vars '$VERSION';
-$VERSION = '0.92';
-
 use base 'Exporter';
 
 use XML::LibXML;
