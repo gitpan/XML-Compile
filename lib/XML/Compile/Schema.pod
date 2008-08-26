@@ -71,8 +71,10 @@ XML::Compile::Schema - Compile a schema into CODE
  use XML::Compile::Cache;   # seperate distribution
  my $schema = XML::Compile::Cache->new(...);
 
- # for debug info, start your script with:
- use Log::Report mode => 'DEBUG';
+ # Error handling tricks with Log::Report
+ use Log::Report mode => 'DEBUG';  # enable debugging
+ dispatcher SYSLOG => 'syslog';    # errors to syslog as well
+ try { $reader->($data) };         # catch errors in $@
 
 =head1 DESCRIPTION
 
@@ -1802,8 +1804,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.93,
-built on August 11, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.94,
+built on August 26, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
