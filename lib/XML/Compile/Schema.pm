@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.94';
+$VERSION = '0.95';
 
 use base 'XML::Compile';
 
@@ -23,7 +23,7 @@ use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::Instance;
 use XML::Compile::Schema::NameSpaces;
 
-use XML::Compile::Translate      ();
+use XML::Compile::Translate  ();
 
 
 sub init($)
@@ -147,15 +147,16 @@ sub compile($$@)
       = !defined $iut ? undef : ref $iut eq 'Regexp' ? $iut : qr/^/;
 
     exists $args{include_namespaces} or $args{include_namespaces} = 1;
-    $args{sloppy_integers}   ||= 0;
-    unless($args{sloppy_integers})
-    {   eval "require Math::BigInt";
-        fault "require Math::BigInt or sloppy_integers:\n$@"
-            if $@;
 
-        eval "require Math::BigFloat";
-        fault "require Math::BigFloat or sloppy_integers:\n$@"
+    if($args{sloppy_integers} ||= 0)
+    {   eval "require Math::BigInt";
+        panic "require Math::BigInt or sloppy_integers:\n$@"
             if $@;
+    }
+
+    if($args{sloppy_floats} ||= 0)
+    {   eval "require Math::BigFloat";
+        panic "require Math::BigFloat by sloppy_floats:\n$@" if $@;
     }
 
     my $prefs = $args{prefixes} = $self->_namespaceTable
@@ -205,13 +206,13 @@ sub _namespaceTable($;$$)
     $table = { reverse @$table }
         if ref $table eq 'ARRAY';
 
-    $table->{$_} = { uri => $_, prefix => $table->{$_} }
+    $table->{$_}    = { uri => $_, prefix => $table->{$_} }
         for grep {ref $table->{$_} ne 'HASH'} keys %$table;
 
     do { $_->{used} = 0 for values %$table }
         if $reset_count;
 
-    $table->{''} = {uri => '', prefix => '', used => 0}
+    $table->{''}    = {uri => '', prefix => '', used => 0}
         if $block_default && !grep {$_->{prefix} eq ''} values %$table;
 
     $table;

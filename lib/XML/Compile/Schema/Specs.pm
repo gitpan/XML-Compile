@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '0.94';
+$VERSION = '0.95';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -86,6 +86,7 @@ my @builtin_extra_2001  = qw/
  base64Binary
  dateTime
  dayTimeDuration
+ error
  gDay
  gMonth
  gMonthDay
@@ -106,8 +107,7 @@ my %builtin_public_2001 = map { ($_ => $_) }
    @builtin_common, @builtin_extra_2001;
 
 my %sloppy_int_version =
- ( decimal            => 'double'
- , integer            => 'int'
+ ( integer            => 'int'
  , long               => 'int'
  , nonNegativeInteger => 'unsigned_int'
  , nonPositiveInteger => 'non_pos_int'
@@ -116,6 +116,9 @@ my %sloppy_int_version =
  , unsignedLong       => 'unsigned_int'
  , unsignedInt        => 'unsigned_int'
  );
+
+my %sloppy_float_version = map { ($_ => 'sloppy_float') }
+   qw/decimal precissionDecimal float double/;
 
 my %schema_1999 =
  ( uri_xsd => SCHEMA1999
@@ -161,6 +164,9 @@ sub builtInType($$;$@)
 
     return $builtin_types{$sloppy_int_version{$name}}
         if $args{sloppy_integers} && exists $sloppy_int_version{$name};
+
+    return $builtin_types{$sloppy_float_version{$name}}
+        if $args{sloppy_floats} && exists $sloppy_float_version{$name};
 
     # only official names are exported this way
     my $public = $schema->{builtin_public}{$name};

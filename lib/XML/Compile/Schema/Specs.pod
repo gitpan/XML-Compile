@@ -24,16 +24,28 @@ name.  Returned is a HASH with process information or C<undef> if not
 found.
 
  Option         --Default
+ sloppy_floats    <false>
  sloppy_integers  <false>
+
+. sloppy_floats => BOOLEAN
+
+=over 4
+
+The float types of XML are all quite big, and support NaN, INF, and -INF.
+Perl's normal floats do not, and therefore Math::BigFloat is used.  This,
+however, is slow.  When true, your application will crash on any value which
+is not understood by Perl's default float... but run much faster.
+
+=back
 
 . sloppy_integers => BOOLEAN
 
 =over 4
 
-the <decimal> and <integer> types must accept huge integers, which
-require C<Math::Big*> objects to process.  But often, Perl's normal
-signed 32bit integers suffice... which is good for performance, but not
-standard compliant.
+the <integer> types must accept huge integers, which require
+C<Math::BigInt> objects to process.  But often, Perl's normal signed
+32bit integers suffice... which is good for performance, but not standard
+compliant.
 
 =back
 
@@ -58,8 +70,8 @@ Returns the uri of all predefined schemas.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.94,
-built on August 26, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.95,
+built on October 01, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

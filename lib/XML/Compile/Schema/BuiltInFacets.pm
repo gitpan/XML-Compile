@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '0.94';
+$VERSION = '0.95';
 
 use base 'Exporter';
 
@@ -35,22 +35,21 @@ my %facets =
  , enumeration     => \&_enumeration
  , totalDigits     => \&_totalDigits
  , fractionDigits  => \&_fractionDigits
- , totalFracDigits => \&_totalFracDigits
  , pattern         => \&_pattern
  , length          => \&_length
  , minLength       => \&_minLength
  , maxLength       => \&_maxLength
+ , minScale        => undef   # ignore
+ , maxScale        => undef   # ignore
  );
 
 sub builtin_facet($$$;@)
 {   my ($path, $args, $type, $value) = @_;
-    my $def = $facets{$type};
+    exists $facets{$type}
+        or panic "facet $type not implemented";
 
-    return $def->($path, $args, $value)
-        if defined $def;
-
-    error __x"unknown facet {type} in {path}"
-        , type => $type, path => $path;
+    my $def = $facets{$type} or return;
+    $def->($path, $args, $value);
 }
 
 sub _whiteSpace($$$)
@@ -172,11 +171,6 @@ sub _totalDigits($$$)
 sub _fractionDigits($$$)
 {   my $nr = $_[2];
     sub { sprintf "%.${nr}f", $_[0] };
-}
-
-sub _totalFracDigits($$$)
-{   my ($td,$fd) = @{$_[2]};
-    sub { sprintf "%${td}.${fd}f", $_[0] };
 }
 
 sub _length($$$)

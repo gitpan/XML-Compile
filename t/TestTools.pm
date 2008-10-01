@@ -10,7 +10,7 @@ use lib '../XMLCompile/lib'  # test environment at home
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.94';
+$VERSION = '0.95';
 
 use base 'Exporter';
 
@@ -43,7 +43,7 @@ sub test_rw($$$$;$$)
 
     # reader
 
-    my $r = create_reader $schema, $test, $type;
+    my $r = reader_create $schema, $test, $type;
     defined $r or return;
 
     my $h = $r->($xml);
@@ -64,7 +64,7 @@ sub test_rw($$$$;$$)
 
     # Writer
 
-    my $writer = create_writer $schema, $test, $type;
+    my $writer = writer_create $schema, $test, $type;
     defined $writer or return;
 
     my $msg  = defined $h2 ? $h2 : $h;

@@ -46,6 +46,12 @@ to represent the passed values.
 
 =back
 
+B<error>
+
+=over 4
+
+=back
+
 =head2 Ungrouped types
 
 B<boolean>
@@ -149,14 +155,6 @@ B<int>
 
 =back
 
-B<precissionDecimal>
-
-=over 4
-
-PARTIAL IMPLEMENTATION.  Special values INF and NaN not handled.
-
-=back
-
 B<short>
 
 =over 4
@@ -183,9 +181,6 @@ Unsigned 8-bits value.
 
 =head2 Floating-point
 
-PARTIAL IMPLEMENTATION: INF, NaN not handled.  The C<float> is not limited
-in size, but mapped on double.
-
 B<decimal>
 
 =over 4
@@ -201,7 +196,11 @@ B<double>
 
 =over 4
 
-A floating-point value.
+A floating-point value "m x 2**e", where m is an integer whose absolute
+value is less than 253, and e is an integer between −1074 and 971, inclusive.
+
+The implementation does not limited the double in size, but maps it onto an
+precissionDecimal (Math::BigFloat) unless C<sloppy_float> is set.
 
 =back
 
@@ -209,7 +208,20 @@ B<float>
 
 =over 4
 
-A small floating-point value.
+A small floating-point value "m x 2**e" where m is an integer whose absolute
+value is less than 224, and e is an integer between −149 and 104, inclusive.
+
+The implementation does not limited the float in size, but maps it onto an
+precissionDecimal (Math::BigFloat) unless C<sloppy_float> is set.
+
+=back
+
+B<precissionDecimal>
+
+=over 4
+
+Floating point value that closely corresponds to the floating-point
+decimal datatypes described by IEEE/ANSI754.
 
 =back
 
@@ -471,8 +483,8 @@ $builtin_types{recurringDuration} = ??
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.94,
-built on August 26, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.95,
+built on October 01, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.94';
+$VERSION = '0.95';
 
 use base 'Exporter';
 
@@ -40,47 +40,11 @@ sub str       { "$_[0]" }
 sub _replace  { $_[0] =~ s/[\t\r\n]/ /g; $_[0]}
 sub _collapse { local $_ = $_[0]; s/[\t\r\n]+/ /g; s/^ +//; s/ +$//; $_}
 
-# a real check() produces a nice error message with name of the
-# variable, however checking floats is extremely expensive.  Therefore,
-# we use the result of the conversion which does not show the variable
-# name.
-
-sub str2num
-{   my $v = eval {use warnings FATAL => 'all'; $_[0] + 0.0};
-    error __x"Value `{val}' is not a float", val => $_[0] if $@;
-    $v;
-}
-
-sub num2str
-{   my $f = shift;
-    if(ref $f && ($f->isa('Math::BigInt') || $f->isa('Math::BigFloat')))
-    {   error __"float is NaN" if $f->is_nan;
-        return $f->bstr;
-    }
-    my $v = eval {use warnings FATAL => 'all'; $f + 0.0};
-    $@ && error __x"Value `{val}' is not a float", val => $f;
-    $f;
-}
-
-sub bigint
-{   $_[0] =~ s/\s+//g;
-    my $v = Math::BigInt->new($_[0]);
-    error __x"Value `{val}' is not a (big) integer", val => $v if $v->is_nan;
-    $v;
-}
-
-sub bigfloat
-{   $_[0] =~ s/\s+//g;
-    my $v = Math::BigFloat->new($_[0]);
-    error __x"Value `{val}' is not a (big) float", val => $v if $v->is_nan;
-    $v;
-}
-
 
 $builtin_types{anySimpleType} =
-$builtin_types{anyType}       =
- { example => 'anything'
- };
+$builtin_types{anyType}       = {example => 'anything'};
+
+$builtin_types{error}         = {example => '[some error structure]'};
 
 
 $builtin_types{boolean} =
@@ -96,6 +60,13 @@ $builtin_types{pattern} =
  { example => '*.exe'
  };
 
+
+sub bigint
+{   $_[0] =~ s/\s+//g;
+    my $v = Math::BigInt->new($_[0]);
+    error __x"Value `{val}' is not a (big) integer", val => $v if $v->is_nan;
+    $v;
+}
 
 $builtin_types{integer} =
  { parse   => \&bigint
@@ -120,7 +91,7 @@ $builtin_types{nonNegativeInteger} =
 
 $builtin_types{positiveInteger} =
  { parse   => \&bigint
- , check   => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ && m/[1-9]/ }
+ , check   => sub { $_[0] =~ m/^\s*(?:\+\s*)?\d[\s\d]*$/ && $_[0] =~ m/[1-9]/ }
  , example => '+3'
  };
 
@@ -223,26 +194,57 @@ $builtin_types{byte} =
 $builtin_types{unsignedByte} =
  { parse   => \&str2int
  , format  => \&int2str
- , check   => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= 0 && $_[0] <=255}
+ , check   => sub {$_[0] =~ m/^\s*[+-]?\d+\s*$/ && $_[0] >= 0 && $_[0] <= 255}
  , example => '2'
  };
 
 
-$builtin_types{precissionDecimal} = $builtin_types{int};
-
-
 $builtin_types{decimal} =
- { parse   => \&bigfloat
- # checked when reading
+ { parse   => sub {$_[0] =~ s/\s+//g; Math::BigFloat->new($_[0]) }
+ , check   => sub {$_[0] =~ m#^(\+|\-)?([0-9]+(\.[0-9]*)?|\.[0-9]+)$#}
  , example => '3.1415'
  };
 
 
-$builtin_types{float} =
+sub str2num
+{   my $s = shift;
+    $s =~ s/\s//g;
+
+      $s =~ m/[^0-9]/ ? Math::BigFloat->new($s eq 'NaN' ? $s : lc $s) # INF->inf
+    : length $s < 9   ? $s+0
+    :                   Math::BigInt->new($s);
+}
+
+sub num2str
+{   my $f = shift;
+      !ref $f         ? $f
+    : !(UNIVERSAL::isa($f,'Math::BigInt') || UNIVERSAL::isa($f,'Math::BigFloat'))
+    ? eval {use warnings FATAL => 'all'; $f + 0.0}
+    : $f->is_nan      ? 'NaN'
+    :                   uc $f->bstr;  # [+-]inf -> [+-]INF,  e->E doesn't matter
+}
+
+sub numcheck($)
+{   $_[0] =~
+      m# [+-]? (?: [0-9]+(?:\.[0-9]*)?|\.[0-9]+) (?:[Ee][+-]?[0-9]+)?
+       | [+-]? INF
+       | NaN #x
+}
+
+$builtin_types{precissionDecimal} =
+$builtin_types{float}  =
 $builtin_types{double} =
  { parse   => \&str2num
  , format  => \&num2str
- # check by str2num
+ , check   => \&numcheck
+ , example => '3.1415'
+ };
+
+$builtin_types{sloppy_float} =
+ { check => sub {
+      my $v = eval {use warnings FATAL => 'all'; $_[0] + 0.0};
+      $@ ? undef : 1;
+    }
  , example => '3.1415'
  };
 
