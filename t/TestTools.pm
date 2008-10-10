@@ -10,7 +10,7 @@ use lib '../XMLCompile/lib'  # test environment at home
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '0.95';
+$VERSION = '0.96';
 
 use base 'Exporter';
 

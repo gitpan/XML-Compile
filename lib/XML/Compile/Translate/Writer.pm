@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '0.95';
+$VERSION = '0.96';
 
 use base 'XML::Compile::Translate';
 
@@ -965,6 +965,7 @@ sub makeHook($$$$$$)
 
     sub
     {  my ($doc, $val) = @_;
+       defined $val or return;
        foreach (@before)
        {   $val = $_->($doc, $val, $path);
            defined $val or return ();
