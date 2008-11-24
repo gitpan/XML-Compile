@@ -1,6 +1,7 @@
 ChangeLog
 MANIFEST
 Makefile.PL
+README
 README.todo
 bin/schema2example
 bin/xml2yaml

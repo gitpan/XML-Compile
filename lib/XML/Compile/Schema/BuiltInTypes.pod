@@ -262,9 +262,10 @@ B<dateTime>
 
 =over 4
 
-A moment, represented in localtime as "date T time tz", where date is
-C<YYYY-MM-DD>, time is C<HH:MM:SS> and optional, and time-zone tz
-is either C<-HH:mm>, C<+HH:mm>, or C<Z> for UTC.
+A moment, represented as "date T time tz", where date is C<YYYY-MM-DD>,
+time is C<HH:MM:SS>, and time-zone tz is either C<-HH:mm>, C<+HH:mm>,
+or C<Z> for UTC.  The time-zone is optional, but can better be used
+because the default is not defined in the standard.
 
 When a decimal value is passed, it is interpreted as C<time> value in UTC,
 and will be formatted as required.  When reading, the date string will
@@ -483,8 +484,8 @@ $builtin_types{recurringDuration} = ??
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.96,
-built on October 10, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.97,
+built on November 24, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

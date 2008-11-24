@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.96';
+$VERSION = '0.97';
 
 use base 'XML::Compile';
 
@@ -31,7 +31,8 @@ sub init($)
     $self->{namespaces} = XML::Compile::Schema::NameSpaces->new;
     $self->SUPER::init($args);
 
-    $self->importDefinitions($args->{top});
+    $self->importDefinitions($args->{top})
+        if $args->{top};
 
     $self->{hooks} = [];
     if(my $h1 = $args->{hook})
