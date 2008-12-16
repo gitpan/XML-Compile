@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '0.97';
+$VERSION = '0.98';
 
 use base 'XML::Compile::Translate';
 
@@ -127,7 +127,9 @@ sub makeWrapperNs
     @entries or return $processor;
 
     sub { my $node = $processor->(@_) or return ();
-          $node->setNamespace(@$_, 0) foreach @entries;
+          UNIVERSAL::isa($node, 'XML::LibXML::Element')
+              or return $node;
+          $node->setNamespace(@$_, 0) for @entries;
           $node;
         };
 }
@@ -173,7 +175,7 @@ sub makeChoice($@)
     {   my ($take, $do) = %do;
         return bless
         sub { my ($doc, $values) = @_;
-                defined $values && $values->{$take}
+                defined $values && defined $values->{$take}
               ? $do->($doc, delete $values->{$take}) : ();
             }, 'BLOCK';
     }
@@ -183,7 +185,7 @@ sub makeChoice($@)
           defined $values or return ();
           foreach my $take (keys %do)
           {   return $do{$take}->($doc, delete $values->{$take})
-                  if $values->{$take};
+                  if defined $values->{$take};
           }
 
           my $starter = keys %$values;
@@ -258,9 +260,9 @@ sub makeElementHandler
     if($min==0 && $max eq 'unbounded')
     {   return
         sub { my ($doc, $values) = @_;
-                ref $values eq 'ARRAY' ? map {$optional->($doc,$_)} @$values
-              : defined $values        ? $optional->($doc, $values)
-              :                          (undef);
+              my @values = ref $values eq 'ARRAY' ? @$values
+                         : defined $values ? $values : ();
+              @values ? map {$optional->($doc,$_)} @$values : (undef);
             };
     }
 
@@ -282,8 +284,8 @@ sub makeElementHandler
         if $min==1 && $max==1;
 
     sub { my ($doc, $values) = @_;
-          my @values = ref $values eq 'ARRAY' ? @$values
-                     : defined $values ? $values : ();
+          my @values
+            = ref $values eq 'ARRAY' ? @$values : defined $values ? $values : ();
 
           @values <= $max
               or error "too many elements for `{tag}', max {max} found {nr} at {path}"
@@ -323,8 +325,8 @@ sub makeBlockHandler
                          : defined $values ? $values : ();
 
               @values >= $min
-                  or error __x"too few blocks specified for `{tag}', got {found} need {min} at {path}"
-                        , tag => $label, found => scalar @values
+                  or error __x"too few blocks for `{tag}' specified, got {found} need {min} at {path}"
+                        , tag => $multi, found => scalar @values
                         , min => $min, path => $path, _class => 'misfit';
 
               map { $process->($doc, $_) } @values;
@@ -339,8 +341,8 @@ sub makeBlockHandler
                          : defined $values ? $values : ();
 
               @values <= 1
-                  or error __x"maximum only block needed for `{tag}', not {count} at {path}"
-                        , tag => $label, count => scalar @values
+                  or error __x"only one block value for `{tag}', not {count} at {path}"
+                        , tag => $multi, count => scalar @values
                         , path => $path, _class => 'misfit';
 
               @values ? $process->($doc, $values[0]) : undef;
@@ -352,7 +354,7 @@ sub makeBlockHandler
     {   my $code = 
         sub { my @d = $process->(@_);
               @d or error __x"no match for required block `{tag}' at {path}"
-                 , tag => $label, path => $path, _class => 'misfit';
+                 , tag => $multi, path => $path, _class => 'misfit';
               @d;
             };
         return ($label, bless($code, 'BLOCK'));
@@ -367,7 +369,7 @@ sub makeBlockHandler
 
           @values >= $min && @values <= $max
               or error __x"found {found} blocks for `{tag}', must be between {min} and {max} inclusive at {path}"
-                   , tag => $label, min => $min, max => $max, path => $path
+                   , tag => $multi, min => $min, max => $max, path => $path
                    , found => scalar @values, _class => 'misfit';
 
           map { $process->($doc, $_) } @values;
@@ -382,7 +384,7 @@ sub makeRequired
     sub { my @nodes = $do->(@_);
           return @nodes if @nodes;
 
-          error __x"required data for block starting with `{tag}' missing at {path}"
+          error __x"required data for block (starts with `{tag}') missing at {path}"
              , tag => $label, path => $path, _class => 'misfit'
                  if ref $do eq 'BLOCK';
 
@@ -404,7 +406,8 @@ sub makeElementFixed
 
     sub { my ($doc, $value) = @_;
           my $ret = defined $value ? $do->($doc, $value) : return;
-          return $ret if defined $ret && $ret->textContent eq $fixed;
+          return $ret
+              if defined $ret && $ret->textContent eq $fixed;
 
           defined $ret
               or error __x"required element `{name}' with fixed value `{fixed}' missing at {path}"

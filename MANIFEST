@@ -24,6 +24,7 @@ html/other/methods/index.html
 html/other/xml.css
 lib/XML/Compile.pm
 lib/XML/Compile.pod
+lib/XML/Compile/FAQ.pod
 lib/XML/Compile/Iterator.pm
 lib/XML/Compile/Iterator.pod
 lib/XML/Compile/Schema.pm

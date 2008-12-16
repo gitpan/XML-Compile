@@ -521,7 +521,8 @@ Overrules what is set with L<new(ignore_unused_tags)|XML::Compile::Schema/"Const
 Indicates whether the WRITER should include the prefix to namespace
 translation on the top-level element of the returned tree.  If not,
 you may continue with the same name-space table to combine various
-XML components into one, and add the namespaces later.
+XML components into one, and add the namespaces later.  No namespace
+definition can be added the production rule produces an attribute.
 
 =back
 
@@ -567,7 +568,7 @@ piece, but reset the counts to zero first.
 
 =over 4
 
-Pre release 0.87 name for the C<prefixes> option.
+Pre release 0.87 name for the C<prefixes> option.  Deprecated.
 
 =back
 
@@ -1716,7 +1717,7 @@ surrounding blanks.
 
 =head2 Default Values
 
-[0.91]
+[added in v0.91]
 With L<compile(default_values)|XML::Compile::Schema/"Compilers"> you can control how much information about
 default values defined by the schema will be passed into your program.
 
@@ -1817,8 +1818,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.97,
-built on November 24, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.98,
+built on December 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
