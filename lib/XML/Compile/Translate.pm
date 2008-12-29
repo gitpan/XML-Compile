@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '0.98';
+$VERSION = '0.99';
 
 
 # Errors are either in _class 'usage': called with request
@@ -102,9 +102,10 @@ sub compile($@)
     my $produce = $self->topLevel($path, $item);
     delete $self->{_created};
 
-      $self->{include_namespaces}
-    ? $self->makeWrapperNs($path, $produce, $self->{prefixes})
-    : $produce;
+    my $in = $self->{include_namespaces}
+        or return $produce;
+
+    $self->makeWrapperNs($path, $produce, $self->{prefixes}, $in);
 }
 
 sub assertType($$$$)
@@ -1435,7 +1436,7 @@ sub findHooks($$$)
 
         if(!$match && defined $type && $hook->{type})
         {   my $t  = $hook->{type};
-            my ($ns, $local) = unpack_type $t;
+            my ($ns, $local) = unpack_type $type;
             $match++
                 if first {ref $_ eq 'Regexp'     ? $type  =~ $_
                          : substr($_,0,1) eq '{' ? $type  eq $_

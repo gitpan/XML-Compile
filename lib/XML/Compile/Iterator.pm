@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Iterator;
 use vars '$VERSION';
-$VERSION = '0.98';
+$VERSION = '0.99';
 
 
 use XML::Compile::Util  qw/pack_type type_of_node/;
@@ -66,7 +66,6 @@ sub childs()
         $ln = $self->{childs}
             = [ grep {$filter->($_)} $self->node->childNodes ];
     }
-
     wantarray ? @$ln : $ln;
 }
 

@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '0.98';
+$VERSION = '0.99';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -96,6 +96,10 @@ sub dataToXML($)
 
         ($xml, %details) = $self->_parseFile($fn);
         $details{source} = "known namespace $thing";
+    }
+    elsif(my $fn = $self->findSchemaFile($thing))
+    {   ($xml, %details) = $self->_parseFile($fn);
+        $details{source} = "filename in schema-dir $thing";
     }
     elsif(-f $thing)
     {   ($xml, %details) = $self->_parseFile($thing);

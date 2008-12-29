@@ -25,9 +25,23 @@ $obj-E<gt>B<new>(TOP, OPTIONS)
 Get's the top of an XML::LibXML tree, which must be a schema element.
 The tree is parsed: the information collected.
 
- Option  --Default
- filename  undef
- source    undef
+ Option              --Default
+ attributeFormDefault  <undef>
+ elementFormDefault    <undef>
+ filename              undef
+ source                undef
+
+. attributeFormDefault => 'qualified'|'unqualified'
+
+. elementFormDefault => 'qualified'|'unqualified'
+
+=over 4
+
+Overrule the default as found in the schema.  Many old schemas (like
+WSDL11 and SOAP11) do not specify the default in the schema but only
+in the text.
+
+=back
 
 . filename => FILENAME
 
@@ -264,17 +278,20 @@ anyway).
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.98,
-built on December 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.99,
+built on December 29, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
 L<XML::Compile::SOAP>,
+L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
+L<XML::Compile::Dumper>,
 L<XML::Rewrite>,
-L<XML::Compile::Dumper>.
+and
+L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
 F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>

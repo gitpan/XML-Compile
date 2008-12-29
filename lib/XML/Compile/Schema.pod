@@ -282,9 +282,23 @@ must be a XML::LibXML node, therefore it is adviced to use
 L<importDefinitions()|XML::Compile::Schema/"Administration">, which has a much more flexible way to
 specify the data.
 
- Option  --Default
- filename  undef
- source    undef
+ Option              --Default
+ attributeFormDefault  <undef>
+ elementFormDefault    <undef>
+ filename              undef
+ source                undef
+
+. attributeFormDefault => 'qualified'|'unqualified'
+
+. elementFormDefault => 'qualified'|'unqualified'
+
+=over 4
+
+Overrule the default as found in the schema.  Many old schemas (like
+WSDL11 and SOAP11) do not specify the default in the schema but only
+in the text.
+
+=back
 
 . filename => FILENAME
 
@@ -761,7 +775,7 @@ $obj-E<gt>B<importDefinitions>(XMLDATA, OPTIONS)
 
 Import (include) the schema information included in the XMLDATA.  The
 XMLDATA must be acceptable for L<dataToXML()|XML::Compile/"Compilers">.  The resulting node
-and the OPTIONS are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">. The schema node does
+and all the OPTIONS are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">. The schema node does
 not need to be the top element: any schema node found in the data
 will be decoded.
 
@@ -1818,17 +1832,20 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.98,
-built on December 16, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 0.99,
+built on December 29, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
 L<XML::Compile::SOAP>,
+L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
+L<XML::Compile::Dumper>,
 L<XML::Rewrite>,
-L<XML::Compile::Dumper>.
+and
+L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
 F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>

@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '0.98';
+$VERSION = '0.99';
 
 use base 'Exporter';
 
@@ -491,8 +491,8 @@ $builtin_types{QName} =
           my $def = $trans->{$ns};
           # let's hope that the namespace will get used somewhere else as
           # well, to make it into the xmlns.
-          defined $def && $def->{used}
-              or error __x"QName formatting only works if the namespace is used for an element, not found {ns}", ns => $ns;
+          defined $def && exists $def->{used}
+              or error __x"QName formatting only works if the namespace is used for an element, not found {ns} for {local}", ns => $ns, local => $local;
 
           length $def->{prefix} ? "$def->{prefix}:$local" : $local;
         }

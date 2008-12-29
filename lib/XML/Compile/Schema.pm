@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.98';
+$VERSION = '0.99';
 
 use base 'XML::Compile';
 
@@ -22,6 +22,7 @@ use Digest::MD5    qw/md5_hex/;
 use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::Instance;
 use XML::Compile::Schema::NameSpaces;
+use XML::Compile::Util       qw/SCHEMA2001 unpack_type/;
 
 use XML::Compile::Translate  ();
 
@@ -89,8 +90,9 @@ sub addSchemas($@)
     defined $node or return ();
 
     my @nsopts;
-    push @nsopts, source   => delete $opts{source}   if $opts{source};
-    push @nsopts, filename => delete $opts{filename} if $opts{filename};
+    foreach my $o (qw/source filename elementFormDefault attributeFormDefault/)
+    {   push @nsopts, $o => delete $opts{$o} if exists $opts{$o};
+    }
 
     ref $node && $node->isa('XML::LibXML::Node')
         or error __x"required is a XML::LibXML::Node";
@@ -217,6 +219,29 @@ sub _namespaceTable($;$$)
         if $block_default && !grep {$_->{prefix} eq ''} values %$table;
 
     $table;
+}
+
+# undocumented, on purpose: do we like this interface?
+sub compileType($$@)
+{   my ($self, $action, $type, %args) = @_;
+
+    # translator can only create elements, not types.
+    my $elem           = delete $args{element}
+       or error __x"compileType requires an element name to be created";
+    my ($ens, $elocal) = unpack_type $elem;
+    my ($ns, $local)   = unpack_type $type;
+
+    my $SchemaNS = SCHEMA2001;
+    $self->importDefinitions( <<_DIRTY_TRICK );
+<schema xmlns="$SchemaNS"
+   targetNamespace="$ens"
+   xmlns:tns="$ns"
+   elementFormDefault="qualified">
+  <element name="$elocal" type="tns:$local" />
+</schema>
+_DIRTY_TRICK
+
+     $self->compile($action, $elem, %args);
 }
 
 
