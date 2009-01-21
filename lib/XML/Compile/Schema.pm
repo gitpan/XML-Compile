@@ -1,11 +1,11 @@
-# Copyrights 2006-2008 by Mark Overmeer.
+# Copyrights 2006-2009 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.05.
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '0.99';
+$VERSION = '1.00';
 
 use base 'XML::Compile';
 
@@ -40,7 +40,7 @@ sub init($)
     {   $self->addHook(ref $h1 eq 'ARRAY' ? @$h1 : $h1);
     }
     if(my $h2 = $args->{hooks})
-    {   $self->addHooks(ref $h2 eq 'ARRAY' ? @$h2 : $h2);
+    {   $self->addHook($_) for ref $h2 eq 'ARRAY' ? @$h2 : $h2;
     }
  
     $self->{key_rewrite} = [];
@@ -59,14 +59,14 @@ sub init($)
 
 sub addHook(@)
 {   my $self = shift;
-    push @{$self->{hooks}}, @_>=1 ? {@_} : defined $_[0] ? shift : ();
+    push @{$self->{hooks}}, @_>1 ? {@_} : defined $_[0] ? shift : ();
     $self;
 }
 
 
 sub addHooks(@)
 {   my $self = shift;
-    push @{$self->{hooks}}, grep {defined} @_;
+    $self->addHook($_) for @_;
     $self;
 }
 
@@ -90,7 +90,8 @@ sub addSchemas($@)
     defined $node or return ();
 
     my @nsopts;
-    foreach my $o (qw/source filename elementFormDefault attributeFormDefault/)
+    foreach my $o (qw/source filename
+        element_form_default attribute_form_default/)
     {   push @nsopts, $o => delete $opts{$o} if exists $opts{$o};
     }
 

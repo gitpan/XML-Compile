@@ -1,4 +1,4 @@
-# Copyrights 2006-2008 by Mark Overmeer.
+# Copyrights 2006-2009 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.05.
@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '0.99';
+$VERSION = '1.00';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -107,12 +107,12 @@ sub _collectTypes($$)
     my $tns = $self->{tns} = $schema->getAttribute('targetNamespace') || '';
 
     my $efd = $self->{efd}
-       = $args->{elementFormDefault}
+       = $args->{element_form_default}
       || $schema->getAttribute('elementFormDefault')
       || 'unqualified';
 
     my $afd = $self->{afd}
-       = $args->{attributeFormDefault}
+       = $args->{attribute_form_default}
       || $schema->getAttribute('attributeFormDefault')
       || 'unqualified';
 
@@ -164,7 +164,7 @@ sub _collectTypes($$)
         my $id    = $schema->getAttribute('id');
 
         my ($prefix, $name)
-         = index($tag, ':') >= 0 ? split(/\:/,$tag,2) : ('', $tag);
+                  = index($tag, ':') >= 0 ? split(/\:/,$tag,2) : ('', $tag);
 
         # prefix existence enforced by xml parser
         my $ns    = length $prefix ? $node->lookupNamespaceURI($prefix) : $tns;

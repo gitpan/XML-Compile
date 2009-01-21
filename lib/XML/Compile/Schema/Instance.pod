@@ -25,15 +25,15 @@ $obj-E<gt>B<new>(TOP, OPTIONS)
 Get's the top of an XML::LibXML tree, which must be a schema element.
 The tree is parsed: the information collected.
 
- Option              --Default
- attributeFormDefault  <undef>
- elementFormDefault    <undef>
- filename              undef
- source                undef
+ Option                --Default
+ attribute_form_default  <undef>
+ element_form_default    <undef>
+ filename                undef
+ source                  undef
 
-. attributeFormDefault => 'qualified'|'unqualified'
+. attribute_form_default => 'qualified'|'unqualified'
 
-. elementFormDefault => 'qualified'|'unqualified'
+. element_form_default => 'qualified'|'unqualified'
 
 =over 4
 
@@ -278,8 +278,8 @@ anyway).
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.99,
-built on December 29, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.00,
+built on January 21, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
@@ -300,7 +300,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2008 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2009 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -1,10 +1,10 @@
-# Copyrights 2006-2008 by Mark Overmeer.
+# Copyrights 2006-2009 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.05.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '0.99';
+$VERSION = '1.00';
 
 use base 'XML::Compile::Translate';
 
@@ -668,19 +668,23 @@ sub makeMixedElement
             my @v = $mixed->($node);
             @v ? ($tag => $v[0]) : ();
           }
+
     : $mixed eq 'XML_NODE'
     ? sub { $_[0] ? ($tag => $_[0]->node) : () }
+
     : $mixed eq 'ATTRIBUTES'
     ? sub { my $tree   = shift or return;
             my $node   = $tree->node;
             my @pairs  = map {$_->($node)} @attrs;
-            ($tag => {_ => $node, @pairs});
+            ($tag => { _ => $node, @pairs
+                     , _MIXED_ELEMENT_MODE => 'ATTRIBUTES'});
           } 
     : $mixed eq 'TEXTUAL'
     ? sub { my $tree   = shift or return;
             my $node   = $tree->node;
             my @pairs  = map {$_->($node)} @attrs;
-            ($tag => {_ => $node->textContent, @pairs});
+            ($tag => { _ => $node->textContent, @pairs
+                     , _MIXED_ELEMENT_MODE => 'TEXTUAL'});
           } 
     : $mixed eq 'XML_STRING'
     ? sub { my $tree   = shift or return;
@@ -688,7 +692,10 @@ sub makeMixedElement
             ($tag => $node->toString);
           }
     : $mixed eq 'STRUCTURAL'
+
+      # this cannot be reached, because handled somewhere else
     ? panic "mixed structural handled as normal element"
+
     : error __x"unknown mixed_elements value `{value}'", value => $mixed;
 }
 

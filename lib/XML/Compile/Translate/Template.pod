@@ -76,6 +76,18 @@ improve the template output.
 
 =head3 hooks executed before the template is generated
 
+None defined yet.
+
+=head3 hooks executed as replacement
+
+The predefined hook C<COLLAPSE> can be used to remove the extensive
+listing of some elements.  Usually used with a type of which you
+know the structure or which is repeated often.
+
+=head3 hooks for post-processing, after the data is collected
+
+None defined yet.
+
 =head2 Typemaps
 
 Typemaps are currently only available to improve the PERL output.
@@ -103,8 +115,8 @@ example: typemaps with template
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 0.99,
-built on December 29, 2008. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.00,
+built on January 21, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
@@ -125,7 +137,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2008 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2009 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

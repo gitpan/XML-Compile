@@ -1,11 +1,11 @@
-# Copyrights 2006-2008 by Mark Overmeer.
+# Copyrights 2006-2009 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.05.
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '0.99';
+$VERSION = '1.00';
 
 use base 'XML::Compile::Translate';
 
@@ -34,6 +34,7 @@ sub makeWrapperNs
 
 sub typemapToHooks($$)
 {   my ($self, $hooks, $typemap) = @_;
+
     while(my($type, $action) = each %$typemap)
     {   defined $action or next;
 
@@ -397,7 +398,7 @@ sub makeHook($$$$$$)
     sub
     {  for(@before) { $_->($tag, $path) or return }
 
-       my $d = @replace ? $replace[0]->($tag, $path) : $r->();
+       my $d = @replace ? $replace[0]->($tag, $path, $r) : $r->();
        defined $d or return ();
 
        for(@after) { $d = $_->($d, $tag, $path) or return }
@@ -414,6 +415,17 @@ sub _decodeBefore($$)
 sub _decodeReplace($$)
 {   my ($self, $path, $call) = @_;
     return $call if ref $call eq 'CODE';
+
+    if($call eq 'COLLAPSE')
+    {   return sub 
+         {  my ($tag, $path, $do) = @_;
+            my $h = $do->();
+            $h->{elems} = [ { struct => [ 'content collapsed' ]
+                            , kind   => 'collapsed' } ];
+            delete $h->{attrs};
+            $h;
+         };
+    }
 
     # SKIP already handled
     error __x"labeled replace hook `{name}' undefined", name => $call;
@@ -479,7 +491,7 @@ sub _perlAny($$)
         @sub or next;
 
         # last line is code and gets comma
-        $sub[-1] =~ s/\,?\s*$/,/;
+        $sub[-1] =~ s/\,?\s*$/,/ if $sub[-1] !~ m/\#\s/;
 
         if(ref $ast ne 'BLOCK')
         {   s/^(.)/$args->{indent}$1/ for @sub;
@@ -495,7 +507,8 @@ sub _perlAny($$)
     {  # repeated block
        @subs or @subs = '';
        $subs[0]  =~ s/^  /{ /;
-       $subs[-1] =~ s/$/ },/;
+       if($subs[-1] =~ m/\#\s/) { push @subs, "}," }
+       else { $subs[-1] =~ s/$/ },/ }
     }
 
     # XML does not permit difficult tags, but we still check.
@@ -520,18 +533,21 @@ sub _perlAny($$)
         if($ast->{is_array})
         {   s/^(.)/  $1/ for @subs;
             $subs[0]  =~ s/^[ ]{0,3}/[ {/;
-            $subs[-1] =~ s/$/ }, ], /;
+            if($subs[-1] =~ m/\#\s/) { push @subs, "}, ], " }
+            else {$subs[-1] =~ s/$/ }, ], / }
             push @lines, "$tag =>", @subs;
         }
         else
         {   $subs[0]  =~ s/^  /{ /;
-            $subs[-1] =~ s/$/ },/;
+            if($subs[-1] =~ m/\#\s/) { push @subs, "}, " }
+            else {$subs[-1] =~ s/$/ },/ }
             push @lines, "$tag =>", @subs;
         }
     }
     elsif($kind eq 'complex' || $kind eq 'mixed')  # empty complex-type
     {   push @lines, "$tag => {}";
     }
+    elsif($kind eq 'collapsed') {;}
     elsif($kind eq 'union')    # union type
     {   foreach my $union ( @{$ast->{choice}} )
         {  # remove examples
