@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                XML-Compile
-version:             1.00
+version:             1.01
 abstract:            Compilation based XML processing
 license:             perl
 author:              
@@ -18,7 +18,7 @@ requires:
     Test::Deep:                    0.095
     Test::More:                    0.54
     Test::Pod:                     1.00
-    XML::Compile::Tester:          0.03
+    XML::Compile::Tester:          0.05
     XML::LibXML:                   1.65
     XML::RegExp:                   0.02
 meta-spec:

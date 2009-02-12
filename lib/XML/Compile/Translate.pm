@@ -1,13 +1,13 @@
 # Copyrights 2006-2009 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.05.
+# Pod stripped from pm file by OODoc 1.06.
 use warnings;
 use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 
 # Errors are either in _class 'usage': called with request
@@ -201,24 +201,27 @@ sub topLevel($$)
     my $node = $top->{node};
 
     my $elems_qual = $top->{efd} eq 'qualified';
-    if(exists $self->{elements_qualified})
-    {   my $qual = $self->{elements_qualified} || 0;
+    my $qual
+      = exists $self->{elements_qualified} ? ($self->{elements_qualified} || 0)
+      : $elems_qual ? 'ALL' : $top->{ns} ? 'TOP' : 'NONE';
 
-           if($qual eq 'ALL')  { $elems_qual = 1 }
-        elsif($qual eq 'NONE') { $elems_qual = 0 }
-        elsif($qual eq 'TOP')
-        {   unless($elems_qual)
-            {   # explitly overrule the name-space qualification of the
-                # top-level element, which is dirty but people shouldn't
-                # use unqualified schemas anyway!!!
-                $node->removeAttribute('form');   # when in schema
-                $node->setAttribute(form => 'qualified');
-                delete $self->{elements_qualified};
-                $elems_qual = 0;
-            }
+    my $remove_form_attribute;
+
+       if($qual eq 'ALL')  { $elems_qual = 1 }
+    elsif($qual eq 'NONE') { $elems_qual = 0 }
+    elsif($qual eq 'TOP')
+    {   unless($elems_qual)
+        {   # explitly overrule the name-space qualification of the
+            # top-level element, which is dirty but people shouldn't
+            # use unqualified schemas anyway!!!
+            $node->removeAttribute('form');   # when in schema
+            $node->setAttribute(form => 'qualified');
+            delete $self->{elements_qualified};
+            $elems_qual = 0;
+            $remove_form_attribute = 1;
         }
-        else {$elems_qual = $qual}
     }
+    else {$elems_qual = $qual}
 
     local $self->{elems_qual} = $elems_qual;
     local $self->{tns}        = $top->{ns};
@@ -244,9 +247,15 @@ sub topLevel($$)
             , full => $fullname, name => $name, where => $tree->path
             , _class => 'usage';
 
-      $name eq 'element'
-    ? $self->makeElementWrapper($path, $make)
-    : $self->makeAttributeWrapper($path, $make);
+    my $data
+      = $name eq 'element'
+      ? $self->makeElementWrapper($path, $make)
+      : $self->makeAttributeWrapper($path, $make);
+
+    $node->removeAttribute('form')
+        if $remove_form_attribute;
+
+    $data;
 }
 
 sub typeByName($$)

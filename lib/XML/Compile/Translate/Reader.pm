@@ -1,10 +1,10 @@
 # Copyrights 2006-2009 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.05.
+# Pod stripped from pm file by OODoc 1.06.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 use base 'XML::Compile::Translate';
 
@@ -94,7 +94,11 @@ sub makeElementWrapper
                   sub { $_[0]->isa('XML::LibXML::Element') } );
           }
 
-          ($processor->($tree))[-1];
+          my $data = ($processor->($tree))[-1];
+          defined $data
+              or error __x"data not recognized, found a `{type}'"
+                  , type => type_of_node $tree->node;
+          $data;
         };
 }
 
@@ -617,8 +621,8 @@ sub makeComplexElement
     sub { my $tree = shift or return ();
           defined $tree->currentChild
               and error __x"element `{name}' not processed at {path}"
-                      , name => $tree->currentType, path => $path
-                      , _class => 'misfit';
+                    , name => $tree->currentType, path => $path
+                    , _class => 'misfit';
           ($tag => {});
         };
 

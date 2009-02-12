@@ -48,13 +48,18 @@ Returns a list of all known schema instances.
 
 =back
 
-$obj-E<gt>B<find>(KIND, ADDRESS|(URI,NAME))
+$obj-E<gt>B<find>(KIND, ADDRESS|(URI,NAME), OPTIONS)
 
 =over 4
 
 Lookup the definition for the specified KIND of definition: the name
 of a global element, global attribute, attributeGroup or model group.
 The ADDRESS is constructed as C< {uri}name > or as seperate URI and NAME.
+
+ Option      --Default
+ include_used  <true>
+
+. include_used => BOOLEAN
 
 =back
 
@@ -102,8 +107,18 @@ Show all definitions from all namespaces, for debugging purposes, by
 default the selected.  Additional OPTIONS are passed to 
 L<XML::Compile::Schema::Instance::printIndex()|XML::Compile::Schema::Instance/"Index">.
 
- Option   --Default
- namespace  <ALL>
+ Option      --Default
+ include_used  <true>
+ namespace     <ALL>
+
+. include_used => BOOLEAN
+
+=over 4
+
+Show also the index from all the schema objects which are defined
+to be usable as well; which were included via L<use()|XML::Compile::Schema::NameSpaces/"Accessors">.
+
+=back
 
 . namespace => URI|ARRAY-of-URI
 
@@ -134,10 +149,23 @@ must be called explictly.
 
 =back
 
+$obj-E<gt>B<use>(OBJECT)
+
+=over 4
+
+Use any other L<XML::Compile::Schema|XML::Compile::Schema> extension as fallback, if the
+L<find()|XML::Compile::Schema::NameSpaces/"Accessors"> does not succeed for the current object.  Searches for
+definitions do not recurse into the used object.
+
+Returns the list of all used OBJECTS.
+This method implements L<XML::Compile::Schema::useSchema()|XML::Compile::Schema/"Accessors">.
+
+=back
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.00,
-built on January 21, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.01,
+built on February 12, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

@@ -1,11 +1,11 @@
 # Copyrights 2006-2009 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.05.
+# Pod stripped from pm file by OODoc 1.06.
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 use base 'XML::Compile';
 
@@ -43,7 +43,7 @@ sub init($)
     {   $self->addHook($_) for ref $h2 eq 'ARRAY' ? @$h2 : $h2;
     }
  
-    $self->{key_rewrite} = [];
+    $self->{key_rewrite}          = [];
     if(my $kr = $args->{key_rewrite})
     {   $self->addKeyRewrite(ref $kr eq 'ARRAY' ? @$kr : $kr);
     }
@@ -95,7 +95,12 @@ sub addSchemas($@)
     {   push @nsopts, $o => delete $opts{$o} if exists $opts{$o};
     }
 
-    ref $node && $node->isa('XML::LibXML::Node')
+
+    UNIVERSAL::isa($node, __PACKAGE__)
+        and error __x"use useSchema(), not addSchemas() for a {got} object"
+             , got => ref $node;
+
+    UNIVERSAL::isa($node, 'XML::LibXML::Node')
         or error __x"required is a XML::LibXML::Node";
 
     $node = $node->documentElement
@@ -122,10 +127,37 @@ sub addSchemas($@)
 }
 
 
+sub useSchema(@)
+{   my $self = shift;
+    foreach my $schema (@_)
+    {   error __x"useSchema() accepts only {pkg} extensions, not {got}"
+          , pkg => __PACKAGE__, got => (ref $schema || $schema);
+        $self->namespaces->use($schema);
+    }
+    $self;
+}
+
+
 sub addKeyRewrite(@)
 {   my $self = shift;
     unshift @{$self->{key_rewrite}}, @_;
-    @{$self->{key_rewrite}};
+    defined wantarray ? $self->_key_rewrite(undef) : ();
+}
+
+sub _key_rewrite($)
+{   my $self = shift;
+    my @more = map { ref $_ eq 'ARRAY' ? @$_ : defined $_ ? $_ : () } @_;
+
+    my ($pref_all, %pref, @other);
+    foreach my $rule (@more, @{$self->{key_rewrite}})
+    {   if($rule eq 'PREFIXED') { $pref_all++ }
+        elsif($rule =~ m/^PREFIXED\((.*)\)/) { $pref{$_}++ for split /\,/, $1 }
+        else { push @other, $rule }
+    }
+
+    ( ( $pref_all  ? 'PREFIXED'
+      : keys %pref ? 'PREFIXED('.join(',', sort keys %pref).')'
+      : ()), @other );
 }
 
 #--------------------------------------
@@ -180,9 +212,7 @@ sub compile($$@)
     my %map = ( %{$self->{typemap}}, %{$args{typemap} || {}} );
     trace "schema compile $action for $type";
 
-    my @rewrite = @{$self->{key_rewrite}};
-    my $kw = delete $args{key_rewrite} || [];
-    unshift @rewrite, ref $kw eq 'ARRAY' ? @$kw : $kw;
+    my @rewrite = $self->_key_rewrite(delete $args{key_rewrite});
 
     $args{mixed_elements} ||= 'ATTRIBUTES';
     $args{default_values} ||= $action eq 'READER' ? 'EXTEND' : 'IGNORE';

@@ -251,15 +251,16 @@ and L<addHook()|XML::Compile::Schema/"Accessors">. C<undef> values are ignored.
 
 =back
 
-$obj-E<gt>B<addKeyRewrite>(CODE|HASH, CODE|HASH, ...)
+$obj-E<gt>B<addKeyRewrite>(PREDEF|CODE|HASH, ...)
 
 =over 4
 
 Add new rewrite rules to the existing list (initially provided with
 L<new(key_rewrite)|XML::Compile::Schema/"Constructors">).  The whole list of rewrite rules is returned.
 
-The last added set of rewrite rules will be applied first.  See
-L</Key rewrite>.
+C<PREFIXED> rules will be applied first.  Special care is taken that the
+prefix will not be called twice.  The last added set of rewrite rules
+will be applied first.  See L</Key rewrite>.
 
 =back
 
@@ -295,8 +296,8 @@ specify the data.
 =over 4
 
 Overrule the default as found in the schema.  Many old schemas (like
-WSDL11 and SOAP11) do not specify the default in the schema but only
-in the text.
+WSDL11 and SOAP11) do not specify the correct default element form in
+the schema but only in the text.
 
 =back
 
@@ -340,6 +341,29 @@ $obj-E<gt>B<hooks>
 =over 4
 
 Returns the LIST of defined hooks (as HASHes).
+
+=back
+
+$obj-E<gt>B<useSchema>(SCHEMA, [SCHEMA])
+
+=over 4
+
+Pass a L<XML::Compile::Schema|XML::Compile::Schema> object, or extensions like
+L<XML::Compile::Cache|XML::Compile::Cache>, to be used as definitions as well.  First,
+elements are looked-up in the current schema definition object.  If not
+found the other provided SCHEMA objects are checked in the order as
+they were added.
+
+Searches for definitions do not recurse into schemas which are used
+by the used schema.
+
+example: use other Schema
+
+  my $wsdl = XML::Compile::WSDL->new($wsdl);
+  my $geo  = Geo::GML->new(version => '3.2.1');
+  # both $wsdl and $geo extend XML::Compile::Schema
+
+  $wsdl->useSchema($geo);
 
 =back
 
@@ -476,7 +500,7 @@ See L</Default Values>.
 
 =over 4
 
-When defined, this will overrule the C<elementFormDefault> flags in
+When defined, this will overrule the namespace use on elements in
 all schemas.  When C<TOP> is specified, at least the top-element will
 be name-space qualified.  When C<ALL> or a true value is given, then all
 elements will be used qualified.  When C<NONE> or a false value is given,
@@ -485,6 +509,9 @@ the XML will not produce or process prefixes on the elements.
 The C<form> attributes will be respected, except on the top element when
 C<TOP> is specified.  Use hooks when you need to fix name-space use in
 more subtile ways.
+
+With XML::Compile::Schema subroutine importDefinitions option element_form_default, you can correct whole
+schema's about their name-space behavior.
 
 =back
 
@@ -694,7 +721,7 @@ C<check_occurs>, and C<ignore_facets>.
 
 =back
 
-$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+XML::Compile::Schema-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
 
 =over 4
 
@@ -762,6 +789,8 @@ List all elements, defined by all schemas sorted alphabetically.
 =back
 
 $obj-E<gt>B<findSchemaFile>(FILENAME)
+
+XML::Compile::Schema-E<gt>B<findSchemaFile>(FILENAME)
 
 =over 4
 
@@ -1595,7 +1624,7 @@ which often is not named in the schema.
 
 =head2 Key rewrite
 
-[release 0.87]
+[release 0.87, improved 1.01]
 The standard practice is to use the localName of the XML elements
 as key in the Perl HASH; the key rewrite mechanism is used to
 change that, sometimes to seperate elements which have the same
@@ -1607,15 +1636,19 @@ B<do not slow-down> the XML construction or deconstruction.  The rules
 work the same for readers and writers, because they are applied to
 name found in the schema.
 
-Key rewrite rules can be set during schema object initiation,
-with L<new(key_rewrite)|XML::Compile::Schema/"Constructors">, or to an existing schema object with
-L<addKeyRewrite()|XML::Compile::Schema/"Accessors">.  The last defined rewrite rules will be applied
-first.  These rules will be used in all calls to L<compile()|XML::Compile::Schema/"Compilers">.
+Key rewrite rules can be set during schema object initiation
+with L<new(key_rewrite)|XML::Compile::Schema/"Constructors"> and to an existing schema object with
+L<addKeyRewrite()|XML::Compile::Schema/"Accessors">.  These rules will be used in all calls to
+L<compile()|XML::Compile::Schema/"Compilers">.
 
-Besides, you can use L<compile(key_rewrite)|XML::Compile::Schema/"Compilers"> to add rules which
+Next, you can use L<compile(key_rewrite)|XML::Compile::Schema/"Compilers"> to add rules which
 are only used for a single compilation.  These are applied before
 the global rules.  All rules will always be attempted, and the
-changes will me made to the key after the previous change.
+rulle will me applied to the result of the previous change.
+
+The last defined rewrite rules will be applied first, with one major
+exception: the C<PREFIXED> rules will be executed before any other
+rule.
 
 =head3 rewrite via table
 
@@ -1739,6 +1772,14 @@ surrounding blanks.
 
   key_rewrite => 'PREFIXED(opt,sar)'
 
+Above is equivalent to:
+
+  key_rewrite => [ 'PREFIXED(opt)', 'PREFIXED(sar)' ]
+
+Special care is taken that the prefix will not be added twice.  For instance,
+if the same prefix appears twice, or a C<PREFIXED> rule is provided as well,
+then still only one prefix is added.
+
 =back
 
 =head2 Default Values
@@ -1844,8 +1885,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.00,
-built on January 21, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.01,
+built on February 12, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

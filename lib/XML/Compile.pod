@@ -170,13 +170,13 @@ example: adding xsd's from your own distribution
 
 =head2 Compilers
 
-$obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+XML::Compile-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
 
 =over 4
 
 Collect XML data, from a wide variety of sources.  In SCALAR context,
-an XML::LibXML::Element or XML::LibXML::Document is returned.  In LIST
-context, pairs of additional information follow the scalar result.
+an XML::LibXML::Element or XML::LibXML::Document is returned.
+In LIST context, pairs of additional information follow the scalar result.
 
 When a ready XML::LibXML::Node (::Element or ::Document) NODE is
 provided, it is returned immediately and unchanged.  A SCALAR reference is
@@ -200,11 +200,15 @@ example:
   my $xml = $schema->dataToXML('/etc/config.xml');
   my ($xml, %details) = $schema->dataToXML($something);
 
+  my $xml = XML::Compile->dataToXML('/etc/config.xml');
+
 =back
 
 =head2 Administration
 
 $obj-E<gt>B<findSchemaFile>(FILENAME)
+
+XML::Compile-E<gt>B<findSchemaFile>(FILENAME)
 
 =over 4
 
@@ -298,8 +302,8 @@ Error: no XML data specified
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.00,
-built on January 21, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.01,
+built on February 12, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

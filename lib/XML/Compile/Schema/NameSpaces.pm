@@ -1,14 +1,14 @@
 # Copyrights 2006-2009 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.05.
+# Pod stripped from pm file by OODoc 1.06.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -25,6 +25,7 @@ sub init($)
 {   my ($self, $args) = @_;
     $self->{tns} = {};
     $self->{sgs} = {};
+    $self->{use} = [];
     $self;
 }
 
@@ -48,6 +49,13 @@ sub add(@)
 }
 
 
+sub use($)
+{   my ($self, $schema) = @_;
+    push @{$self->{use}}, @_;
+    @{$self->{use}};
+}
+
+
 sub schemas($) { $_[0]->namespace($_[1]) }
 
 
@@ -59,13 +67,22 @@ sub allSchemas()
 
 sub find($$;$)
 {   my ($self, $kind) = (shift, shift);
-    my ($ns, $name) = @_==1 ? (unpack_type $_[0]) : @_;
-    my $label = pack_type $ns, $name; # re-pack unpacked for consistency
+    my ($ns, $name) = (@_%2==1) ? (unpack_type shift) : (shift, shift);
+    my %opts = @_;
 
     defined $ns or return undef;
+    my $label = pack_type $ns, $name; # re-pack unpacked for consistency
 
     foreach my $schema ($self->schemas($ns))
     {   my $def = $schema->find($kind, $label);
+        return $def if defined $def;
+    }
+
+    my $used = exists $opts{include_used} ? $opts{include_used} : 1;
+    $used or return undef;
+
+    foreach my $use ( @{$self->{use}} )
+    {   my $def = $use->namespaces->find($kind, $label, include_used => 0);
         return $def if defined $def;
     }
 
@@ -104,6 +121,13 @@ sub printIndex(@)
     foreach my $nsuri (ref $nss eq 'ARRAY' ? @$nss : $nss)
     {   $_->printIndex($fh, %opts) for $self->namespace($nsuri);
     }
+
+    my $show_used = exists $opts{include_used} ? $opts{include_used} : 1;
+    foreach my $use ($self->use)
+    {   $use->namespaces->printIndex(%opts, include_used => 0);
+    }
+
+    $self;
 }
 
 1;
