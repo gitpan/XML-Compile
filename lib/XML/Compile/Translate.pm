@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.01';
+$VERSION = '1.02';
 
 
 # Errors are either in _class 'usage': called with request
