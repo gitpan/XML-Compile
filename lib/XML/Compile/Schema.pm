@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 use base 'XML::Compile';
 
@@ -214,6 +214,7 @@ sub compile($$@)
 
     my @rewrite = $self->_key_rewrite(delete $args{key_rewrite});
 
+    $args{abstract_types} ||= 'ERROR';
     $args{mixed_elements} ||= 'ATTRIBUTES';
     $args{default_values} ||= $action eq 'READER' ? 'EXTEND' : 'IGNORE';
 
@@ -295,6 +296,7 @@ sub template($@)
     $args{include_namespaces} ||= 1;
     $args{mixed_elements}     ||= 'ATTRIBUTES';
     $args{default_values}     ||= 'EXTEND';
+    $args{abstract_types}     ||= 'IGNORE';
 
     # it could be used to add extra comment lines
     error __x"typemaps not implemented for XML template examples"
@@ -311,20 +313,23 @@ sub template($@)
 
     my $compiled = $transl->compile
      ( $type
-     , rewrite => \@rewrite
+     , rewrite     => \@rewrite
      , %args
      );
+    $compiled or return;
 
     my $ast = $compiled->();
 #use Data::Dumper; $Data::Dumper::Indent = 1; warn Dumper $ast;
 
     if($action eq 'XML')
     {   my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
-        my $node = $transl->toXML($doc,$ast, @comment, indent => $indent);
+        my $node = $transl->toXML($doc,$ast, @comment
+          , indent => $indent, skip_header => $args{skip_header});
         return $node->toString(1);
     }
 
-    return $transl->toPerl($ast, @comment, indent => $indent)
+    return $transl->toPerl($ast, @comment
+       , indent => $indent, skip_header => $args{skip_header})
         if $action eq 'PERL';
 
     error __x"template output is either in XML or PERL layout, not '{action}'"

@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 use base 'XML::Compile::Translate';
 
@@ -17,6 +17,10 @@ no warnings 'once';
 
 use XML::Compile::Util qw/odd_elements unpack_type/;
 use Log::Report 'xml-compile', syntax => 'SHORT';
+use List::Util  qw/max/;
+
+our $VERSION;         # OODoc adds $VERSION to the script
+$VERSION ||= 'undef';
 
 
 BEGIN {
@@ -25,11 +29,33 @@ BEGIN {
       for qw/makeTagQualified makeTagUnqualified/;
 }
 
+my (%recurse, %reuse);
+
+sub compile($@)
+{   my $self = shift;
+    (%recurse, %reuse) = ();
+    $self->SUPER::compile(@_);
+}
+
 sub actsAs($) { $_[1] eq 'READER' }
 
-sub makeWrapperNs
-{   my ($self, $path, $processor, $index) = @_;
-    $processor;
+sub makeWrapperNs($$$$)
+{   my ($self, $path, $processor, $index, $filter) = @_;
+
+    my @entries;
+    $filter = sub {1} if ref $filter ne 'CODE';
+
+    foreach my $entry (sort {$a->{prefix} cmp $b->{prefix}} values %$index)
+    {   $entry->{used} or next;
+        $filter->($entry->{uri}, $entry->{prefix}) or next;
+        push @entries, [ $entry->{uri}, $entry->{prefix} ];
+        $entry->{used} = 0;
+    }
+
+    sub { my $data = $processor->(@_) or return ();
+          $data->{"xmlns:$_->[1]"} = $_->[0] for @entries;
+          $data;
+        };
 }
 
 sub typemapToHooks($$)
@@ -167,7 +193,6 @@ sub makeElementAbstract
     sub { () };
 }
 
-my %recurse;
 sub makeComplexElement
 {   my ($self, $path, $tag, $elems, $attrs, $any_attr) = @_;
     my @parts = (odd_elements(@$elems, @$attrs), @$any_attr);
@@ -182,7 +207,16 @@ sub makeComplexElement
                };
           }
 
+          if($reuse{$tag})
+          {   return
+              +{ kind   => 'complex'
+               , struct => 'complex structure shown above'
+               , tag    => $tag
+               };
+          }
+
           $recurse{$tag}++;
+          $reuse{$tag}++;
           foreach my $part (@parts)
           {   my $child = $part->();
               if($child->{attr}) { push @attrs, $child }
@@ -357,9 +391,19 @@ sub makeSubstgroup
 {   my ($self, $path, $type, @do) = @_;
     my @tags = sort map { $_->[0] } odd_elements @do;
 
+    my $longest = max map length, @tags;
+    my $columns = int(60 / ($longest + 2));
+    my $rows    = int(@tags / $columns) + (@tags % $columns ? 1 : 0);
+
+    my @lines;
+    foreach (0..@tags)
+    {   defined $tags[$_] or next;
+        $lines[$_ % $rows] .= sprintf "  %-${longest}s", $tags[$_];
+    }
+
     sub { +{ kind    => 'substitution group'
            , tag     => $do[1][0]
-           , struct  => [ "substitutionGroup $type:", map { "   $_" } @tags ]
+           , struct  => [ "substitutionGroup", "$type:", @lines ]
            , example => "{ $tags[0] => {...} }"
            }
         };
@@ -444,7 +488,27 @@ sub _decodeAfter($$)
 
 sub toPerl($%)
 {   my ($self, $ast, %args) = @_;
-    my @lines = $self->_perlAny($ast, \%args);
+    $ast or return undef;
+
+    local $self->{_output} = 'PERL';
+
+    my @lines;
+    push @lines
+      , "# BE WARNED: in most cases, the example below cannot be used without"
+      , "# interpretation.  The comments will guide you."
+      , "# Produced by ".__PACKAGE__." version $VERSION"
+      , "#          on ".localtime()
+      , "#"
+        unless $args{skip_header};
+
+    # add info about name-spaces
+    foreach my $nsdecl (grep /^xmlns\:/, sort keys %$ast)
+    {   push @lines, sprintf "# %-15s %s", $nsdecl, $ast->{$nsdecl};
+    }
+    push @lines, '';
+    
+    # produce data tree
+    push @lines, $self->_perlAny($ast, \%args);
 
     # remove leading  'type =>'
     for(my $linenr = 0; $linenr < @lines; $linenr++)
@@ -459,6 +523,7 @@ sub toPerl($%)
     $lines;
 }
 
+my %seen;
 sub _perlAny($$);
 sub _perlAny($$)
 {   my ($self, $ast, $args) = @_;
@@ -580,7 +645,36 @@ sub _perlAny($$)
 
 sub toXML($$%)
 {   my ($self, $doc, $ast, %args) = @_;
-    $self->_xmlAny($doc, $ast, "\n$args{indent}", \%args);
+    local $self->{_output} = 'XML';
+    my $xml = $self->_xmlAny($doc, $ast, "\n$args{indent}", \%args);
+
+    UNIVERSAL::isa($xml, 'XML::LibXML::Element')
+        or return $xml;
+
+    # add comment
+    my $pkg = __PACKAGE__;
+    my $now = localtime();
+
+    my $header = $doc->createComment( <<_HEADER . '    ' );
+ BE WARNED: in most cases, the example below cannot be used without
+    -- interpretation.  The comments will guide you.
+    -- Produced by $pkg version $VERSION
+    --          on $now
+_HEADER
+
+    unless($args{skip_header})
+    {   $xml->insertBefore($header, $xml->firstChild);
+        $xml->insertBefore($doc->createTextNode("\n  "), $header);
+    }
+
+    # add info about name-spaces
+    foreach (sort keys %$ast)
+    {   if( m/^xmlns\:(.*)/ )
+        {   $xml->setNamespace($ast->{$_}, $1, 0);
+        }
+    }
+
+    $xml;
 }
 
 sub _xmlAny($$$$);
