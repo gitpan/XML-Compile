@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.06.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 use base 'XML::Compile::Translate';
 
@@ -192,7 +192,7 @@ sub makeChoice($@)
           # a choice, instead on choice itself.  That always succeeds.
           foreach my $some (values %do)
           {   try { $some->(undef) };
-              $@ or return;
+              $@ or return ();
           }
 
           $type

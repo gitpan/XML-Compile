@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 use base 'XML::Compile';
 
@@ -32,7 +32,7 @@ sub init($)
     $self->{namespaces} = XML::Compile::Schema::NameSpaces->new;
     $self->SUPER::init($args);
 
-    $self->importDefinitions($args->{top})
+    $self->importDefinitions($args->{top}, %$args)
         if $args->{top};
 
     $self->{hooks} = [];
@@ -90,7 +90,7 @@ sub addSchemas($@)
     defined $node or return ();
 
     my @nsopts;
-    foreach my $o (qw/source filename
+    foreach my $o (qw/source filename target_namespace
         element_form_default attribute_form_default/)
     {   push @nsopts, $o => delete $opts{$o} if exists $opts{$o};
     }
@@ -351,6 +351,10 @@ sub importDefinitions($@)
 {   my ($self, $thing, %options) = @_;
     my @data = ref $thing eq 'ARRAY' ? @$thing : $thing;
 
+    # this is a horrible hack, but by far the simpelest solution to
+    # avoid dataToXML process the same info twice.
+    local $self->{_use_cache} = 1;
+
     my @schemas;
     foreach my $data (@data)
     {   defined $data or next;
@@ -360,19 +364,19 @@ sub importDefinitions($@)
         if(defined $xml)
         {   my @added = $self->addSchemas($xml, %details, %options);
             if(my $checksum = $details{checksum})
-            {   $schemaByChecksum{$checksum} = \@added;
+            {   $self->{_cache_checksum}{$checksum} = \@added;
             }
             elsif(my $filestamp = $details{filestamp})
-            {   $schemaByFilestamp{$filestamp} = \@added;
+            {   $self->{_cache_file}{$filestamp} = \@added;
             }
             push @schemas, @added;
         }
         elsif(my $filestamp = $details{filestamp})
-        {   my $cached = $schemaByFilestamp{$filestamp};
+        {   my $cached = $self->{_cache_file}{$filestamp};
             $self->namespaces->add(@$cached);
         }
         elsif(my $checksum = $details{checksum})
-        {   my $cached = $schemaByChecksum{$checksum};
+        {   my $cached = $self->{_cache_checksum}{$checksum};
             $self->namespaces->add(@$cached);
         }
     }
@@ -381,31 +385,40 @@ sub importDefinitions($@)
 
 sub _parseScalar($)
 {   my ($thing, $data) = @_;
-    my $checksum = md5_hex $$data;
 
-    if($schemaByChecksum{$checksum})
-    {   trace "importDefinitions reusing string data with checksum $checksum";
+    ref $thing && $thing->{_use_cache}
+        or return $thing->SUPER::_parseScalar($data);
+
+    my $self = $thing;
+    my $checksum = md5_hex $$data;
+    if($self->{_cache_checksum}{$checksum})
+    {   trace "reusing string data with checksum $checksum";
         return (undef, checksum => $checksum);
     }
 
-    trace "importDefintions for scalar with checksum $checksum";
-    ( $thing->SUPER::_parseScalar($data)
+    trace "cache parsed scalar with checksum $checksum";
+    ( $self->SUPER::_parseScalar($data)
     , checksum => $checksum
     );
 }
 
 sub _parseFile($)
 {   my ($thing, $fn) = @_;
+
+    ref $thing && $thing->{_use_cache}
+        or return $thing->SUPER::_parseFile($fn);
+    my $self = $thing;
+
     my ($mtime, $size) = (stat $fn)[9,7];
     my $filestamp = basename($fn) . '-'. $mtime . '-' . $size;
 
-    if($schemaByFilestamp{$filestamp})
-    {   trace "importDefinitions reusing schemas from file $filestamp";
+    if($self->{_cache_file}{$filestamp})
+    {   trace "reusing schemas from file $filestamp";
         return (undef, filestamp => $filestamp);
     }
 
-    trace "importDefinitions for filestamp $filestamp";
-    ( $thing->SUPER::_parseFile($fn)
+    trace "cache parsed file $filestamp";
+    ( $self->SUPER::_parseFile($fn)
     , filestamp => $filestamp
     );
 }

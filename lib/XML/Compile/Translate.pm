@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 
 # Errors are either in _class 'usage': called with request
@@ -1342,11 +1342,11 @@ sub complexContent($$)
 
     $tree     = $tree->descend;
     $node     = $tree->node;
-    my $base  = $node->getAttribute('base') || 'anyType';
+    my $base  = $node->getAttribute('base');
     my $type  = {};
     my $where = $tree->path . '#cce';
 
-    if($base ne 'anyType')
+    if($base !~ m/\banyType$/)
     {   my $typename = $self->rel2abs($where, $node, $base);
         my $typedef  = $self->namespaces->find(complexType => $typename)
             or error __x"unknown base type '{type}' at {where}"

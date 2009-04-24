@@ -11,7 +11,7 @@ XML::Compile::Iterator - reduce view on a node tree
 It would have been nice to be able to use XML::LibXML::Iterator, but
 on the moment of this writing, that module is not maintained.  Besides,
 this implementation of the iterator is more specific for our purpose.
-The main user for this object currently is XML::Compile::Schema::Translate.
+The main user for this object currently is L<XML::Compile::Translate|XML::Compile::Translate>.
 
 =head1 METHODS
 
@@ -184,8 +184,8 @@ Returns the textContent of the L<node()|XML::Compile::Iterator/"Attributes">, or
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.03,
-built on March 25, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.04,
+built on April 24, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

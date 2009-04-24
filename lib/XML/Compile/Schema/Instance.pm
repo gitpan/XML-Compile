@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -104,7 +104,10 @@ sub _collectTypes($$)
 
         $self->{xsi} = $def->{uri_xsi};
     }
-    my $tns = $self->{tns} = $schema->getAttribute('targetNamespace') || '';
+    my $tns = $self->{tns}
+       = $args->{target_namespace}
+      || $schema->getAttribute('targetNamespace')
+      || '';
 
     my $efd = $self->{efd}
        = $args->{element_form_default}

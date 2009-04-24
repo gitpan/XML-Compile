@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 use base 'Exporter';
 
@@ -41,10 +41,14 @@ sub _replace  { $_[0] =~ s/[\t\r\n]/ /g; $_[0]}
 sub _collapse { local $_ = $_[0]; s/[\t\r\n]+/ /g; s/^ +//; s/ +$//; $_}
 
 
+# format not useful, because xsi:type not supported
 $builtin_types{anySimpleType} =
-$builtin_types{anyType}       = {example => 'anything'};
+$builtin_types{anyType} =
+ { example => 'anything'
+ , parse   => sub {shift}
+ };
 
-$builtin_types{error}         = {example => '[some error structure]'};
+$builtin_types{error}   = {example => '[some error structure]'};
 
 
 $builtin_types{boolean} =
