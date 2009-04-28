@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.04';
+$VERSION = '1.05';
 
 use base 'XML::Compile::Translate';
 
@@ -554,11 +554,7 @@ sub makeTaggedElement
           return $doc->importNode($data)
               if UNIVERSAL::isa($data, 'XML::LibXML::Element');
 
-          UNIVERSAL::isa($data, 'HASH')
-             or error __x"tagged `{tag}' requires a HASH of input data, not `{found}' at {path}"
-                  , tag => $tag, found => $data, path => $path;
-
-          my $copy    = { %$data };
+          my $copy    = UNIVERSAL::isa($data,'HASH') ? {%$data} : {_ => $data};
           my $content = delete $copy->{_};
 
           my ($node, @childs);
@@ -624,16 +620,10 @@ sub makeMixedElement
           return $doc->importNode($data)
               if UNIVERSAL::isa($data, 'XML::LibXML::Element');
 
-          UNIVERSAL::isa($data, 'HASH')
-             or error __x"mixed `{tag}' requires a HASH of input data, not `{found}' at {path}"
-                   , tag => $tag, found => $data, path => $path;
-
-          my $copy    = { %$data };
+          my $copy = UNIVERSAL::isa($data, 'HASH') ? {%$data} : {_ => $data};
           my $content = delete $copy->{_};
           UNIVERSAL::isa($content, 'XML::LibXML::Node')
-              or error __x"mixed `{tag}' value `_' must be XML::LibXML::Node, not `{found}' at {path}"
-                   , tag => $tag, found => $data, path => $path;
-
+              or $content = $doc->createTextNode($content);
           my $node = $doc->importNode($content);
 
           my @childs;
