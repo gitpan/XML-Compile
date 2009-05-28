@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.05';
+$VERSION = '1.06';
 
 use base 'XML::Compile::Translate';
 
@@ -745,6 +745,11 @@ sub _xmlAny($$$$)
     $node->addChild($_) for @res;
     $node->appendText($outdent) if @elems;
     $node;
+}
+
+sub makeBlocked($$$)
+{   my ($self, $where, $class, $type) = @_;
+    panic "namespace blocking not yet supported for Templates";
 }
 
 

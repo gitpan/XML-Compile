@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.06.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.05';
+$VERSION = '1.06';
 
 use base 'XML::Compile::Translate';
 
@@ -748,8 +748,6 @@ sub makeBuiltin
       );
 }
 
-# simpleType
-
 sub makeList
 {   my ($self, $path, $st) = @_;
     sub { my $tree = shift;
@@ -1070,7 +1068,7 @@ sub makeHook($$$$$$)
            defined $xml or return ();
        }
        my @h = @replace
-             ? map {$_->($xml,$self,$path,$tag)} @replace
+             ? map {$_->($xml,$self,$path,$tag,$r)} @replace
              : $r->($tree->descend($xml));
        @h or return ();
        my $h = @h==1 ? {_ => $h[0]} : $h[1];  # detect simpleType
@@ -1134,5 +1132,26 @@ sub _decodeAfter($$)
     : error __x"labeled after hook `{call}' undefined for READER", call=> $call;
 }
 
+sub makeBlocked($$$)
+{   my ($self, $where, $class, $type) = @_;
+
+    # errors are produced in class=misfit to allow other choices to succeed.
+      $class eq 'anyType'
+    ? { st => sub { error __x"use of `{type}' blocked at {where}"
+              , type => $type, where => $where, _class => 'misfit';
+          }}
+    : $class eq 'simpleType'
+    ? { st => sub { error __x"use of {class} `{type}' blocked at {where}"
+              , class => $class, type => $type, where => $where
+              , _class => 'misfit';
+          }}
+    : $class eq 'complexType'
+    ? { elems => [] }
+    : $class eq 'ref'
+    ? { st => sub { error __x"use of referenced `{type}' blocked at {where}"
+              , type => $type, where => $where, _class => 'misfit';
+          }}
+    : panic "blocking of $class for $type not implemented";
+}
 
 1;

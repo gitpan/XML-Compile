@@ -306,6 +306,54 @@ the option defaults to false: do not use the invisible prefix.
 You may explicitly specify a blank prefix with C<prefixes>,
 which will be used when applicable.
 
+=item block_namespace NAMESPACE|TYPE|HASH|CODE|ARRAY
+
+[1.06] Available on global scale via
+L<XML::Compile::Schema::new(block_namespace)|XML::Compile::Schema/"Constructors"> or
+L<XML::Compile::Schema::blockNamespace()|XML::Compile::Schema/"Accessors">, and for a single compiled
+instance via L<XML::Compile::Schema::compile(block_namespace)|XML::Compile::Schema/"Compilers">.
+
+Some schemas include other schemas which you do not need.  For instance,
+the other schema is only used in rare cases, or the other schema defines
+deprecated types and elements.  Of course, you can simply not load those
+schemas... however: the main schema may refer to those types and elements
+you do not need.  So, with this option, you can make the compilation to
+ignore whole namespaces and specific elements or types.
+
+The NAMESPACE is a uri, which will disable use of any element or type
+defined in that space.  You may also provide a specific full TYPE (toplevel
+element or type name).  You may also give an LIST or ARRAY of these, but
+then a HASH is much more suitable: with linear lookup time.
+
+When you provide a CODE reference, it will be called for each type
+and element to be judged.  Passed are C<$type>, C<$ns>, C<$local>,
+and C<$path>.  The C<$ns/$local> is the decomposition of C<$type>.
+When the CODE returns C<undef>, then it is undecisive, letting other
+rules decide.  When it returns C<0>, then the thing will not be blocked
+(whatever the other rules decide).  In other cases, the thing will not
+be used.
+
+  # block a whole namespace
+  $schema->blockNamespace("http://xyz.example.com");
+
+  # block only a single element or typedef
+  $schema->blockNamespace("{http://xyz.example.com}buggy");
+
+  # block $ns1 and $type1, unblock $ns2
+  $schema->blockNamespace( {$ns1 => 1, $ns2 => 0, $type1 => 1} );
+
+  $schema->blockNamespace($ns1, $type1);
+  $schema->compile(..., block_namespace => [$ns1, $type1]);
+  $schema->new(..., block_namespace => [$ns1, $type1]);
+
+  # very flexible
+  sub want_block($$$$) ( my ($type,$ns,$local,$path) = @_; undef}
+  $schema->blockNamespace(\&want_block);
+
+It is very well posible that the blocking of some namespaces breaks the
+validness of messages: when those elements are required but set to be
+ignored.  There is no way to detect this, on the moment.
+
 =back
 
 =head3 Wildcards handlers
@@ -342,8 +390,8 @@ By default, all C<anyAttribute> specifications will be ignored.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.05,
-built on april 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.06,
+built on May 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

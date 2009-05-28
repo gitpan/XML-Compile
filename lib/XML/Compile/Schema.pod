@@ -173,12 +173,21 @@ work on: all schema information and all hooks are only used when
 the readers and writers get compiled.
 
  Option            --Defined in     --Default
+ block_namespace                      []
  hook                                 undef
  hooks                                []
  ignore_unused_tags                   <false>
  key_rewrite                          []
  schema_dirs         XML::Compile     undef
  typemap                              {}
+
+. block_namespace => NAMESPACE|TYPE|HASH|CODE|ARRAY
+
+=over 4
+
+See L<blockNamespace()|XML::Compile::Schema/"Accessors">
+
+=back
 
 . hook => ARRAY-WITH-HOOKDATA | HOOK
 
@@ -349,6 +358,21 @@ Add new XML-Perl type relations.  See L</Typemaps>.
 
 =back
 
+$obj-E<gt>B<blockNamespace>(NAMESPACE|TYPE|HASH|CODE|ARRAY)
+
+=over 4
+
+Block all references to a NAMESPACE or full TYPE, as if they do not appear
+in the schema.  Specially useful if the schema includes references to
+old (deprecated) versions of itself which are not being used.  It can
+also be used to block inclusion of huge structures which are not used,
+for increased compile performance, or to avoid buggy constructs.
+
+These values can also be passed with L<new(block_namespace)|XML::Compile::Schema/"Constructors"> and
+L<compile(block_namespace)|XML::Compile::Schema/"Compilers">.
+
+=back
+
 $obj-E<gt>B<hooks>
 
 =over 4
@@ -405,7 +429,7 @@ When a WRITER is created, a CODE reference is returned which needs
 to be called with an XML::LibXML::Document object and a HASH, and
 returns a XML::LibXML::Node.
 
-Most options below are B<explained in more detailed> in the manual-page
+Many OPTIONS below are B<explained in more detailed> in the manual-page
 L<XML::Compile::Translate|XML::Compile::Translate>, which implements the compilation.
 
  Option                        --Default
@@ -413,6 +437,7 @@ L<XML::Compile::Translate|XML::Compile::Translate>, which implements the compila
  any_attribute                   undef
  any_element                     undef
  attributes_qualified            <undef>
+ block_namespace                 []
  check_occurs                    <true>
  check_values                    <true>
  default_values                  <depends on backend>
@@ -481,6 +506,14 @@ still work.
 When defined, this will overrule the C<attributeFormDefault> flags in
 all schemas.  When not qualified, the xml will not produce nor
 process prefixes on attributes.
+
+=back
+
+. block_namespace => NAMESPACE|TYPE|HASH|CODE|ARRAY
+
+=over 4
+
+See L<blockNamespace()|XML::Compile::Schema/"Accessors">.
 
 =back
 
@@ -1930,8 +1963,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.05,
-built on april 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.06,
+built on May 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

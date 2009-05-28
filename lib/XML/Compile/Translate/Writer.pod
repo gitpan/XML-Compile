@@ -169,12 +169,18 @@ XML::LibXML::Node or C<undef>.  The hook must use the
 C<XML::LibXML::Document> node (which is provided as first
 argument) to create a node.
 
+As parameters, the called replace function will receive the
+document, user-provided values, location in the data tree (for
+error messages), the tag of the node with prefix attached, and
+a reference to the code which would be executed if the replace
+hook had not been active.
+
 On the moment, the only predefined C<replace> hook is C<SKIP>.
 
 example: replace hook
 
- sub replace($$$)
- {  my ($doc, $values, $path, $tag) = @_
+ sub replace($$$$$)
+ {  my ($doc, $values, $path, $tag, $r) = @_
     my $node = $doc->createElement($tag);
     $node->appendText($values->{text});
     $node;
@@ -312,8 +318,8 @@ writer considerably.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.05,
-built on april 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.06,
+built on May 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
