@@ -386,12 +386,18 @@ default, all C<any> specifications will be ignored.
 C<anyAttribute> definition, after processing the other attributes.
 By default, all C<anyAttribute> specifications will be ignored.
 
+=item any_type CODE
+
+[1.07] Called for processing an "xsd:anyType" element.  Currently only
+supported for the reader.  By default, it returns a string when the
+element does not contains sub-elements, otherwise the XML node.
+
 =back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.06,
-built on May 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.07,
+built on June 22, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

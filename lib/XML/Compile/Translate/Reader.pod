@@ -172,6 +172,23 @@ The C<minOccurs> and C<maxOccurs> of C<any> are ignored: the amount of
 elements is always unbounded.  Therefore, you will get an array of
 elements back per type. 
 
+=head3 option any_type CODE
+
+By default, the elements which have type "xsd:anyType" will return
+an XML::LibXML::Element when there are sub-elements.  Otherwise,
+it will return the textual content. 
+
+If you pass your own CODE reference, you can change this behavior.  It
+will get called with the path, the node, and the default handler.  Be
+awayre the $node may actually be a string already.
+
+   $schema->compile(READER => ..., any_type => \&handle_any_type);
+   sub handle_any_type
+   { my ($path, $node, $handler) = @_;
+     ref $node or return $node;
+     $node;
+   }
+
 =head2 Mixed elements
 
 [available since 0.86]
@@ -392,8 +409,8 @@ with some extra checks.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.06,
-built on May 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.07,
+built on June 22, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

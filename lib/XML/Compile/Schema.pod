@@ -436,6 +436,7 @@ L<XML::Compile::Translate|XML::Compile::Translate>, which implements the compila
  abstract_types                  'ERROR'
  any_attribute                   undef
  any_element                     undef
+ any_type                        <returns string or node>
  attributes_qualified            <undef>
  block_namespace                 []
  check_occurs                    <true>
@@ -481,8 +482,7 @@ fact that the types are abstract, and treat them as non-abstract types.
 automatically.  If  you need to create or process anyAttribute
 information, then read about wildcards in the DETAILS chapter of the
 manual-page for the specific back-end.
-Before release 0.89 this option was named C<anyElement>, which will
-still work.
+[pre-0.89] this option was named C<anyElement>, which will still work.
 
 =back
 
@@ -494,8 +494,15 @@ still work.
 If  you need to create or process any information, then read about
 wildcards in the DETAILS chapter of the manual-page for the specific
 back-end.
-Before release 0.89 this option was named C<anyElement>, which will
-still work.
+[pre-0.89] this option was named C<anyElement>, which will still work.
+
+=back
+
+. any_type => CODE
+
+=over 4
+
+[1.07] how to handle "anyType" type elements.  Depends on the backend.
 
 =back
 
@@ -668,7 +675,7 @@ piece, but reset the counts to zero first.
 
 =over 4
 
-Pre release 0.87 name for the C<prefixes> option.  Deprecated.
+[Pre-0.87] name for the C<prefixes> option.  Deprecated.
 
 =back
 
@@ -1963,8 +1970,8 @@ Error: don't known how to interpret XML data
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.06,
-built on May 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.07,
+built on June 22, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.06';
+$VERSION = '1.07';
 
 
 # Errors are either in _class 'usage': called with request
@@ -525,7 +525,7 @@ sub element($)
 {   my ($self, $tree) = @_;
 
     # attributes: abstract, default, fixed, form, id, maxOccurs, minOccurs
-    #           , name, nillable, ref, substitutionGroup, type
+    #    , name, nillable, ref, substitutionGroup, targetNamespace, type
     # ignored: block, final, targetNamespace additional restrictions
     # content: annotation?
     #        , (simpleType | complexType)?
@@ -535,7 +535,7 @@ sub element($)
     my $name     = $node->getAttribute('name')
         or error __x"element has no name nor ref at {where}"
              , where => $tree->path, _class => 'schema';
-    my $ns       = $self->{tns};
+    my $ns       = $node->getAttribute('targetNamespace') || $self->{tns};
 
     $self->assertType($tree->path, name => NCName => $name);
     my $fullname = pack_type $ns, $name;
@@ -651,10 +651,11 @@ sub element($)
 
     # Implement hooks
     my ($before, $replace, $after)
-       = $self->findHooks($where, $compname, $node);
-
-    my $do3 = ($before || $replace || $after)
-       ? $self->makeHook($where, $do2, $tag, $before, $replace, $after) : $do2;
+      = $self->findHooks($where, $compname, $node);
+    my $do3
+      = ($before || $replace || $after)
+      ? $self->makeHook($where, $do2, $tag, $before, $replace, $after)
+      : $do2;
 
     # handle recursion
     # this must look very silly to you... however, this is resolving
@@ -1012,7 +1013,8 @@ sub attributeOne($)
             , form => $form, where => $where, _class => 'schema';
 
     my $trans   = $qual ? 'makeTagQualified' : 'makeTagUnqualified';
-    my $ns      = $qual ? $self->{tns} : '';
+    my $tns     = $node->getAttribute('targetNamespace') || $self->{tns};
+    my $ns      = $qual ? $tns : '';
     my $tag     = $self->$trans($where, $node, $name, $ns);
 
     my $use     = $node->getAttribute('use') || '';
@@ -1195,7 +1197,7 @@ sub complexBody($$)
 
     my @elems;
     if($tree->currentLocal =~ $particle_blocks)
-    {   push @elems, $self->particle($tree->descend) unless $mixed;
+    {   push @elems, $self->particle($tree->descend); # unless $mixed;
         $tree->nextChild;
     }
 
@@ -1342,9 +1344,11 @@ sub complexContent($$)
     # content: annotation?, (restriction | extension)
 
     my $node = $tree->node;
-    defined $mixed || $self->{mixed_elements} eq 'STRUCTURAL'
-        or $mixed = $self->isTrue($node->getAttribute('mixed') || 'false');
-  
+    if(my $m = $node->getAttribute('mixed'))
+    {   $mixed = $self->isTrue($m)
+            if $self->{mixed_elements} ne 'STRUCTURAL';
+    }
+
     $tree->nrChildren == 1
         or error __x"only one complexContent child expected at {where}"
              , where => $tree->path, _class => 'schema';
@@ -1378,7 +1382,6 @@ sub complexContent($$)
     }
 
     my $own = $self->complexBody($tree, $mixed);
-
     $self->extendAttrs($type, $own);
 
     if($name eq 'extension')
@@ -1390,11 +1393,6 @@ sub complexContent($$)
 
     $type->{mixed} ||= $own->{mixed};
     $type;
-}
-
-sub complexMixed($)
-{   my ($self, $tree) = @_;
-    { mixed => 1 };
 }
 
 #

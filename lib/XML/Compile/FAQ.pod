@@ -2,8 +2,6 @@
 
 XML::Compile::FAQ - frequently asked questions
 
-=head1 INHERITANCE
-
 =head1 DESCRIPTION
 
 On this page, a wild collection of questions are answered.  If you have
@@ -12,8 +10,8 @@ via the mailinglist.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.06,
-built on May 28, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.07,
+built on June 22, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

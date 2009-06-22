@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.06.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.06';
+$VERSION = '1.07';
 
 use base 'XML::Compile::Translate';
 
@@ -676,7 +676,7 @@ sub makeMixedElement
           }
 
     : $mixed eq 'XML_NODE'
-    ? sub { $_[0] ? ($tag => $_[0]->node) : () }
+    ? sub {$_[0] ? ($tag => $_[0]->node) : () }
 
     : $mixed eq 'ATTRIBUTES'
     ? sub { my $tree   = shift or return;
@@ -716,8 +716,35 @@ sub makeSimpleElement
         };
 }
 
+sub default_anytype_handler($$)
+{   my ($path, $node) = @_;
+    ref $node or return $node;
+      (first{ UNIVERSAL::isa($_, 'XML::LibXML::Element') } $node->childNodes)
+    ? $node : $node->textContent;
+}
+
 sub makeBuiltin
 {   my ($self, $path, $node, $type, $def, $check_values) = @_;
+
+    if($type =~ m/}anyType$/)
+    {   if(my $a = $self->{any_type})
+        {   return sub {
+               my $node
+                 = ref $_[0] && UNIVERSAL::isa($_[0], 'XML::Compile::Iterator')
+                 ? $_[0]->node : $_[0];
+               $a->( $path, $node, \&default_anytype_handler)};
+        }
+        else
+        {   return sub
+              { ref $_[0] or return $_[0];
+                my $node = UNIVERSAL::isa($_[0], 'XML::Compile::Iterator')
+                 ? $_[0]->node : $_[0];
+                (first{ UNIVERSAL::isa($_, 'XML::LibXML::Element') }
+                     $node->childNodes) ? $node : $node->textContent;
+              };
+        }
+    }
+
     my $check = $check_values ? $def->{check} : undef;
     my $parse = $def->{parse};
     my $err   = $path eq $type
@@ -990,8 +1017,7 @@ sub makeAnyElement
     # Takes all, before filtering
     my $any = $max eq 'unbounded' || $max > 1
     ? sub
-      {
-          my $tree  = shift or return ();
+      {   my $tree  = shift or return ();
           my $count = 0;
           my %result;
           while(   (my $child = $tree->currentChild)
@@ -1153,5 +1179,6 @@ sub makeBlocked($$$)
           }}
     : panic "blocking of $class for $type not implemented";
 }
+
 
 1;
