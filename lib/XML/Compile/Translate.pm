@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 
 # Errors are either in _class 'usage': called with request
@@ -53,7 +53,6 @@ sub new($@)
 
 sub init($)
 {   my ($self, $args) = @_;
-
     $self->{nss}      = $args->{nss} or panic "no namespace tables";
     $self->{prefixes} = $args->{prefixes} || {};
     $self;

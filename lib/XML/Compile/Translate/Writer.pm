@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 use base 'XML::Compile::Translate';
 
@@ -1013,7 +1013,7 @@ sub _decodeReplace($$)
     return $call if ref $call eq 'CODE';
 
     # SKIP already handled
-    # $replace->($doc, $val, $path, $tag)
+    # $replace->($doc, $val, $path, $tag, $replaced)
     error __x"labeled replace hook `{name}' undefined for WRITER", name=>$call;
 }
 

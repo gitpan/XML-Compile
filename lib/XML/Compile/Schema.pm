@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 use base 'XML::Compile';
 
@@ -210,12 +210,12 @@ sub compile($$@)
         panic "require Math::BigFloat by sloppy_floats:\n$@" if $@;
     }
 
-    my $prefs = $args{prefixes} = $self->_namespaceTable
-       ( ($args{prefixes} || $args{output_namespaces})
-       , $args{namespace_reset}
-       , !($args{use_default_namespace} || $args{use_default_prefix})
-         # use_default_prefix renamed in 0.90
-       );
+    $args{prefixes} = $self->_namespaceTable
+      (($args{prefixes} || $args{output_namespaces})
+      , $args{namespace_reset}
+      , !($args{use_default_namespace} || $args{use_default_prefix})
+        # use_default_prefix renamed in 0.90
+      );
 
     my $nss   = $self->namespaces;
 
@@ -310,29 +310,36 @@ sub template($@)
 
     my $indent                  = $args{indent} || "  ";
     $args{check_occurs}         = 1;
-    $args{include_namespaces} ||= 1;
     $args{mixed_elements}     ||= 'ATTRIBUTES';
     $args{default_values}     ||= 'EXTEND';
     $args{abstract_types}     ||= 'IGNORE';
+
+    exists $args{include_namespaces}
+        or $args{include_namespaces} = 1;
 
     # it could be used to add extra comment lines
     error __x"typemaps not implemented for XML template examples"
         if $action eq 'XML' && defined $args{typemap} && keys %{$args{typemap}};
 
-    my @rewrite = @{$self->{key_rewrite}};
-    my $kw = delete $args{key_rewrite} || [];
-    unshift @rewrite, ref $kw eq 'ARRAY' ? @$kw : $kw;
+    my @rewrite = $self->_key_rewrite(delete $args{key_rewrite});
 
-    my $transl = XML::Compile::Translate->new
+    $args{prefixes} = $self->_namespaceTable
+      (($args{prefixes} || $args{output_namespaces})
+      , $args{namespace_reset}
+      , !$args{use_default_namespace}
+      );
+
+    my $transl  = XML::Compile::Translate->new
      ( 'TEMPLATE'
-     , nss => $self->namespaces
+     , nss         => $self->namespaces
      );
 
     my $compiled = $transl->compile
      ( $type
-     , rewrite     => \@rewrite
+     , rewrite         => \@rewrite
      , %args
      , block_namespace => []   # not yet supported
+     , output          => $action
      );
     $compiled or return;
 

@@ -276,34 +276,10 @@ C<substitutionGroup> (unions on complex type level), and even the
 nasty C<any> and C<anyAttribute>, which is rarely the case for the
 other modules.
 
-=head1 DIAGNOSTICS
-
-Error: cannot find pre-installed name-space files
-
-=over 4
-
-Use C<$ENV{SCHEMA_LOCATION}> or L<new(schema_dirs)|XML::Compile/"Constructors"> to express location
-of installed name-space files, which came with the L<XML::Compile|XML::Compile>
-distribution package.
-
-=back
-
-Error: don't known how to interpret XML data
-
-=over 4
-
-=back
-
-Error: no XML data specified
-
-=over 4
-
-=back
-
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.07,
-built on June 22, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.08,
+built on October 24, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
@@ -313,6 +289,7 @@ L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
+L<XML::Compile::RPC>,
 L<XML::Rewrite>,
 and
 L<XML::LibXML::Simple>.

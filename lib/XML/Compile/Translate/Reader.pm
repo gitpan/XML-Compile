@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.06.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.07';
+$VERSION = '1.08';
 
 use base 'XML::Compile::Translate';
 
@@ -118,7 +118,7 @@ sub makeAttributeWrapper
 }
 
 sub makeWrapperNs        # no namespaces in the HASH
-{   my ($self, $path, $processor, $index) = @_;
+{   my ($self, $path, $processor, $index, $filter) = @_;
     $processor;
 }
 
@@ -961,7 +961,7 @@ sub makeSubstgroup
 
           my @subst = $do->[1]($tree->descend);
           $tree->nextChild;
-          @subst ? ($do->[0] => $subst[1]) : ();   # rewrite
+          @subst ? ($do->[0] => $subst[1]) : ();   # key-rewrite
         }, 'BLOCK';
 }
 
@@ -1094,7 +1094,8 @@ sub makeHook($$$$$$)
            defined $xml or return ();
        }
        my @h = @replace
-             ? map {$_->($xml,$self,$path,$tag,$r)} @replace
+             ? map {$_->( $xml,$self,$path,$tag
+                        , sub {$r->($tree->descend($xml))} )} @replace
              : $r->($tree->descend($xml));
        @h or return ();
        my $h = @h==1 ? {_ => $h[0]} : $h[1];  # detect simpleType
