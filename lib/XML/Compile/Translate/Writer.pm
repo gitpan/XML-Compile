@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.08';
+$VERSION = '1.09';
 
 use base 'XML::Compile::Translate';
 
@@ -436,8 +436,8 @@ sub makeElementNillable
 
     sub
     {   my ($doc, $value) = @_;
-        return $do->($doc, $value)
-            if !defined $value || $value ne 'NIL';
+        defined $value && $value eq 'NIL'
+            or return $do->($doc, $value);
 
         return $doc->createTextNode('')
             if $inas;
@@ -662,6 +662,9 @@ sub makeSimpleElement
               if ref $data eq 'HASH';
 
           my $value = $st->($doc, $data);
+          defined $value
+              or return ();
+
           my $node  = $doc->createElement($tag);
           error __x"expected single value for {tag}, but got {type}"
              , tag => $tag, type => ref($value)
