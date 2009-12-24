@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 use base 'XML::Compile';
 
@@ -245,9 +245,9 @@ sub compile($$@)
 
     $transl->compile
      ( $type, %args
-     , hooks   => \@hooks
-     , typemap => \%map
-     , rewrite => \@rewrite
+     , hooks    => \@hooks
+     , typemap  => \%map
+     , rewrite  => \@rewrite
      , block_namespace => \@blocked
      );
 }

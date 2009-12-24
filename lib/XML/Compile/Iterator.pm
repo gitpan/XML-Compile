@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Iterator;
 use vars '$VERSION';
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 
 use XML::Compile::Util  qw/pack_type type_of_node/;
@@ -117,7 +117,10 @@ sub textContent()
 }
 
 
-sub currentType() { type_of_node(shift->currentChild) || '' }
+sub currentType()
+{   my $current = shift->currentChild or return '';
+    type_of_node $current;
+}
 
 
 sub currentLocal()

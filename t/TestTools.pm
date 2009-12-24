@@ -7,7 +7,7 @@ use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 use base 'Exporter';
 
@@ -16,7 +16,7 @@ use XML::Compile::Util ':constants';
 use XML::Compile::Tester;
 
 use Test::More;
-use Test::Deep   qw/cmp_deeply/;
+use Test::Deep   qw/cmp_deeply eq_deeply/;
 use Log::Report;
 use Data::Dumper qw/Dumper/;
 
@@ -66,8 +66,14 @@ sub test_rw($$$$;$$)
     my $writer = writer_create $schema, $test, $type;
     defined $writer or return;
 
-    my $msg  = defined $h2 ? $h2 : $h;
-    my $tree = writer_test $writer, $msg;
+    my $msg    = defined $h2 ? $h2 : $h;
+    my $wasmsg = do {no strict; eval Dumper $msg};    # clone
+
+    my $tree   = writer_test $writer, $msg;
+    my $untouched = eq_deeply $msg, $wasmsg;
+
+    ok($untouched, 'not tempored with written structure');
+    $untouched or warn Dumper $msg, $wasmsg;
 
     compare_xml($tree, $expect || $xml);
 }

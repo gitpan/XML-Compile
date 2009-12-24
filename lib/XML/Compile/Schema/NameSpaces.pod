@@ -162,8 +162,8 @@ This method implements L<XML::Compile::Schema::useSchema()|XML::Compile::Schema/
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.09,
-built on November 13, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.10,
+built on December 24, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

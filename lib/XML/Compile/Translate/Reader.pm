@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.06.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 use base 'XML::Compile::Translate';
 
@@ -870,7 +870,7 @@ sub makeUnion
 # Attributes
 
 sub makeAttributeRequired
-{   my ($self, $path, $ns, $tag, $do) = @_;
+{   my ($self, $path, $ns, $tag, $label, $do) = @_;
     sub { my $node = $_[0]->getAttributeNodeNS($ns, $tag);
           defined $node
              or error __x"attribute `{name}' is required at {path}"
@@ -878,12 +878,12 @@ sub makeAttributeRequired
 
           defined $node or return ();
           my $value = $do->($node);
-          defined $value ? ($tag => $value) : ();
+          defined $value ? ($label => $value) : ();
         };
 }
 
 sub makeAttributeProhibited
-{   my ($self, $path, $ns, $tag, $do) = @_;
+{   my ($self, $path, $ns, $tag, $label, $do) = @_;
     sub { my $node = $_[0]->getAttributeNodeNS($ns, $tag);
           defined $node or return ();
           error __x"attribute `{name}' is prohibited at {path}"
@@ -893,43 +893,43 @@ sub makeAttributeProhibited
 }
 
 sub makeAttribute
-{   my ($self, $path, $ns, $tag, $do) = @_;
+{   my ($self, $path, $ns, $tag, $label, $do) = @_;
     sub { my $node = $_[0]->getAttributeNodeNS($ns, $tag);
           defined $node or return ();;
           my $val = $do->($node);
-          defined $val ? ($tag => $val) : ();
+          defined $val ? ($label => $val) : ();
         };
 }
 
 sub makeAttributeDefault
-{   my ($self, $path, $ns, $tag, $do, $default) = @_;
+{   my ($self, $path, $ns, $tag, $label, $do, $default) = @_;
 
     my $mode = $self->{default_values};
     $mode eq 'IGNORE'
         and return sub
           { my $node = $_[0]->getAttributeNodeNS($ns, $tag);
-            defined $node ? ($tag => $do->($node)) : () };
+            defined $node ? ($label => $do->($node)) : () };
 
     my $def = $do->($default);
 
     $mode eq 'EXTEND'
         and return sub
           { my $node = $_[0]->getAttributeNodeNS($ns, $tag);
-            ($tag => ($node ? $do->($node) : $def))
+            ($label => ($node ? $do->($node) : $def))
           };
 
     $mode eq 'MINIMAL'
         and return sub
           { my $node = $_[0]->getAttributeNodeNS($ns, $tag);
             my $v = $node ? $do->($node) : $def;
-            !defined $v || $v eq $def ? () : ($tag => $v);
+            !defined $v || $v eq $def ? () : ($label => $v);
           };
 
     error __x"illegal default_values mode `{mode}'", mode => $mode;
 }
 
 sub makeAttributeFixed
-{   my ($self, $path, $ns, $tag, $do, $fixed) = @_;
+{   my ($self, $path, $ns, $tag, $label, $do, $fixed) = @_;
     my $def  = $do->($fixed);
 
     sub { my $node  = $_[0]->getAttributeNodeNS($ns, $tag)
@@ -940,7 +940,7 @@ sub makeAttributeFixed
               or error __x"value of attribute `{tag}' is fixed to `{fixed}', not `{value}' at {path}"
                   , tag => $tag, fixed => $def, value => $value, path => $path;
 
-          ($tag => $def);
+          ($label => $def);
         };
 }
 
@@ -1072,6 +1072,31 @@ sub makeAnyElement
      bless $run, 'ANY';
 }
 
+# xsi:type handling
+
+sub makeXsiTypeSwitch($$$$)
+{   my ($self, $where, $elem, $default_type, $types) = @_;
+
+    sub {
+        my $tree = shift;
+        my $node = $tree->node or return;
+        my $type = $node->getAttributeNS(SCHEMA2001i, 'type');
+        my ($alt, $code);
+        if($type)
+        {   my ($pre, $local) = $type =~ /(.*?)\:(.*)/ ? ($1, $2) : ('',$type);
+            $alt  = pack_type $node->lookupNamespaceURI($pre), $local;
+            $code = $types->{$alt}
+                or error __x"specified xsi:type list for `{default}' does not contain `{got}'"
+                     , default => $default_type, got => $type;
+        }
+        else { ($alt, $code) = ($default_type, $types->{$default_type}) }
+
+        my ($t, $d) = $code->($tree);
+        $d->{XSI_TYPE} ||= $alt if ref $d eq 'HASH';
+        ($t, $d);
+    };
+}
+
 # any kind of hook
 
 sub makeHook($$$$$$)
@@ -1179,6 +1204,8 @@ sub makeBlocked($$$)
           }}
     : panic "blocking of $class for $type not implemented";
 }
+
+#-----------------------------------
 
 
 1;
