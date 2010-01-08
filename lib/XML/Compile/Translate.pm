@@ -1,4 +1,4 @@
-# Copyrights 2006-2009 by Mark Overmeer.
+# Copyrights 2006-2010 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.06.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 
 # Errors are either in _class 'usage': called with request
@@ -454,14 +454,13 @@ sub simpleRestriction($$)
     +{ st => $do };
 }
 
-my @facets_prelex  = qw/whiteSpace/;
-my @facets_lexical = qw/pattern enumeration length minLength maxLength/;
-my @facets_value   = qw/totalDigits maxScale minScale maxInclusive
+my @facets_early = qw/whiteSpace pattern enumeration/;
+my @facets_late  = qw/length minLength maxLength
+  totalDigits maxScale minScale maxInclusive
   maxExclusive minInclusive minExclusive fractionDigits/;
-# assertions ignored
 
 sub applySimpleFacets($$$)
-{   my ($self, $tree, $st, $in_list) = @_;
+{   my ($self, $tree, $st, $is_list) = @_;
 
     # partial
     # content: facet*
@@ -504,19 +503,18 @@ sub applySimpleFacets($$$)
         $facets{totalFracDigits} = [$td, $fd];
     }
 
-    # Pre-lexicals
     my (@early, @late);
-    foreach my $facet (@facets_prelex)
+    foreach my $facet (@facets_early)
     {   my $limit = $facets{$facet} or next;
-        push @early, builtin_facet($where, $self, $facet, $limit);
+        push @early, builtin_facet($where, $self, $facet, $limit, $is_list);
     }
 
-    foreach my $facet (@facets_lexical, @facets_value)
+    foreach my $facet (@facets_late)
     {   my $limit = $facets{$facet} or next;
-        push @late, builtin_facet($where, $self, $facet, $limit);
+        push @late, builtin_facet($where, $self, $facet, $limit, $is_list);
     }
 
-      $in_list
+      $is_list
     ? $self->makeFacetsList($where, $st, \%facets_info, \@early, \@late)
     : $self->makeFacets($where, $st, \%facets_info, @early, @late);
 }

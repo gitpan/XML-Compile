@@ -101,8 +101,8 @@ Translate an XML::LibXML::Node into a packed type.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.10,
-built on December 24, 2009. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.11,
+built on January 08, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
@@ -125,7 +125,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2009 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2010 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

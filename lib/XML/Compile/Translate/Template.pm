@@ -1,11 +1,11 @@
-# Copyrights 2006-2009 by Mark Overmeer.
+# Copyrights 2006-2010 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.06.
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 use base 'XML::Compile::Translate';
 
@@ -321,8 +321,8 @@ sub makeList
 }
 
 sub makeFacetsList
-{   my ($self, $path, $st, $info, $early, $late) = @_;
-    sub { (facets => "with some restrictions on list elements", $st->()) };
+{   my ($self, $path, $st, $info) = @_;
+    $self->makeFacets($path, $st, $info);
 }
 
 sub _fillFacets($@)
@@ -337,7 +337,7 @@ sub _fillFacets($@)
 }
 
 sub makeFacets
-{   my ($self, $path, $st, $info, @do) = @_;
+{   my ($self, $path, $st, $info) = @_;
     my $comment
        = keys %$info==1 && $info->{enumeration}
        ? $self->_fillFacets('Enum', sort @{$info->{enumeration}})

@@ -1,4 +1,4 @@
-# Copyrights 2006-2009 by Mark Overmeer.
+# Copyrights 2006-2010 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 1.06.
@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Specs;
 use vars '$VERSION';
-$VERSION = '1.10';
+$VERSION = '1.11';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
