@@ -394,8 +394,8 @@ element does not contains sub-elements, otherwise the XML node.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.11,
-built on January 08, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.12,
+built on January 11, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

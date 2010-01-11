@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.11';
+$VERSION = '1.12';
 
 
 # Errors are either in _class 'usage': called with request
@@ -672,6 +672,7 @@ sub element($)
     foreach my $alttype (@{$self->{xsi_type}{$comptype}})
     {   my ($ns, $local) = unpack_type $alttype;
         my $prefix  = $node->lookupNamespacePrefix($ns);
+        defined $prefix or $prefix = $self->_registerNSprefix(undef, $ns, 1);
         my $type    = length $prefix ? "$prefix:$local" : $local;
 
         my $doc     = $node->ownerDocument;
@@ -1447,8 +1448,8 @@ sub _registerNSprefix($$$)
 
     my %prefs = map { ($_->{prefix} => 1) } values %$table;
     my $take;
-    if(!$prefs{$prefix}) { $take = $prefix }
-    elsif(!$prefs{''})   { $take = '' }
+    if(defined $prefix && !$prefs{$prefix}) {   $take = $prefix }
+    elsif(!$prefs{''}) { $take = '' }
     else
     {   # prefix already in use; create a new x\d+ prefix
         my $count = 0;
