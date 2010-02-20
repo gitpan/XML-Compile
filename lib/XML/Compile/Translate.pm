@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.12';
+$VERSION = '1.13';
 
 
 # Errors are either in _class 'usage': called with request
@@ -680,6 +680,10 @@ sub element($)
         $altnode->setNamespace($ns => $prefix);
         $altnode->setAttribute(name => $name);
         $altnode->setAttribute(type => $type);
+
+        my $altnodeid = $altnode->nodePath.'#'.$fullname;
+        delete $self->{_created}{$altnodeid}; # clean nesting cache
+
         $alt{$alttype} = $self->element($tree->descend($altnode));
     }
 
