@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 use base 'Exporter';
 
@@ -362,9 +362,10 @@ $builtin_types{gYearMonth} =
 
 $builtin_types{duration} =
  { parse   => \&_collapse
- , check   => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
-     m/^\-?P(?:\d+Y)?(?:\d+M)?(?:\d+D)?
-        (?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?)S)?$/x }
+ , check   => sub { my $val = $_[0]; $val =~ s/\s+//g;
+      $val =~ m/^\-?P(?:\d+Y)?(?:\d+M)?(?:\d+D)?
+          (?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?S)?)?$/x }
+
  , example => 'P9M2DT3H5M'
  };
 
@@ -372,7 +373,7 @@ $builtin_types{duration} =
 $builtin_types{dayTimeDuration} =
  { parse  => \&_collapse
  , check  => sub { my $val = $_[0]; $val =~ s/\s+//g; $val =~
-     m/^\-?P(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?)S)?$/ }
+     m/^\-?P(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?S)?)?$/ }
  , example => 'P2DT3H5M10S'
  };
 

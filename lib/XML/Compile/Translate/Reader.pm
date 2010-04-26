@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.06.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.13';
+$VERSION = '1.14';
 
 use base 'XML::Compile::Translate';
 
@@ -1050,7 +1050,7 @@ sub makeXsiTypeSwitch($$$$)
 {   my ($self, $where, $elem, $default_type, $types) = @_;
 
     sub {
-        my $tree = shift;
+        my $tree = shift or return;
         my $node = $tree->node or return;
         my $type = $node->getAttributeNS(SCHEMA2001i, 'type');
         my ($alt, $code);
@@ -1064,7 +1064,8 @@ sub makeXsiTypeSwitch($$$$)
         else { ($alt, $code) = ($default_type, $types->{$default_type}) }
 
         my ($t, $d) = $code->($tree);
-        $d->{XSI_TYPE} ||= $alt if ref $d eq 'HASH';
+        $d = { _ => $d } if ref $d ne 'HASH';
+        $d->{XSI_TYPE} ||= $alt;
         ($t, $d);
     };
 }
