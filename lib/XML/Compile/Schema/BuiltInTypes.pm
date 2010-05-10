@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.14';
+$VERSION = '1.15';
 
 use base 'Exporter';
 
@@ -519,6 +519,15 @@ $builtin_types{timeDuration} = $builtin_types{duration};
 
 $builtin_types{uriReference} = $builtin_types{anyURI};
 
+# These constants where removed from the spec in 2001. Probably
+# no-one is using these (anymore)
+# century       = period   => 'P100Y'
+# recurringDate = duration => 'P24H', period => 'P1Y'
+# recurringDay  = duration => 'P24H', period => 'P1M'
+# timeInstant   = duration => 'P0Y',  period => 'P0Y'
+# timePeriod    = duration => 'P0Y'
+# year          = period => 'P1Y'
+# recurringDuration = ??
 
 # only in 2000/10 schemas
 $builtin_types{CDATA} =
