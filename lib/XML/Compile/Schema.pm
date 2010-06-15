@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.15';
+$VERSION = '1.16';
 
 use base 'XML::Compile';
 
@@ -426,6 +426,7 @@ sub _parseScalar($)
     }
 
     trace "cache parsed scalar with checksum $checksum";
+
     ( $self->SUPER::_parseScalar($data)
     , checksum => $checksum
     );
@@ -447,6 +448,7 @@ sub _parseFile($)
     }
 
     trace "cache parsed file $filestamp";
+
     ( $self->SUPER::_parseFile($fn)
     , filestamp => $filestamp
     );

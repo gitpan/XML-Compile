@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 1.06.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.15';
+$VERSION = '1.16';
 
 use base 'XML::Compile::Translate';
 
@@ -31,19 +31,9 @@ use XML::Compile::Iterator ();
 # that the structure of found data is not conforming the needs. For optional
 # blocks, these errors are caught and un-done.
 
-sub actsAs($) { $_[1] eq 'READER' }
-
-sub makeTagUnqualified
-{ # my ($self, $path, $node, $local, $ns) = @_;
-  # $local;
-    $_[3];
-}
-
-sub makeTagQualified
-{ # my ($self, $path, $node, $local, $ns) = @_;
-#   $_[0]->keyRewrite($_[4], $_[3]);
-    $_[3];
-}
+sub actsAs($)             {$_[1] eq 'READER'}
+sub makeTagUnqualified(@) {$_[3]} # ($self, $path, $node, $local, $ns)
+sub makeTagQualified(@)   {$_[3]} # same params
 
 sub typemapToHooks($$)
 {   my ($self, $hooks, $typemap) = @_;

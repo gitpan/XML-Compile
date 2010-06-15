@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.15';
+$VERSION = '1.16';
 
 use base 'XML::Compile::Translate';
 
@@ -211,7 +211,10 @@ sub makeElementFixed
 
 sub makeElementNillable
 {   my ($self, $path, $ns, $childname, $do) = @_;
-    sub { +{occur => "$childname is nillable", $do->()} };
+    sub { my $h = $do->();
+          $h->{occur} = "$childname is nillable";
+          $h;
+        };
 }
 
 sub makeElementAbstract
