@@ -463,15 +463,15 @@ L<XML::Compile::Translate|XML::Compile::Translate>, which implements the compila
  validation                      <true>
  xsi_type                        {}
 
-. abstract_types => 'ERROR'|'IGNORE'|'ACCEPT'
+. abstract_types => 'ERROR'|'ACCEPT'
 
 =over 4
 
 How to handle the use abstract types.  Of course, they should not be
 used, but sometime they accidentally are.  When set to C<ERROR>, an error
-will be produced whenever an abstract type is encountered.  C<IGNORE>
-will ignore the existence of abstract types.  C<ACCEPT> will ignore the
-fact that the types are abstract, and treat them as non-abstract types.
+will be produced whenever an abstract type is encountered.
+C<ACCEPT> will ignore the fact that the types are abstract, and treat
+them as non-abstract types.
 
 =back
 
@@ -823,7 +823,7 @@ The templates produced are B<not always correct>.  Please contribute
 improvements.
 
  Option              --Default
- abstract_types        'IGNORE'
+ abstract_types        'ERROR'
  attributes_qualified  <undef>
  elements_qualified    <undef>
  include_namespaces    <true>
@@ -832,7 +832,7 @@ improvements.
  show_comments         ALL
  skip_header           <false>
 
-. abstract_types => 'ERROR'|'IGNORE'|'ACCEPT'
+. abstract_types => 'ERROR'|'ACCEPT'
 
 =over 4
 
@@ -2001,8 +2001,8 @@ value.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.16,
-built on June 15, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.17,
+built on September 23, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

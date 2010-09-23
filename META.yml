@@ -1,25 +1,32 @@
 --- #YAML:1.0
-name:                XML-Compile
-version:             1.16
-abstract:            Compilation based XML processing
-license:             perl
-author:              
+name:               XML-Compile
+version:            1.17
+abstract:           Compilation based XML processing
+author:
     - Mark Overmeer
-generated_by:        ExtUtils::MakeMaker version 6.42
-distribution_type:   module
-requires:     
-    bignum:                        0.1
-    Digest::MD5:                   2.36
-    IO:                            1.22
-    List::Util:                    0
-    Log::Report:                   0.21
-    Math::BigInt:                  1.77
-    Math::BigRat:                  0.1
-    Test::Deep:                    0.095
-    Test::More:                    0.54
-    Test::Pod:                     1.00
-    XML::Compile::Tester:          0.05
-    XML::LibXML:                   1.7
+license:            perl
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    bignum:               0.1
+    Digest::MD5:          2.36
+    IO:                   1.22
+    List::Util:           0
+    Log::Report:          0.21
+    Math::BigInt:         1.77
+    Math::BigRat:         0.1
+    Test::Deep:           0.095
+    Test::More:           0.54
+    XML::Compile::Tester:  0.05
+    XML::LibXML:          1.7
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.56
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
-    version: 1.3
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4

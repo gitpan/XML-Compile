@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.16';
+$VERSION = '1.17';
 
 use base 'XML::Compile';
 
@@ -297,6 +297,12 @@ _DIRTY_TRICK
 sub template($@)
 {   my ($self, $action, $type, %args) = @_;
 
+    my $to_perl
+      = $action eq 'PERL' ? 1
+      : $action eq 'XML'  ? 0
+      : error __x"template output is either in XML or PERL layout, not '{action}'"
+        , action => $action;
+
     my $show
       = exists $args{show_comments} ? $args{show_comments}
       : exists $args{show} ? $args{show} # pre-0.79 option name 
@@ -308,11 +314,11 @@ sub template($@)
 
     my $nss = $self->namespaces;
 
-    my $indent                  = $args{indent} || "  ";
-    $args{check_occurs}         = 1;
-    $args{mixed_elements}     ||= 'ATTRIBUTES';
-    $args{default_values}     ||= 'EXTEND';
-    $args{abstract_types}     ||= 'IGNORE';
+    my $indent              = $args{indent} || "  ";
+    $args{check_occurs}     = 1;
+    $args{mixed_elements} ||= 'ATTRIBUTES';
+    $args{default_values} ||= 'EXTEND';
+    $args{abstract_types} ||= 'ERROR';
 
     exists $args{include_namespaces}
         or $args{include_namespaces} = 1;
@@ -350,19 +356,16 @@ sub template($@)
     my $ast = $compiled->();
 #use Data::Dumper; $Data::Dumper::Indent = 1; warn Dumper $ast;
 
-    if($action eq 'XML')
-    {   my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
-        my $node = $transl->toXML($doc,$ast, @comment
-          , indent => $indent, skip_header => $args{skip_header});
-        return $node->toString(1);
+    if($to_perl)
+    {   return $transl->toPerl($ast, @comment
+           , indent => $indent, skip_header => $args{skip_header})
     }
 
-    return $transl->toPerl($ast, @comment
-       , indent => $indent, skip_header => $args{skip_header})
-        if $action eq 'PERL';
-
-    error __x"template output is either in XML or PERL layout, not '{action}'"
-        , action => $action;
+    # to_xml
+    my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
+    my $node = $transl->toXML($doc,$ast, @comment
+      , indent => $indent, skip_header => $args{skip_header});
+    $node->toString(1);
 }
 
 #------------------------------------------

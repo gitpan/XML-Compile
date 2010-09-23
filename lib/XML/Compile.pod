@@ -278,8 +278,8 @@ other modules.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.16,
-built on June 15, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.17,
+built on September 23, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

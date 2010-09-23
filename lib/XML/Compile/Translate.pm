@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.16';
+$VERSION = '1.17';
 
 
 # Errors are either in _class 'usage': called with request
@@ -540,8 +540,7 @@ sub element($)
 
     my $abstract = $node->getAttribute('abstract') || 'false';
     $abstract = 'false' if $self->{abstract_types} eq 'ACCEPT';
-    return if $self->isTrue($abstract) && $self->{abstract_types} eq 'IGNORE';
-    
+
     # Handle re-usable fragments, fight against combinatorial explosions
 
     my $nodeid   = $node->nodePath.'#'.$fullname;
@@ -848,6 +847,7 @@ sub particleElementRef($)
     @sgs or return $self->particleElement($tree); # simple element
 
     my ($label, $do) = $self->particleElement($tree);
+    $label or return;
 
     if(Log::Report->needs('TRACE')) # dump table of substgroup alternatives
     {   my $labelrw = $self->keyRewrite($label);
@@ -857,6 +857,7 @@ sub particleElementRef($)
         local $"    = "\n  ";
         trace "substitutionGroup $type$\"SG=$label ($labelrw)$\"@c";
     }
+
     my @elems;
     push @elems, $label => [$self->keyRewrite($label), $do] if $do;
 
