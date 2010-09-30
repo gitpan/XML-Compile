@@ -1102,9 +1102,7 @@ The schemas define kinds of data types.  There are various ways to define
 them (with restrictions and extensions), but for the resulting data
 structure is that knowledge not important.
 
-=over 4
-
-=item simpleType
+=head3 simpleType
 
 A single value.  A lot of single value data-types are built-in (see
 L<XML::Compile::Schema::BuiltInTypes|XML::Compile::Schema::BuiltInTypes>).
@@ -1133,8 +1131,8 @@ With reader hook C<< after => 'XML_NODE' >> hook applied, it will become
  test1 => { _ => 42
           , _XML_NODE => $obj
           }
- 
-=item complexType/simpleContent
+
+=head3 complexType/simpleContent
 
 In this case, the single value container may have attributes.  The number
 of attributes can be endless, and the value is only one.  This value
@@ -1152,7 +1150,7 @@ As a HASH, this looks like
           , question => 'everything'
           }
 
-=item complexType and complexType/complexContent
+=head3 complexType and complexType/complexContent
 
 These containers not only have attributes, but also multiple values
 as content.  The C<complexContent> is used to create inheritance
@@ -1176,7 +1174,7 @@ Represented as HASH, this looks like
           , when     => '5 billion BC'
           }
 
-=item anything by XML NODE
+=head3 Manually produced XML NODE
 
 For a WRITER, you may also specify a XML::LibXML::Node anywhere.
 
@@ -1184,11 +1182,10 @@ For a WRITER, you may also specify a XML::LibXML::Node anywhere.
  test3 => $doc->createElement('ariba');
 
 This data-structure is used without validation, so you are fully on
-your own with this one.
+your own with this one. Typically, nodes are produced by hooks to
+implement work-arounds.
 
-=back
-
-=head2 Processing
+=head3 Occurence
 
 A second factor which determines the data-structure is the element
 occurrence.  Usually, elements have to appear once and exactly once
@@ -1223,13 +1220,16 @@ unless L<compile(check_occurs)|XML::Compile::Schema/"Compilers"> is C<false>.
 example: elements with maxOccurs larger than 1
 
 In the schema:
+
  <element name="a" type="int" maxOccurs="unbounded" />
  <element name="b" type="int" />
 
 In the XML message:
+
  <a>12</a><a>13</a><b>14</b>
 
 In the Perl representation:
+
  a => [12, 13], b => 14
 
 =item value is C<NIL>
@@ -1258,164 +1258,100 @@ the white-space rules where applied).
 
 =back
 
-=head2 Repetative blocks
+=head3 Default Values
+
+[added in v0.91]
+With L<compile(default_values)|XML::Compile::Schema/"Compilers"> you can control how much information about
+default values defined by the schema will be passed into your program.
+
+The choices, available for both READER and WRITER, are:
+
+=over 4
+
+=item C<IGNORE>   (the WRITER's standard behavior)
+
+Only include element and attribute values in the result if they are in
+the XML message.  Behaviorally, this treats elements with default values
+as if they are just optional.  The WRITER does not try to be smarter than
+you.
+
+=item C<EXTEND>   (the READER's standard behavior)
+
+If some element or attribute is not in the source but has a default in
+the schema, that value will be produced.  This is very convenient for the
+READER, because your application does not have to hard-code the same
+constant values as defaults as well.
+
+=item C<MINIMAL>
+
+Only produce the values which differ from the defaults.  This choice is
+useful when producing XML, to reduce the size of the output.
+
+=back
+
+example: use of default_values EXTEND
+
+Let us process a schema using the schema schema.  A schema file can
+contain lines like this:  
+
+ <element minOccurs="0" ref="myelem"/>
+
+In mode C<EXTEND> (the READER default), this gets translated into:
+
+ element => { ref => 'myelem', maxOccurs => 1
+            , minOccurs => 0, nillable => 0 };
+
+With C<EXTEND> in the READER, all schema information is used to provide
+a complete overview of available information.  Your code does not need
+to check whether the attributes were available or not: attributes with
+defaults or fixed values are automatically added.
+
+Again mode C<EXTEND>, now for the writer:
+
+ element => { ref => 'myelem', minOccurs => 0 };
+ <element minOccurs="0" maxOccurs="1" ref="myelem" nillable="0"/>
+
+example: use of default_values IGNORE
+
+With option C<default_values> set to C<IGNORE> (the WRITER default), you
+would get
+
+ element => { ref => 'myelem', maxOccurs => 1, minOccurs => 0 }
+ <element minOccurs="0" maxOccurs="1" ref="myelem"/>
+
+The same in both translation directions.
+The nillable attribute is not used, so will not be shown by the READER.  The
+writer does not try to be smart, so does not add the nillable default.
+
+example: use of default_values MINIMAL
+
+With option C<default_values> set to C<MINIMAL>, the READER would do this:
+
+ <element minOccurs="0" maxOccurs="1" ref="myelem"/>
+ element => { ref => 'myelem', minOccurs => 0 }
+
+The maxOccurs default is "1", so will not be included, minimalizing the
+size of the HASH.
+
+For the WRITER:
+
+ element => { ref => 'myelem', minOccurs => 0, nillable => 0 }
+ <element minOccurs="0" ref="myelem"/>
+
+because the default value for nillable is '0', it will not show as attribute
+value.
+
+=head3 Repetative blocks
 
 Particle blocks come in four shapes: C<sequence>, C<choice>, C<all>,
 and C<group> (an indirect block).  This also affects C<substitutionGroups>.
 
-=head3 repetative sequence, choice, all
-
-In situations like this:
-
-  <element name="example">
-    <complexType>
-      <sequence>
-        <element name="a" type="int" />
-        <sequence>
-          <element name="b" type="int" />
-        </sequence>
-        <element name="c" type="int" />
-      </sequence>
-    </complexType>
-  </element>
-
-(yes, schemas are verbose) the data structure is
-
-  <example> <a>1</a> <b>2</b> <c>3</c> </example>
-
-the Perl representation is I<flattened>, into
-
-  example => { a => 1, b => 2, c => 3 }
-
-Ok, this is very simple.  However, schemas can use repetition:
-
-  <element name="example">
-    <complexType>
-      <sequence>
-        <element name="a" type="int" />
-        <sequence minOccurs="0" maxOccurs="unbounded">
-          <element name="b" type="int" />
-        </sequence>
-        <element name="c" type="int" />
-      </sequence>
-    </complexType>
-  </element>
-
-The XML message may be:
-
-  <example> <a>1</a> <b>2</b> <b>3</b> <b>4</b> <c>5</c> </example>
-
-Now, the perl representation needs to produce an array of the data in
-the repeated block.  This array needs to have a name, because more of
-these blocks may appear together in a construct.  The B<name of the
-block> is derived from the I<type of block> and the name of the I<first
-element> in the block, regardless whether that element is present in
-the data or not.
-
-So, our example data is translated into (and vice versa)
-
-  example =>
-    { a     => 1
-    , seq_b => [ {b => 2}, {b => 3}, {b => 4} ]
-    , c     => 5
-    }
-
-The following label is used, based on the name of the first element (say C<xyz>)
-as defined in the schema (not in the actual message):
-   seq_xyz    sequence with maxOccurs > 1
-   cho_xyz    choice with maxOccurs > 1
-   all_xyz    all with maxOccurs > 1
-
-When you have L<compile(key_rewrite)|XML::Compile::Schema/"Compilers"> option PREFIXED, and you have explicitly
-assigned the prefix C<xs> to the schema namespace (See L<compile(prefixes)|XML::Compile::Schema/"Compilers">),
-then those names will respectively be C<seq_xs_xyz>, C<cho_xs_xyz>,
-C<all_xs_xyz>.
-
-example: always an array with maxOccurs larger than 1
-
-Even when there is only one element found, it will be returned as
-ARRAY (of one element).  Therefore, you can write
-
- my $data = $reader->($xml);
- foreach my $a ( @{$data->{a}} ) {...}
-
-example: blocks with maxOccurs larger than 1
-
-In the schema:
- <sequence maxOccurs="5">
-   <element name="a" type="int" />
-   <element name="b" type="int" />
- </sequence>
-
-In the XML message:
- <a>15</a><b>16</b><a>17</a><b>18</b>
-
-In Perl representation:
- seq_a => [ {a => 15, b => 16}, {a => 17, b => 18} ]
-
-=head3 repetative groups
-
-[behavioral change in 0.93]
-In contrast to the normal partical blocks, as described above, do the
-groups have names.  In this case, we do not need to take the name of
-the first element, but can use the group name.  It will still have C<gr_>
-appended, because groups can have the same name as an element or a type(!)
-
-Blocks within the group definition cannot be repeated.
-
-example: groups with maxOccurs larger than 1
-
- <element name="top">
-   <complexType>
-     <sequence>
-       <group ref="ns:xyz" maxOccurs="unbounded">
-     </sequence>
-   </complexType>
- </element>
-
- <group name="xyz">
-   <sequence>
-     <element name="a" type="int" />
-     <element name="b" type="int" />
-   </sequence>
- </group>
-
-translates into
-
-  gr_xyz => [ {a => 42, b => 43}, {a => 44, b => 45} ]
-
-=head3 repetative substitutionGroups
-
-For B<substitutionGroup>s which are repeating, the I<name of the base
-element> is used (the element which has attribute C<<abstract="true">>.
-We do need this array, because the order of the elements within the group
-may be important; we cannot group the elements based to the extended
-element's name.
-
-In an example substitutionGroup, the Perl representation will be
-something like this:
-
-  base-element-name =>
-    [ { extension-name  => $data1 }
-    , { other-extension => $data2 }
-    ]
-
-Each HASH has only one key.
-
-=head2 List type
+=head3 List type
 
 List simpleType objects are also represented as ARRAY, like elements
 with a minOccurs or maxOccurs unequal 1.
 
-example: with a list of ints
-
-  <test5>3 8 12</test5>
-
-as Perl structure:
-
-  test5 => [3, 8, 12]
-
-=head2 substitutionGroup
+=head3 Using substitutionGroup constructs
 
 A substitution group is kind-of choice between alternative (complex)
 types.  However, in this case roles have reversed: instead a C<choice>
@@ -1424,39 +1360,7 @@ themselves as valid for an abstract (I<head>) element.  All alternatives
 should be extensions of the head element's type, but there is no way to
 check that.
 
-example: substitutionGroup
-
- <xs:element name="price"  type="xs:int" abstract="true" />
- <xs:element name="euro"   type="xs:int" substitutionGroup="price" />
- <xs:element name="dollar" type="xs:int" substitutionGroup="price" />
-
- <xs:element name="product">
-   <xs:complexType>
-      <xs:element name="name" type="xs:string" />
-      <xs:element ref="price" />
-   </xs:complexType>
- </xs:element>
- 
-Now, valid XML data is
-
- <product>
-   <name>Ball</name>
-   <euro>12</euro>
- </product>
-
-and
-
- <product>
-   <name>Ball</name>
-   <dollar>6</dollar>
- </product>
-
-The HASH repesentation is respectively
-
- product => {name => 'Ball', euro  => 12}
- product => {name => 'Ball', dollar => 6}
-
-=head2 Wildcards
+=head3 Wildcards any and anyAttribute
 
 The C<any> and C<anyAttribute> elements are referred to as C<wildcards>:
 they specify groups of elements and attributes which can be used, in
@@ -1477,7 +1381,7 @@ knowledge into code explicitly.  Read about the processing of wildcards
 in the manual page for each of the back-ends, because it is different
 in each case.
 
-=head2 ComplexType with "mixed" attribute
+=head3 ComplexType with "mixed" attribute
 
 [largely improved in 0.86, reader only]
 ComplexType and ComplexContent components can be declared with the
@@ -1492,6 +1396,29 @@ Each back-end has its own way of handling mixed elements.  The
 L<compile(mixed_elements)|XML::Compile::Schema/"Compilers"> currently only modifies the reader's
 behavior; the writer's capabilities are limited.
 See L<XML::Compile::Translate::Reader|XML::Compile::Translate::Reader>.
+
+=head3 hexBinary and base64Binary
+
+These are used to include images and such in an XML message. Usually,
+they are quite large with respect to the other elements. When you use
+SOAP, you may wish to use L<XML::Compile::XOP|XML::Compile::XOP> instead.
+
+The element values which you need to pass for fields of these
+types is a binary BLOB, something Perl does not have. So, it is
+a string containing binary data but not specially marked that way.
+
+If you need to store an integer in such a binary field, you first have
+to promote it into a BLOB (string) like this
+
+   { color => pack('N', $i) }          # writer
+   my $i = unpack('N', $d->{color});   # reader
+
+Module Geo::KML implements a nice hook to avoid the explicit need
+for this C<pack> and C<unpack>. The KML schema designers liked colors
+to be written as C<ffc0c0c0> and abused C<hexBinary> for that purpose.
+The C<colorType> fields in KML are treated as binary, but just represent
+an int. Have a look in that Geo::KML code if your schema has some of
+those tricks.
 
 =head2 Schema hooks
 
@@ -1527,23 +1454,6 @@ evaluated before the global hooks.
 
  my $reader = $schema->compile(READER => $type
   , hook => HOOK, hooks => [ HOOK, HOOK, ...]);
-
-example: of HOOKs:
-
- my $hook = { type    => '{my_ns}my_type'
-            , before  => sub { ... }
-            };
-
- my $hook = { path    => qr/\(volume\)/
-            , replace => 'SKIP'
-            };
-
- # path contains "volume" or id is 'aap' or id is 'noot'
- my $hook = { path    => qr/\bvolume\b/
-            , id      => [ 'aap', 'noot' ]
-            , before  => [ sub {...}, sub { ... } ]
-            , after   => sub { ... }
-            };
 
 =head3 general syntax
 
@@ -1592,41 +1502,12 @@ If you use L<XML::Compile::Cache|XML::Compile::Cache> [release 0.90], then you c
 C<prefix:type> as type specification as well.  You have to explicitly
 define prefix to namespace beforehand.
 
-example: use of the type selector
-
- type => 'int'
- type => '{http://www.w3.org/2000/10/XMLSchema}int'
- type => qr/\}xml_/   # type start with xml_
- type => [ qw/int float/ ];
-
- use XML::Compile::Util qw/pack_type SCHEMA2000/;
- type => pack_type(SCHEMA2000, 'int')
-
-example: type hook with XML::Compile::Cache
-
- use XML::Compile::Util qw/SCHEMA2001/;
- my $schemas = XML::Compile::Cache->new(...);
- $schemas->prefixes(xsd => SCHEMA2001, mine => 'http://somens');
- $schemas->addHook(type => 'xsd:int', ...);
- $schemas->addHook(type => 'mine:sometype', ...);
-
 =head3 hooks on matching ids
 
 Matching based on IDs can reach more schema elements: some types are
 anonymous but still have an ID.  Best is to base selection on the full
 ID name, like C<ns#id>, to avoid all kinds of name-space conflicts in
 the future.
-
-example: use of the ID selector
-
- # default schema types have id's with same name
- id => 'ABC'
- id => 'http://www.w3.org/2001/XMLSchema#int'
- id => qr/\#xml_/   # id which start with xml_
- id => [ qw/ABC fgh/ ];
-
- use XML::Compile::Util qw/pack_id SCHEMA2001/;
- id => pack_id(SCHEMA2001, 'ABC')
 
 =head3 hooks on matching paths
 
@@ -1916,93 +1797,10 @@ then still only one prefix is added.
 
 =back
 
-=head2 Default Values
-
-[added in v0.91]
-With L<compile(default_values)|XML::Compile::Schema/"Compilers"> you can control how much information about
-default values defined by the schema will be passed into your program.
-
-The choices, available for both READER and WRITER, are:
-
-=over 4
-
-=item C<IGNORE>   (the WRITER's standard behavior)
-
-Only include element and attribute values in the result if they are in
-the XML message.  Behaviorally, this treats elements with default values
-as if they are just optional.  The WRITER does not try to be smarter than
-you.
-
-=item C<EXTEND>   (the READER's standard behavior)
-
-If some element or attribute is not in the source but has a default in
-the schema, that value will be produced.  This is very convenient for the
-READER, because your application does not have to hard-code the same
-constant values as defaults as well.
-
-=item C<MINIMAL>
-
-Only produce the values which differ from the defaults.  This choice is
-useful when producing XML, to reduce the size of the output.
-
-=back
-
-example: use of default_values EXTEND
-
-Let us process a schema using the schema schema.  A schema file can
-contain lines like this:  
-
- <element minOccurs="0" ref="myelem"/>
-
-In mode C<EXTEND> (the READER default), this gets translated into:
-
- element => { ref => 'myelem', maxOccurs => 1
-            , minOccurs => 0, nillable => 0 };
-
-With C<EXTEND> in the READER, all schema information is used to provide
-a complete overview of available information.  Your code does not need
-to check whether the attributes were available or not: attributes with
-defaults or fixed values are automatically added.
-
-Again mode C<EXTEND>, now for the writer:
-
- element => { ref => 'myelem', minOccurs => 0 };
- <element minOccurs="0" maxOccurs="1" ref="myelem" nillable="0"/>
-
-example: use of default_values IGNORE
-
-With option C<default_values> set to C<IGNORE> (the WRITER default), you
-would get
-
- element => { ref => 'myelem', maxOccurs => 1, minOccurs => 0 }
- <element minOccurs="0" maxOccurs="1" ref="myelem"/>
-
-The same in both translation directions.
-The nillable attribute is not used, so will not be shown by the READER.  The
-writer does not try to be smart, so does not add the nillable default.
-
-example: use of default_values MINIMAL
-
-With option C<default_values> set to C<MINIMAL>, the READER would do this:
-
- <element minOccurs="0" maxOccurs="1" ref="myelem"/>
- element => { ref => 'myelem', minOccurs => 0 }
-
-The maxOccurs default is "1", so will not be included, minimalizing the
-size of the HASH.
-
-For the WRITER:
-
- element => { ref => 'myelem', minOccurs => 0, nillable => 0 }
- <element minOccurs="0" ref="myelem"/>
-
-because the default value for nillable is '0', it will not show as attribute
-value.
-
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.17,
-built on September 23, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.18,
+built on September 30, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,
@@ -2016,7 +1814,7 @@ L<XML::Compile::Dumper>,
 L<XML::Compile::RPC>,
 and
 L<XML::Rewrite>,
-L<XML::ExistDB>,
+L<XML::eXistDB>,
 L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at

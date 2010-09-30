@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 use base 'XML::Compile';
 
@@ -336,8 +336,8 @@ sub template($@)
       , !$args{use_default_namespace}
       );
 
-    $table->{&SCHEMA2001}  ||= {prefix => 'xs', uri => SCHEMA2001,  used => 0};
-    $table->{&SCHEMA2001i} ||= {prefix => 'xs', uri => SCHEMA2001i, used => 0};
+    $table->{&SCHEMA2001}  ||= {prefix => 'xs',  uri => SCHEMA2001,  used => 0};
+    $table->{&SCHEMA2001i} ||= {prefix => 'xsi', uri => SCHEMA2001i, used => 0};
 
     my $transl  = XML::Compile::Translate->new
      ( 'TEMPLATE'

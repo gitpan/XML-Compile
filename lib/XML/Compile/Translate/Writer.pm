@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.17';
+$VERSION = '1.18';
 
 use base 'XML::Compile::Translate';
 
@@ -777,8 +777,8 @@ sub makeSubstgroup
     sub { my ($doc, $values) = @_;
 #warn "SUBST($type) AVAILABLE ARE ", join ', ', keys %do;
           foreach my $take (keys %do)
-          {   my $subst = delete $values->{$take}
-                  or next;
+          {   my $subst = delete $values->{$take};
+              defined $subst or next;
 
               return $do{$take}->($doc, $subst);
           }
