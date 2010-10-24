@@ -124,23 +124,7 @@ Returns a list of all defined model groups.
 
 =back
 
-$obj-E<gt>B<id>(STRING)
-
-=over 4
-
-Returns one global element, selected by ID.
-
-=back
-
-$obj-E<gt>B<ids>
-
-=over 4
-
-Returns a list of all found ids.
-
-=back
-
-$obj-E<gt>B<mergeSubstGroupsInto>(HASH)
+$obj-E<gt>B<schema>
 
 =over 4
 
@@ -158,6 +142,15 @@ $obj-E<gt>B<schemaNamespace>
 
 =back
 
+$obj-E<gt>B<sgs>
+
+=over 4
+
+Returns a HASH with the base-type as key and an ARRAY of types
+which extend it.
+
+=back
+
 $obj-E<gt>B<simpleTypes>
 
 =over 4
@@ -172,26 +165,18 @@ $obj-E<gt>B<source>
 
 =back
 
-$obj-E<gt>B<substitutionGroupMembers>(ELEMENT)
-
-=over 4
-
-The expanded ELEMENT name is used to collect a set of alternatives which
-are in this substitutionGroup (super-class like alternatives). 
-
-=back
-
-$obj-E<gt>B<substitutionGroups>
-
-=over 4
-
-Returns a list of all named substitutionGroups.
-
-=back
-
 $obj-E<gt>B<targetNamespace>
 
 =over 4
+
+=back
+
+$obj-E<gt>B<tnses>
+
+=over 4
+
+A schema can defined more than one target namespace, where recent
+schema spec changes provide a targetNamespace attribute.
 
 =back
 
@@ -213,15 +198,15 @@ Returns a list of all simpleTypes and complexTypes
 
 =head2 Index
 
-$obj-E<gt>B<find>(KIND, LOCALNAME)
+$obj-E<gt>B<find>(KIND, FULLNAME)
 
 =over 4
 
-Returns the definition for the object of KIND, with LOCALNAME.
+Returns the definition for the object of KIND, with FULLNAME.
 
 example: of find
 
- my $attr = $instance->find(attribute => 'myns#my_global_attr');
+  my $attr = $instance->find(attribute => '{myns}my_global_attr');
 
 =back
 
@@ -285,8 +270,8 @@ anyway).
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.18,
-built on September 30, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.19,
+built on October 25, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
 
 All modules in this suite:
 L<XML::Compile>,

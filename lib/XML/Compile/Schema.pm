@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.18';
+$VERSION = '1.19';
 
 use base 'XML::Compile';
 
@@ -477,6 +477,12 @@ sub elements()
 sub printIndex(@)
 {   my $self = shift;
     $self->namespaces->printIndex(@_);
+}
+
+
+sub doesExtend($$)
+{   my $self = shift;
+    $self->namespaces->doesExtend(@_);
 }
 
 

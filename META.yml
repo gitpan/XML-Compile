@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               XML-Compile
-version:            1.18
+version:            1.19
 abstract:           Compilation based XML processing
 author:
     - Mark Overmeer
