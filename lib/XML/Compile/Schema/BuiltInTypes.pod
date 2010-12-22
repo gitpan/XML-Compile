@@ -169,19 +169,19 @@ Signed 16-bits value.
 
 =back
 
-B<unsigned>(Short)
-
-=over 4
-
-unsigned 16-bits value.
-
-=back
-
 B<unsignedByte>
 
 =over 4
 
 Unsigned 8-bits value.
+
+=back
+
+B<unsignedShort>
+
+=over 4
+
+unsigned 16-bits value.
 
 =back
 
@@ -192,9 +192,8 @@ B<decimal>
 =over 4
 
 Decimals are painful: they can be very large, much larger than Perl's
-internal floats.  The value is therefore kept as string.
-Use Math::BigFloat when you need calculations.  You can also pass such
-object here.
+internal floats.  Therefore, we need to use Math::BigFloat which are
+slow but nearly seamlessly invisible in the application.
 
 =back
 
@@ -490,10 +489,10 @@ Probably the same rules as L<anyURI()|XML::Compile::Schema::BuiltInTypes/"URI">.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.19,
-built on October 25, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.20,
+built on December 22, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
 
-All modules in this suite:
+Other distributions in this suite:
 L<XML::Compile>,
 L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP12>,
@@ -503,14 +502,14 @@ L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
 L<XML::Compile::RPC>,
-and
 L<XML::Rewrite>,
 L<XML::eXistDB>,
+and
 L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
 F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
-For life contact with other developers, visit the C<#xml-compile> channel
+For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 
 =head1 LICENSE

@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 
 # Errors are either in _class 'usage': called with request
@@ -518,7 +518,7 @@ sub applySimpleFacets($$$$)
     if(defined $facets{totalDigits} && defined $facets{fractionDigits})
     {   my $td = delete $facets{totalDigits};
         my $fd = delete $facets{fractionDigits};
-        $facets{totalFracDigits} = [$td, $fd];
+        $facets{_totalFracDigits} = [$td, $fd];
     }
 
     my (@early, @late);
@@ -635,7 +635,7 @@ sub element($)
       :                            'makeSimpleElement';
 
     my $r = $self->$elem_handler
-      ( $where, $tag, ($st||$elems), $attrs, $attrs_any, $comptype);
+      ($where, $tag, ($st||$elems), $attrs, $attrs_any, $comptype);
 
     # Add defaults and stuff
     my $default  = $node->getAttributeNode('default');
@@ -1497,6 +1497,9 @@ sub findHooks($$$)
 {   my ($self, $path, $type, $node) = @_;
     # where is before, replace, after
 
+#warn $type;
+#use Data::Dumper;
+#warn Dumper $self->{hooks};
     my %hooks;
     foreach my $hook (@{$self->{hooks}})
     {   my $match;

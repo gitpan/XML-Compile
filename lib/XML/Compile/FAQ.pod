@@ -8,6 +8,8 @@ On this page, a wild collection of questions are answered.  If you have
 contributions either in question or as answer, then please contribute
 via the mailinglist.
 
+See also XML::Compile::SOAP::FAQ.
+
 =head2 The data structure
 
 =head3 what do the cho_, seq_ and all_ start of labels mean?
@@ -210,10 +212,10 @@ Try turning on debugging with:
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.19,
-built on October 25, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.20,
+built on December 22, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
 
-All modules in this suite:
+Other distributions in this suite:
 L<XML::Compile>,
 L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP12>,
@@ -223,14 +225,14 @@ L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
 L<XML::Compile::RPC>,
-and
 L<XML::Rewrite>,
 L<XML::eXistDB>,
+and
 L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
 F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
-For life contact with other developers, visit the C<#xml-compile> channel
+For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 
 =head1 LICENSE

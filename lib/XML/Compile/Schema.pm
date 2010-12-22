@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.19';
+$VERSION = '1.20';
 
 use base 'XML::Compile';
 
