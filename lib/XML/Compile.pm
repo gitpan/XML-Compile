@@ -1,21 +1,23 @@
-# Copyrights 2006-2010 by Mark Overmeer.
+# Copyrights 2006-2011 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.06.
+# Pod stripped from pm file by OODoc 2.00.
 
 use warnings;
 use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '1.21';
+$VERSION = '1.22';
 
 
-use Log::Report 'xml-compile', syntax => 'SHORT';
+use Log::Report 'xml-compile';
 use XML::LibXML;
 use XML::Compile::Util qw/:constants type_of_node/;
 
-use File::Spec     qw();
+use File::Spec  qw();
+
+my $parser;
 
 __PACKAGE__->knownNamespace
  ( &XMLNS       => '1998-namespace.xsd'
@@ -43,10 +45,15 @@ sub new($@)
 
 sub init($)
 {   my ($self, $args) = @_;
+
+    my $popts = $args->{parser_options} || [];
+    $self->initParser(ref $popts eq 'HASH' ? %$popts : @$popts);
+
     $self->addSchemaDirs($args->{schema_dirs});
     $self;
 }
 
+#-------------------
 
 my @schema_dirs;
 sub addSchemaDirs(@)
@@ -67,14 +74,26 @@ sub addSchemaDirs(@)
 #----------------------
 
 
-my $parser = XML::LibXML->new;
-$parser->line_numbers(1);
-$parser->no_network(1);
+sub initParser(@)
+{   my $thing = shift;
+    $parser = XML::LibXML->new
+      ( line_numbers    => 1
+      , no_network      => 1
+      , expand_xinclude => 0
+      , expand_entities => 1                                                  
+      , load_ext_dtd    => 0
+      , ext_ent_handler =>
+           sub { alert __x"parsing external entities disabled"; '' }
+      , @_
+      );
+}
+
 
 sub dataToXML($)
 {   my ($thing, $raw) = @_;
-    defined $raw
-        or return;
+    defined $raw or return;
+
+    $parser ||= $thing->initParser;
 
     my ($xml, %details);
     if(ref $raw && UNIVERSAL::isa($raw, 'XML::LibXML::Node'))

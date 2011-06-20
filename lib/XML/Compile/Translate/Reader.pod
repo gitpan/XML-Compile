@@ -14,29 +14,25 @@ XML::Compile::Translate::Reader - translate XML to HASH
 
 =head1 DESCRIPTION
 
+=head2 Unsupported features
+
 The translator understands schemas, but does not encode that into
 actions.  This module implements those actions to translate from XML
 into a (nested) Perl HASH structure.
-
-=head2 Unsupported features
 
 =head1 METHODS
 
 =head2 Constructors
 
-$obj-E<gt>B<new>(TRANSLATOR, OPTIONS)
-
 =over 4
+
+=item $obj-E<gt>B<new>(TRANSLATOR, OPTIONS)
 
 See L<XML::Compile::Translate/"Constructors">
 
-=back
+=item $obj-E<gt>B<register>(NAME)
 
-$obj-E<gt>B<register>(NAME)
-
-XML::Compile::Translate::Reader-E<gt>B<register>(NAME)
-
-=over 4
+=item XML::Compile::Translate::Reader-E<gt>B<register>(NAME)
 
 See L<XML::Compile::Translate/"Constructors">
 
@@ -46,9 +42,9 @@ See L<XML::Compile::Translate/"Constructors">
 
 =head2 Handlers
 
-XML::Compile::Translate::Reader-E<gt>B<compile>(ELEMENT|ATTRIBUTE|TYPE, OPTIONS)
-
 =over 4
+
+=item XML::Compile::Translate::Reader-E<gt>B<compile>(ELEMENT|ATTRIBUTE|TYPE, OPTIONS)
 
 See L<XML::Compile::Translate/"Handlers">
 
@@ -58,12 +54,15 @@ See L<XML::Compile::Translate/"Handlers">
 
 =head2 Translator options
 
-=head2 Processing Wildcards
+=head3 performance optimization
 
-If you want to collect information from the XML structure, which is
-permitted by C<any> and C<anyAttribute> specifications in the schema,
-you have to implement that yourself.  The problem is C<XML::Compile>
-has less knowledge than you about the possible data.
+=head3 qualified XML
+
+=head3 Name-spaces
+
+=head3 Wildcards handlers
+
+=head2 Processing Wildcards
 
 =head3 option any_attribute
 
@@ -110,6 +109,11 @@ awayre the $node may actually be a string already.
      ref $node or return $node;
      $node;
    }
+
+If you want to collect information from the XML structure, which is
+permitted by C<any> and C<anyAttribute> specifications in the schema,
+you have to implement that yourself.  The problem is C<XML::Compile>
+has less knowledge than you about the possible data.
 
 =head2 Mixed elements
 
@@ -234,10 +238,6 @@ underscore C<_>.
 
 =head2 Typemaps
 
-In a typemap, a relation between an XML element type and a Perl class (or
-object) is made.  Each translator back-end will implement this a little
-differently.  This section is about how the reader handles typemaps.
-
 =head3 Typemap to Class
 
 Usually, an XML type will be mapped on a Perl class.  The Perl class
@@ -325,10 +325,14 @@ is comparible to
 
 with some extra checks.
 
+In a typemap, a relation between an XML element type and a Perl class (or
+object) is made.  Each translator back-end will implement this a little
+differently.  This section is about how the reader handles typemaps.
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.21,
-built on December 24, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.22,
+built on June 20, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -336,6 +340,8 @@ L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -352,7 +358,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2010 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2011 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

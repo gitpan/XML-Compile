@@ -4,12 +4,6 @@ XML::Compile::FAQ - frequently asked questions
 
 =head1 DESCRIPTION
 
-On this page, a wild collection of questions are answered.  If you have
-contributions either in question or as answer, then please contribute
-via the mailinglist.
-
-See also XML::Compile::SOAP::FAQ.
-
 =head2 The data structure
 
 =head3 what do the cho_, seq_ and all_ start of labels mean?
@@ -47,15 +41,11 @@ See L<XML::Compile::Schema/"Key rewrite"> for the full list of options.
 
 =head2 Schemas
 
-Be aware that the "2001" schema specification is continuously under
-development.  So, the namespace has not been changed over time, but
-the content has.
-
 =head3 qualified elements
 
 One of the more noticable problems with schemas is the specification of
 the namespaces to be used for the schema.  In older schema's, like many
-important protocols, there was no way to specify wether elements should
+important protocols, there was no way to specify whether elements should
 be used qualified or not.  Some schema's lack the target namespace
 declaration.  Those fields did not exist in earlier versions of the
 "2001" spec; it was defined in the documentation.
@@ -189,6 +179,10 @@ the ::Schema base object.  So, with reading/writing the hash keys
 which relate to the elements in this schema will have C<xyz_> as
 prefix for clarity.
 
+Be aware that the "2001" schema specification is continuously under
+development.  So, the namespace has not been changed over time, but
+the content has.
+
 =head2 Processing
 
 =head3 my data is not recognized
@@ -210,10 +204,16 @@ Try turning on debugging with:
 
   use Log::Report  mode => "DEBUG";
 
+On this page, a wild collection of questions are answered.  If you have
+contributions either in question or as answer, then please contribute
+via the mailinglist.
+
+See also XML::Compile::SOAP::FAQ.
+
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.21,
-built on December 24, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.22,
+built on June 20, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -221,6 +221,8 @@ L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -237,7 +239,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2010 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2011 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

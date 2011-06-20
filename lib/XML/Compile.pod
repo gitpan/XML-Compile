@@ -91,18 +91,14 @@ not be worth the effort.
 
 =head1 METHODS
 
-Methods found in this manual page are shared by the end-user modules,
-and should not be used directly: objects of type C<XML::Compile> do not
-exist!
-
 =head2 Constructors
 
 These constructors are base class methods to be extended,
 and therefore should not be accessed directly.
 
-XML::Compile-E<gt>B<new>([XMLDATA], OPTIONS)
-
 =over 4
+
+=item XML::Compile-E<gt>B<new>([XMLDATA], OPTIONS)
 
 The XMLDATA is a source of XML. See L<dataToXML()|XML::Compile/"Compilers"> for valid ways,
 for example as filename, string or C<undef>.
@@ -111,12 +107,19 @@ If you have compiled all readers and writers you need, you may simply
 terminate the compiler object: that will clean-up (most of) the
 XML::LibXML objects.
 
- Option     --Default
- schema_dirs  undef
+ -Option        --Default
+  parser_options  <many>
+  schema_dirs     undef
 
-. schema_dirs => DIRECTORY|ARRAY-OF-DIRECTORIES
+=over 2
 
-=over 4
+=item parser_options => HASH|ARRAY
+
+See XML::LibXML::Parser for a list of available options which can be
+used to create an XML parser (the new method). The default will set you
+in a secure mode.  See L<initParser()|XML::Compile/"Compilers">.
+
+=item schema_dirs => DIRECTORY|ARRAY-OF-DIRECTORIES
 
 Where to find schema's.  This can be specified with the
 environment variable C<SCHEMA_DIRECTORIES> or with this option.
@@ -128,11 +131,11 @@ See L<addSchemaDirs()|XML::Compile/"Accessors"> for a detailed explanation.
 
 =head2 Accessors
 
-$obj-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
-
-XML::Compile-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
-
 =over 4
+
+=item $obj-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
+
+=item XML::Compile-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
 
 Each time this method is called, the specified DIRECTORIES will be added
 in front of the list of already known schema directories.  Initially,
@@ -170,9 +173,11 @@ example: adding xsd's from your own distribution
 
 =head2 Compilers
 
-XML::Compile-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
-
 =over 4
+
+=item $obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+
+=item XML::Compile-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
 
 Collect XML data, from a wide variety of sources.  In SCALAR context,
 an XML::LibXML::Element or XML::LibXML::Document is returned.
@@ -202,15 +207,23 @@ example:
 
   my $xml = XML::Compile->dataToXML('/etc/config.xml');
 
+=item $obj-E<gt>B<initParser>(OPTIONS)
+
+=item XML::Compile-E<gt>B<initParser>(OPTIONS)
+
+Create a new parser, an XML::LibXML::Parser object. By default, the
+parsing is set in a safe mode, avoiding exploits. You may explicitly
+overrule it, especially if you need to process entities.
+
 =back
 
 =head2 Administration
 
-$obj-E<gt>B<findSchemaFile>(FILENAME)
-
-XML::Compile-E<gt>B<findSchemaFile>(FILENAME)
-
 =over 4
+
+=item $obj-E<gt>B<findSchemaFile>(FILENAME)
+
+=item XML::Compile-E<gt>B<findSchemaFile>(FILENAME)
 
 Runs through all defined schema directories (see L<addSchemaDirs()|XML::Compile/"Accessors">)
 in search of the specified FILENAME.  When the FILENAME is absolute,
@@ -220,13 +233,9 @@ the caller.
 
 Although the file may be found, it still could be unreadible.
 
-=back
+=item $obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
 
-$obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
-
-XML::Compile-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
-
-=over 4
+=item XML::Compile-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
 
 If used with only one NAMESPACE, it returns the filename in the
 distribution (not the full path) which contains the definition.
@@ -239,17 +248,17 @@ are global: not related to specific instances.
 The FILENAMES are relative to the directories as specified with some
 L<addSchemaDirs()|XML::Compile/"Accessors"> call.
 
-=back
-
-$obj-E<gt>B<walkTree>(NODE, CODE)
-
-=over 4
+=item $obj-E<gt>B<walkTree>(NODE, CODE)
 
 Walks the whole tree from NODE downwards, calling the CODE reference
 for each NODE found.  When that routine returns false, the child
 nodes will be skipped.
 
 =back
+
+Methods found in this manual page are shared by the end-user modules,
+and should not be used directly: objects of type C<XML::Compile> do not
+exist!
 
 =head1 DETAILS
 
@@ -278,8 +287,8 @@ other modules.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.21,
-built on December 24, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.22,
+built on June 20, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -287,6 +296,8 @@ L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -303,7 +314,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2010 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2011 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

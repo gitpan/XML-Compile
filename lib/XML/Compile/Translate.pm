@@ -1,13 +1,13 @@
-# Copyrights 2006-2010 by Mark Overmeer.
+# Copyrights 2006-2011 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.06.
+# Pod stripped from pm file by OODoc 2.00.
 use warnings;
 use strict;
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.21';
+$VERSION = '1.22';
 
 
 # Errors are either in _class 'usage': called with request
@@ -218,12 +218,15 @@ sub topLevel($$)
             # use unqualified schemas anyway!!!
             $node->removeAttribute('form');   # when in schema
             $node->setAttribute(form => 'qualified');
-            delete $self->{elements_qualified};
             $elems_qual = 0;
             $remove_form_attribute = 1;
         }
     }
     else {$elems_qual = $qual}
+
+    delete $self->{elements_qualified}
+        if $self->{elements_qualified}
+        && $self->{elements_qualified} eq 'TOP';
 
     local $self->{elems_qual} = $elems_qual;
     local $self->{tns}        = $top->{ns};

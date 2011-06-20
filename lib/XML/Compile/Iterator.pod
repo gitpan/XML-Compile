@@ -2,8 +2,6 @@
 
 XML::Compile::Iterator - reduce view on a node tree
 
-=head1 SYNOPSIS
-
 =head1 DESCRIPTION
 
 It would have been nice to be able to use XML::LibXML::Iterator, but
@@ -15,9 +13,9 @@ The main user for this object currently is L<XML::Compile::Translate|XML::Compil
 
 =head2 Constructors
 
-$obj-E<gt>B<descend>([NODE, [PATH, [FILTER]]])
-
 =over 4
+
+=item $obj-E<gt>B<descend>([NODE, [PATH, [FILTER]]])
 
 The NODE is a child of the node handled by the iterator where this
 method is called upon.  Without explicit NODE, the current node is used.
@@ -25,11 +23,7 @@ Returned is a new L<XML::Compile::Iterator|XML::Compile::Iterator> object.  The 
 will use the same FILTER as the parent iterator by default.  The internal
 administered path with be extended with the PATH.
 
-=back
-
-XML::Compile::Iterator-E<gt>B<new>(NODE, PATH, FILTER,)
-
-=over 4
+=item XML::Compile::Iterator-E<gt>B<new>(NODE, PATH, FILTER,)
 
 The NODE is a XML::LibXML::Node object, of which the direct childs
 are inspected.
@@ -44,26 +38,18 @@ first child is requested by the program.
 
 =head2 Attributes
 
-$obj-E<gt>B<filter>
-
 =over 4
+
+=item $obj-E<gt>B<filter>
 
 Returns the CODE reference which is used to select the nodes.
 
-=back
-
-$obj-E<gt>B<node>
-
-=over 4
+=item $obj-E<gt>B<node>
 
 Returns the XML::LibXML::Node node of which the childs are walked
 through.
 
-=back
-
-$obj-E<gt>B<path>
-
-=over 4
+=item $obj-E<gt>B<path>
 
 The path represents the location where the node is, like a symbolic
 link, how you got there.
@@ -72,59 +58,35 @@ link, how you got there.
 
 =head2 Scanning
 
-$obj-E<gt>B<childs>
-
 =over 4
+
+=item $obj-E<gt>B<childs>
 
 Returns the child nodes which fulfil the filter requirements.  In LIST
 context as list, in SCALAR context as reference to an ARRAY.
 
-=back
-
-$obj-E<gt>B<currentChild>
-
-=over 4
+=item $obj-E<gt>B<currentChild>
 
 Returns the current child node.
 
-=back
-
-$obj-E<gt>B<firstChild>
-
-=over 4
+=item $obj-E<gt>B<firstChild>
 
 Returns the first child node.  Does not change the current position.
 
-=back
-
-$obj-E<gt>B<lastChild>
-
-=over 4
+=item $obj-E<gt>B<lastChild>
 
 Returns the last child node which fulfills the requirements.
 Does not change the current position.
 
-=back
-
-$obj-E<gt>B<nextChild>
-
-=over 4
+=item $obj-E<gt>B<nextChild>
 
 Returns the next child when available, otherwise C<undef>.
 
-=back
-
-$obj-E<gt>B<nrChildren>
-
-=over 4
+=item $obj-E<gt>B<nrChildren>
 
 Returns the number of childnodes which fulfill the restriction.
 
-=back
-
-$obj-E<gt>B<previousChild>
-
-=over 4
+=item $obj-E<gt>B<previousChild>
 
 Returns the previous child when available, otherwise C<undef>.
 
@@ -132,49 +94,29 @@ Returns the previous child when available, otherwise C<undef>.
 
 =head2 simplify XML node access
 
-$obj-E<gt>B<currentContent>
-
 =over 4
+
+=item $obj-E<gt>B<currentContent>
 
 Returns the textContent of the L<currentChild()|XML::Compile::Iterator/"Scanning"> node, or undef.
 
-=back
-
-$obj-E<gt>B<currentLocal>
-
-=over 4
+=item $obj-E<gt>B<currentLocal>
 
 Returns the local name of the L<currentChild()|XML::Compile::Iterator/"Scanning">, or the empty string.
 
-=back
-
-$obj-E<gt>B<currentType>
-
-=over 4
+=item $obj-E<gt>B<currentType>
 
 Returns the type of the L<currentChild()|XML::Compile::Iterator/"Scanning">, or the empty string.
 
-=back
-
-$obj-E<gt>B<nodeLocal>
-
-=over 4
+=item $obj-E<gt>B<nodeLocal>
 
 Returns the local name of the L<node()|XML::Compile::Iterator/"Attributes">, or the empty string.
 
-=back
-
-$obj-E<gt>B<nodeType>
-
-=over 4
+=item $obj-E<gt>B<nodeType>
 
 Returns the type of the L<node()|XML::Compile::Iterator/"Attributes">, or the empty string.
 
-=back
-
-$obj-E<gt>B<textContent>
-
-=over 4
+=item $obj-E<gt>B<textContent>
 
 Returns the textContent of the L<node()|XML::Compile::Iterator/"Attributes">, or undef.
 
@@ -182,8 +124,8 @@ Returns the textContent of the L<node()|XML::Compile::Iterator/"Attributes">, or
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.21,
-built on December 24, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.22,
+built on June 20, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -191,6 +133,8 @@ L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -207,7 +151,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2010 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2011 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -16,51 +16,39 @@ process it.
 
 =head2 Constructors
 
-$obj-E<gt>B<new>(TOP, OPTIONS)
-
 =over 4
+
+=item $obj-E<gt>B<new>(TOP, OPTIONS)
 
 Get's the top of an XML::LibXML tree, which must be a schema element.
 The tree is parsed: the information collected.
 
- Option                --Default
- attribute_form_default  <undef>
- element_form_default    <undef>
- filename                undef
- source                  undef
- target_namespace        <undef>
+ -Option                --Default
+  attribute_form_default  <undef>
+  element_form_default    <undef>
+  filename                undef
+  source                  undef
+  target_namespace        <undef>
 
-. attribute_form_default => 'qualified'|'unqualified'
+=over 2
 
-. element_form_default => 'qualified'|'unqualified'
+=item attribute_form_default => 'qualified'|'unqualified'
 
-=over 4
+=item element_form_default => 'qualified'|'unqualified'
 
 Overrule the default as found in the schema.  Many old schemas (like
 WSDL11 and SOAP11) do not specify the default in the schema but only
 in the text.
 
-=back
-
-. filename => FILENAME
-
-=over 4
+=item filename => FILENAME
 
 When the source is some file, this is its name.
 
-=back
-
-. source => STRING
-
-=over 4
+=item source => STRING
 
 An indication where this information came from.
 
-=back
-
-. target_namespace => NAMESPACE
-
-=over 4
+=item target_namespace => NAMESPACE
 
 Overrule or set the target namespace.
 
@@ -70,127 +58,63 @@ Overrule or set the target namespace.
 
 =head2 Accessors
 
-$obj-E<gt>B<attributeGroups>
-
 =over 4
+
+=item $obj-E<gt>B<attributeGroups>
 
 Returns a list of all defined attribute groups.
 
-=back
-
-$obj-E<gt>B<attributes>
-
-=over 4
+=item $obj-E<gt>B<attributes>
 
 Returns a lost of all globally defined attribute names.
 
-=back
-
-$obj-E<gt>B<complexTypes>
-
-=over 4
+=item $obj-E<gt>B<complexTypes>
 
 Returns a list with all complexType names.
 
-=back
-
-$obj-E<gt>B<element>(URI)
-
-=over 4
+=item $obj-E<gt>B<element>(URI)
 
 Returns one global element definition.
 
-=back
-
-$obj-E<gt>B<elements>
-
-=over 4
+=item $obj-E<gt>B<elements>
 
 Returns a list of all globally defined element names.
 
-=back
+=item $obj-E<gt>B<filename>
 
-$obj-E<gt>B<filename>
-
-=over 4
-
-=back
-
-$obj-E<gt>B<groups>
-
-=over 4
+=item $obj-E<gt>B<groups>
 
 Returns a list of all defined model groups.
 
-=back
+=item $obj-E<gt>B<schema>
 
-$obj-E<gt>B<schema>
+=item $obj-E<gt>B<schemaInstance>
 
-=over 4
+=item $obj-E<gt>B<schemaNamespace>
 
-=back
-
-$obj-E<gt>B<schemaInstance>
-
-=over 4
-
-=back
-
-$obj-E<gt>B<schemaNamespace>
-
-=over 4
-
-=back
-
-$obj-E<gt>B<sgs>
-
-=over 4
+=item $obj-E<gt>B<sgs>
 
 Returns a HASH with the base-type as key and an ARRAY of types
 which extend it.
 
-=back
-
-$obj-E<gt>B<simpleTypes>
-
-=over 4
+=item $obj-E<gt>B<simpleTypes>
 
 Returns a list with all simpleType names.
 
-=back
+=item $obj-E<gt>B<source>
 
-$obj-E<gt>B<source>
+=item $obj-E<gt>B<targetNamespace>
 
-=over 4
-
-=back
-
-$obj-E<gt>B<targetNamespace>
-
-=over 4
-
-=back
-
-$obj-E<gt>B<tnses>
-
-=over 4
+=item $obj-E<gt>B<tnses>
 
 A schema can defined more than one target namespace, where recent
 schema spec changes provide a targetNamespace attribute.
 
-=back
-
-$obj-E<gt>B<type>(URI)
-
-=over 4
+=item $obj-E<gt>B<type>(URI)
 
 Returns the type definition with the specified name.
 
-=back
-
-$obj-E<gt>B<types>
-
-=over 4
+=item $obj-E<gt>B<types>
 
 Returns a list of all simpleTypes and complexTypes
 
@@ -198,9 +122,9 @@ Returns a list of all simpleTypes and complexTypes
 
 =head2 Index
 
-$obj-E<gt>B<find>(KIND, FULLNAME)
-
 =over 4
+
+=item $obj-E<gt>B<find>(KIND, FULLNAME)
 
 Returns the definition for the object of KIND, with FULLNAME.
 
@@ -208,58 +132,38 @@ example: of find
 
   my $attr = $instance->find(attribute => '{myns}my_global_attr');
 
-=back
-
-$obj-E<gt>B<importLocations>(NAMESPACE)
-
-=over 4
+=item $obj-E<gt>B<importLocations>(NAMESPACE)
 
 Returns a list of all schemaLocations specified with the import NAMESPACE
 (one of the values returned by L<imports()|XML::Compile::Schema::Instance/"Index">).
 
-=back
-
-$obj-E<gt>B<imports>
-
-=over 4
+=item $obj-E<gt>B<imports>
 
 Returns a list with all namespaces which need to be imported.
 
-=back
-
-$obj-E<gt>B<includeLocations>
-
-=over 4
+=item $obj-E<gt>B<includeLocations>
 
 Returns a list of all schemaLocations which where specified with include
 statements.
 
-=back
-
-$obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
-
-=over 4
+=item $obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
 
 Prints an overview over the defined objects within this schema to the
 selected FILEHANDLE.
 
- Option       --Default
- kinds          <all>
- list_abstract  <true>
+ -Option       --Default
+  kinds          <all>
+  list_abstract  <true>
 
-. kinds => KIND|ARRAY-of-KIND
+=over 2
 
-=over 4
+=item kinds => KIND|ARRAY-of-KIND
 
 Which KIND of definitions would you like to see.  Pick from
 C<element>, C<attribute>, C<simpleType>, C<complexType>, C<attributeGroup>,
 and C<group>.
 
-=back
-
-. list_abstract => BOOLEAN
-
-=over 4
+=item list_abstract => BOOLEAN
 
 Show abstract elements, or skip them (because they cannot be instantiated
 anyway).
@@ -270,8 +174,8 @@ anyway).
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.21,
-built on December 24, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.22,
+built on June 20, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -279,6 +183,8 @@ L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -295,7 +201,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2010 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2011 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

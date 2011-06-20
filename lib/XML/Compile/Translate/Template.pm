@@ -1,11 +1,11 @@
-# Copyrights 2006-2010 by Mark Overmeer.
+# Copyrights 2006-2011 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.06.
+# Pod stripped from pm file by OODoc 2.00.
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.21';
+$VERSION = '1.22';
 
 use base 'XML::Compile::Translate';
 
@@ -202,7 +202,7 @@ sub makeElement
 sub makeElementDefault
 {   my ($self, $path, $ns, $childname, $do, $default) = @_;
     sub { my $h = $do->(@_);
-          $h->{occur}   = "$childname defaults to $default";
+          $h->{occur}   = "defaults to $default";
           $h->{example} = $default;
           $h;
         };
@@ -211,7 +211,7 @@ sub makeElementDefault
 sub makeElementFixed
 {   my ($self, $path, $ns, $childname, $do, $fixed) = @_;
     sub { my $h = $do->(@_);
-          $h->{occur}   = "$childname fixed to $fixed";
+          $h->{occur}   = "fixed to $fixed";
           $h->{example} = $fixed;
           $h;
         };
@@ -220,7 +220,7 @@ sub makeElementFixed
 sub makeElementNillable
 {   my ($self, $path, $ns, $childname, $do) = @_;
     sub { my $h = $do->();
-          $h->{occur} = "$childname is nillable";
+          $h->{occur} = "is nillable";
           $h;
         };
 }
@@ -346,7 +346,12 @@ sub makeBuiltin
 
 sub makeList
 {   my ($self, $path, $st) = @_;
-    sub { (struct => "a (blank separated) list of elements", $st->()) };
+    sub { my %d = $st->();
+          $d{struct} = 'a list of values, where each';
+          my $example = $d{example};
+          $example    = qq("$example") if $example =~ m/[^0-9.]/;
+          $d{example} = "[ $example , ... ]";
+          %d };
 }
 
 sub makeFacetsList
@@ -520,17 +525,31 @@ sub makeXsiTypeSwitch($$$$)
 sub makeAnyAttribute
 {   my ($self, $path, $handler, $yes, $no, $process) = @_;
     $yes ||= []; $no ||= [];
-    my $occurs = @$yes ? "in @$yes" : @$no ? "not in @$no" : 'any type';
-    bless sub { +{kind => 'attr' , struct  => "anyAttribute $occurs"
+    $yes = [ map {$self->prefixed("{$_}") || $_} @$yes];
+    $no  = [ map {$self->prefixed("{$_}") || $_} @$no];
+    my $occurs = @$yes ? "in @$yes" : @$no ? "not in @$no" : 'in any namespace';
+    bless sub { +{kind => 'attr' , struct  => "any attribute $occurs"
                  , tag => 'ANYATTR', example => 'AnySimple'} }, 'ANY';
 }
 
 sub makeAnyElement
 {   my ($self, $path, $handler, $yes, $no, $process, $min, $max) = @_;
     $yes ||= []; $no ||= [];
-    my $occurs = @$yes ? "in @$yes" : @$no ? "not in @$no" : 'any type';
-    bless sub { +{ kind => 'element', struct  => 'anyElement'
-                 , tag => "ANY", example => 'ANY' } }, 'ANY';
+    $yes = [ map {$self->prefixed("{$_}") || $_} @$yes];
+    $no  = [ map {$self->prefixed("{$_}") || $_} @$no];
+    my $where = @$yes ? "in @$yes" : @$no ? "not in @$no" : 'in any namespace';
+
+    my $data  = +{ kind => 'element', struct  => "any element $where"
+                 , tag => "ANY", example => 'Anything' };
+    my $occur
+      = $max eq 'unbounded' && $min==0 ? 'occurs any number of times'
+      : $max ne 'unbounded' && $max==1 && $min==0 ? 'is optional' 
+      : $max ne 'unbounded' && $max==1 && $min==1 ? ''  # the usual case
+      :                                  "occurs $min <= # <= $max times";
+    $data->{occur}  ||= $occur if $occur;
+    $data->{is_array} = $max eq 'unbounded' || $max > 1;
+
+    bless sub { +$data }, 'ANY';
 }
 
 sub makeHook($$$$$$)
@@ -655,9 +674,11 @@ sub _perlAny($$)
 
     if($ast->{_TYPE} && $args->{show_type})
     {   my $pref = $self->prefixed($ast->{_TYPE});
-        push @lines  # not perfect, but a good attempt
-          , $pref =~ m/^[aiou]/i && $pref !~ m/^(uni|eu)/i
-          ? "# is an $pref" : "# is a $pref";
+        if($pref)
+        {   push @lines  # not perfect, but a good attempt
+              , $pref =~ m/^[aiou]/i && $pref !~ m/^(uni|eu)/i
+              ? "# is an $pref" : "# is a $pref";
+        }
     }
 
     push @lines, "# $ast->{occur}"

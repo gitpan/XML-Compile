@@ -21,115 +21,83 @@ older definitions).
 
 =head2 Constructors
 
-$obj-E<gt>B<new>(OPTIONS)
-
 =over 4
+
+=item $obj-E<gt>B<new>(OPTIONS)
 
 =back
 
 =head2 Accessors
 
-$obj-E<gt>B<add>(SCHEMA, [SCHEMAS])
-
 =over 4
+
+=item $obj-E<gt>B<add>(SCHEMA, [SCHEMAS])
 
 Add L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects to the internal
 knowledge of this object.
 
-=back
-
-$obj-E<gt>B<allSchemas>
-
-=over 4
+=item $obj-E<gt>B<allSchemas>
 
 Returns a list of all known schema instances.
 
-=back
-
-$obj-E<gt>B<doesExtend>(EXTTYPE, BASETYPE)
-
-=over 4
+=item $obj-E<gt>B<doesExtend>(EXTTYPE, BASETYPE)
 
 Returns true when EXTTYPE extends BASETYPE.
 
-=back
-
-$obj-E<gt>B<find>(KIND, ADDRESS|(URI,NAME), OPTIONS)
-
-=over 4
+=item $obj-E<gt>B<find>(KIND, ADDRESS|(URI,NAME), OPTIONS)
 
 Lookup the definition for the specified KIND of definition: the name
 of a global element, global attribute, attributeGroup or model group.
 The ADDRESS is constructed as C< {uri}name > or as seperate URI and NAME.
 
- Option      --Default
- include_used  <true>
+ -Option      --Default
+  include_used  <true>
 
-. include_used => BOOLEAN
+=over 2
+
+=item include_used => BOOLEAN
 
 =back
 
-$obj-E<gt>B<findID>(ADDRESS|(URI,ID))
-
-=over 4
+=item $obj-E<gt>B<findID>(ADDRESS|(URI,ID))
 
 Lookup the definition for the specified id, which is constructed as
 C< uri#id > or as seperate URI and ID.
 
-=back
-
-$obj-E<gt>B<findSgMembers>(CLASS, TYPE)
-
-=over 4
+=item $obj-E<gt>B<findSgMembers>(CLASS, TYPE)
 
 Lookup the substitutionGroup alternatives for a specific element, which
 is an TYPE (element full name) of form C< {uri}name > or as seperate
 URI and NAME.  Returned is an ARRAY of HASHes, each describing one type
 (as returned by L<find()|XML::Compile::Schema::NameSpaces/"Accessors">)
 
-=back
-
-$obj-E<gt>B<list>
-
-=over 4
+=item $obj-E<gt>B<list>
 
 Returns the list of name-space URIs defined.
 
-=back
-
-$obj-E<gt>B<namespace>(URI)
-
-=over 4
+=item $obj-E<gt>B<namespace>(URI)
 
 Returns a list of L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects which have
 the URI as target namespace.
 
-=back
-
-$obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
-
-=over 4
+=item $obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
 
 Show all definitions from all namespaces, for debugging purposes, by
 default the selected.  Additional OPTIONS are passed to 
 L<XML::Compile::Schema::Instance::printIndex()|XML::Compile::Schema::Instance/"Index">.
 
- Option      --Default
- include_used  <true>
- namespace     <ALL>
+ -Option      --Default
+  include_used  <true>
+  namespace     <ALL>
 
-. include_used => BOOLEAN
+=over 2
 
-=over 4
+=item include_used => BOOLEAN
 
 Show also the index from all the schema objects which are defined
 to be usable as well; which were included via L<use()|XML::Compile::Schema::NameSpaces/"Accessors">.
 
-=back
-
-. namespace => URI|ARRAY-of-URI
-
-=over 4
+=item namespace => URI|ARRAY-of-URI
 
 Show only information about the indicate namespaces.
 
@@ -145,20 +113,12 @@ example:
  use XML::Compile::SOAP::Util qw/WSDL11/;
  $nss->printIndex(\*STDERR, namespace => WSDL11);
 
-=back
-
-$obj-E<gt>B<schemas>(URI)
-
-=over 4
+=item $obj-E<gt>B<schemas>(URI)
 
 We need the name-space; when it is lacking then import must help, but that
 must be called explictly.
 
-=back
-
-$obj-E<gt>B<use>(OBJECT)
-
-=over 4
+=item $obj-E<gt>B<use>(OBJECT)
 
 Use any other L<XML::Compile::Schema|XML::Compile::Schema> extension as fallback, if the
 L<find()|XML::Compile::Schema::NameSpaces/"Accessors"> does not succeed for the current object.  Searches for
@@ -171,8 +131,8 @@ This method implements L<XML::Compile::Schema::useSchema()|XML::Compile::Schema/
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.21,
-built on December 24, 2010. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.22,
+built on June 20, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -180,6 +140,8 @@ L<XML::Compile::SOAP>,
 L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -196,7 +158,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2010 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2011 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
