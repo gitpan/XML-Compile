@@ -4,10 +4,11 @@
 # Pod stripped from pm file by OODoc 2.00.
 use warnings;
 use strict;
+no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.22';
+$VERSION = '1.23';
 
 
 # Errors are either in _class 'usage': called with request
@@ -1411,7 +1412,7 @@ sub complexContent($$)
 
     $tree     = $tree->descend;
     $node     = $tree->node;
-    my $base  = $node->getAttribute('base');
+    my $base  = $node->getAttribute('base') || $self->anyType($node);
     my $type  = {};
     my $where = $tree->path . '#cce';
 

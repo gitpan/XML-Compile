@@ -4,10 +4,11 @@
 # Pod stripped from pm file by OODoc 2.00.
 use warnings;
 use strict;
+no warnings 'recursion';
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.22';
+$VERSION = '1.23';
 
 use base 'Exporter';
 

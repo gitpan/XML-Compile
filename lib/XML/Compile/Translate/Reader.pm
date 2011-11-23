@@ -4,13 +4,13 @@
 # Pod stripped from pm file by OODoc 2.00.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.22';
+$VERSION = '1.23';
 
 use base 'XML::Compile::Translate';
 
 use strict;
 use warnings;
-no warnings 'once';
+no warnings 'once', 'recursion';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util qw/first/;
@@ -827,7 +827,7 @@ sub makeUnion
           for(@types) { my $v = try { $_->($tree) }; $@ or return $v }
           my $text = $tree->textContent;
 
-          substr $text, 20, -1, '...' if length($text) > 73;
+          substr $text, 20, -5, '...' if length($text) > 50;
           error __x"no match for `{text}' in union at {path}"
              , text => $text, path => $path;
         };
