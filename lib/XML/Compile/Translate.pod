@@ -16,6 +16,17 @@ XML::Compile::Translate - create an XML data parser
 
 =head1 DESCRIPTION
 
+This module converts a schema type definition into a code
+reference which can be used to interpret a schema.  The sole public
+function in this package is L<compile()|XML::Compile::Translate/"Handlers">, and is called by
+L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">, which does a lot of set-ups.
+Please do not try to use this package directly!
+
+The code in this package interprets schemas; it understands, for
+instance, how complexType definitions work.  Then, when the
+schema syntax is decoded, it will knot the pieces together into
+one CODE reference which can be used in the main user program.
+
 =head2 Unsupported features
 
 This implementation is work in progress, but by far most structures in
@@ -43,17 +54,6 @@ A few nuts are still to crack:
 
 Of course, the latter list is all fixed in next release ;-)
 See chapter L</DETAILS> for more on how the tune the translator.
-
-This module converts a schema type definition into a code
-reference which can be used to interpret a schema.  The sole public
-function in this package is L<compile()|XML::Compile::Translate/"Handlers">, and is called by
-L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">, which does a lot of set-ups.
-Please do not try to use this package directly!
-
-The code in this package interprets schemas; it understands, for
-instance, how complexType definitions work.  Then, when the
-schema syntax is decoded, it will knot the pieces together into
-one CODE reference which can be used in the main user program.
 
 =head1 METHODS
 
@@ -394,8 +394,8 @@ element does not contains sub-elements, otherwise the XML node.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.23,
-built on November 23, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.24,
+built on December 28, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

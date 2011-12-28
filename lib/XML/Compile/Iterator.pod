@@ -40,16 +40,16 @@ first child is requested by the program.
 
 =over 4
 
-=item $obj-E<gt>B<filter>
+=item $obj-E<gt>B<filter>()
 
 Returns the CODE reference which is used to select the nodes.
 
-=item $obj-E<gt>B<node>
+=item $obj-E<gt>B<node>()
 
 Returns the XML::LibXML::Node node of which the childs are walked
 through.
 
-=item $obj-E<gt>B<path>
+=item $obj-E<gt>B<path>()
 
 The path represents the location where the node is, like a symbolic
 link, how you got there.
@@ -60,33 +60,33 @@ link, how you got there.
 
 =over 4
 
-=item $obj-E<gt>B<childs>
+=item $obj-E<gt>B<childs>()
 
 Returns the child nodes which fulfil the filter requirements.  In LIST
 context as list, in SCALAR context as reference to an ARRAY.
 
-=item $obj-E<gt>B<currentChild>
+=item $obj-E<gt>B<currentChild>()
 
 Returns the current child node.
 
-=item $obj-E<gt>B<firstChild>
+=item $obj-E<gt>B<firstChild>()
 
 Returns the first child node.  Does not change the current position.
 
-=item $obj-E<gt>B<lastChild>
+=item $obj-E<gt>B<lastChild>()
 
 Returns the last child node which fulfills the requirements.
 Does not change the current position.
 
-=item $obj-E<gt>B<nextChild>
+=item $obj-E<gt>B<nextChild>()
 
 Returns the next child when available, otherwise C<undef>.
 
-=item $obj-E<gt>B<nrChildren>
+=item $obj-E<gt>B<nrChildren>()
 
 Returns the number of childnodes which fulfill the restriction.
 
-=item $obj-E<gt>B<previousChild>
+=item $obj-E<gt>B<previousChild>()
 
 Returns the previous child when available, otherwise C<undef>.
 
@@ -96,27 +96,27 @@ Returns the previous child when available, otherwise C<undef>.
 
 =over 4
 
-=item $obj-E<gt>B<currentContent>
+=item $obj-E<gt>B<currentContent>()
 
 Returns the textContent of the L<currentChild()|XML::Compile::Iterator/"Scanning"> node, or undef.
 
-=item $obj-E<gt>B<currentLocal>
+=item $obj-E<gt>B<currentLocal>()
 
 Returns the local name of the L<currentChild()|XML::Compile::Iterator/"Scanning">, or the empty string.
 
-=item $obj-E<gt>B<currentType>
+=item $obj-E<gt>B<currentType>()
 
 Returns the type of the L<currentChild()|XML::Compile::Iterator/"Scanning">, or the empty string.
 
-=item $obj-E<gt>B<nodeLocal>
+=item $obj-E<gt>B<nodeLocal>()
 
 Returns the local name of the L<node()|XML::Compile::Iterator/"Attributes">, or the empty string.
 
-=item $obj-E<gt>B<nodeType>
+=item $obj-E<gt>B<nodeType>()
 
 Returns the type of the L<node()|XML::Compile::Iterator/"Attributes">, or the empty string.
 
-=item $obj-E<gt>B<textContent>
+=item $obj-E<gt>B<textContent>()
 
 Returns the textContent of the L<node()|XML::Compile::Iterator/"Attributes">, or undef.
 
@@ -124,8 +124,8 @@ Returns the textContent of the L<node()|XML::Compile::Iterator/"Attributes">, or
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.23,
-built on November 23, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.24,
+built on December 28, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

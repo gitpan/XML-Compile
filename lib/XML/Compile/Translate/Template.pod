@@ -18,14 +18,14 @@ XML::Compile::Translate::Template - create an XML or PERL example
 
 =head1 DESCRIPTION
 
-=head2 Unsupported features
-
 The translator understands schemas, but does not encode that into
 actions.  This module interprets the parse results of the translator,
 and creates a kind of abstract syntax tree from it, which can be used
 for documentational purposes.  Then, it implements to ways to represent
 that knowledge: as an XML or a Perl example of the data-structure which
 the schema describes.
+
+=head2 Unsupported features
 
 =head1 METHODS
 
@@ -75,6 +75,9 @@ Wildcards are not (yet) supported.
 
 =head2 Schema hooks
 
+Hooks are implemented since version 0.82.  They can be used to
+improve the template output.
+
 =head3 hooks executed before the template is generated
 
 None defined yet.
@@ -89,10 +92,9 @@ know the structure or which is repeated often.
 
 None defined yet.
 
-Hooks are implemented since version 0.82.  They can be used to
-improve the template output.
-
 =head2 Typemaps
+
+Typemaps are currently only available to improve the PERL output.
 
 =head3 Typemaps for PERL template output
 
@@ -107,12 +109,10 @@ In case class name (any bareword will do) is specified, it is shown
 as a call to the C<toXML()> instance method call from some data object
 of the specified class.
 
-Typemaps are currently only available to improve the PERL output.
-
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.23,
-built on November 23, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.24,
+built on December 28, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

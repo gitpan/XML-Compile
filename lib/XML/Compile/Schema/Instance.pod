@@ -60,15 +60,15 @@ Overrule or set the target namespace.
 
 =over 4
 
-=item $obj-E<gt>B<attributeGroups>
+=item $obj-E<gt>B<attributeGroups>()
 
 Returns a list of all defined attribute groups.
 
-=item $obj-E<gt>B<attributes>
+=item $obj-E<gt>B<attributes>()
 
 Returns a lost of all globally defined attribute names.
 
-=item $obj-E<gt>B<complexTypes>
+=item $obj-E<gt>B<complexTypes>()
 
 Returns a list with all complexType names.
 
@@ -76,36 +76,36 @@ Returns a list with all complexType names.
 
 Returns one global element definition.
 
-=item $obj-E<gt>B<elements>
+=item $obj-E<gt>B<elements>()
 
 Returns a list of all globally defined element names.
 
-=item $obj-E<gt>B<filename>
+=item $obj-E<gt>B<filename>()
 
-=item $obj-E<gt>B<groups>
+=item $obj-E<gt>B<groups>()
 
 Returns a list of all defined model groups.
 
-=item $obj-E<gt>B<schema>
+=item $obj-E<gt>B<schema>()
 
-=item $obj-E<gt>B<schemaInstance>
+=item $obj-E<gt>B<schemaInstance>()
 
-=item $obj-E<gt>B<schemaNamespace>
+=item $obj-E<gt>B<schemaNamespace>()
 
-=item $obj-E<gt>B<sgs>
+=item $obj-E<gt>B<sgs>()
 
 Returns a HASH with the base-type as key and an ARRAY of types
 which extend it.
 
-=item $obj-E<gt>B<simpleTypes>
+=item $obj-E<gt>B<simpleTypes>()
 
 Returns a list with all simpleType names.
 
-=item $obj-E<gt>B<source>
+=item $obj-E<gt>B<source>()
 
-=item $obj-E<gt>B<targetNamespace>
+=item $obj-E<gt>B<targetNamespace>()
 
-=item $obj-E<gt>B<tnses>
+=item $obj-E<gt>B<tnses>()
 
 A schema can defined more than one target namespace, where recent
 schema spec changes provide a targetNamespace attribute.
@@ -114,7 +114,7 @@ schema spec changes provide a targetNamespace attribute.
 
 Returns the type definition with the specified name.
 
-=item $obj-E<gt>B<types>
+=item $obj-E<gt>B<types>()
 
 Returns a list of all simpleTypes and complexTypes
 
@@ -137,11 +137,11 @@ example: of find
 Returns a list of all schemaLocations specified with the import NAMESPACE
 (one of the values returned by L<imports()|XML::Compile::Schema::Instance/"Index">).
 
-=item $obj-E<gt>B<imports>
+=item $obj-E<gt>B<imports>()
 
 Returns a list with all namespaces which need to be imported.
 
-=item $obj-E<gt>B<includeLocations>
+=item $obj-E<gt>B<includeLocations>()
 
 Returns a list of all schemaLocations which where specified with include
 statements.
@@ -174,8 +174,8 @@ anyway).
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.23,
-built on November 23, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.24,
+built on December 28, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

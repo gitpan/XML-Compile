@@ -36,7 +36,7 @@ older definitions).
 Add L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects to the internal
 knowledge of this object.
 
-=item $obj-E<gt>B<allSchemas>
+=item $obj-E<gt>B<allSchemas>()
 
 Returns a list of all known schema instances.
 
@@ -71,7 +71,7 @@ is an TYPE (element full name) of form C< {uri}name > or as seperate
 URI and NAME.  Returned is an ARRAY of HASHes, each describing one type
 (as returned by L<find()|XML::Compile::Schema::NameSpaces/"Accessors">)
 
-=item $obj-E<gt>B<list>
+=item $obj-E<gt>B<list>()
 
 Returns the list of name-space URIs defined.
 
@@ -131,8 +131,8 @@ This method implements L<XML::Compile::Schema::useSchema()|XML::Compile::Schema/
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.23,
-built on November 23, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.24,
+built on December 28, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

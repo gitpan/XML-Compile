@@ -91,6 +91,10 @@ not be worth the effort.
 
 =head1 METHODS
 
+Methods found in this manual page are shared by the end-user modules,
+and should not be used directly: objects of type C<XML::Compile> do not
+exist!
+
 =head2 Constructors
 
 These constructors are base class methods to be extended,
@@ -256,10 +260,6 @@ nodes will be skipped.
 
 =back
 
-Methods found in this manual page are shared by the end-user modules,
-and should not be used directly: objects of type C<XML::Compile> do not
-exist!
-
 =head1 DETAILS
 
 =head2 Comparison
@@ -287,8 +287,8 @@ other modules.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.23,
-built on November 23, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.24,
+built on December 28, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
