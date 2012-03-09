@@ -1,11 +1,11 @@
-# Copyrights 2006-2011 by Mark Overmeer.
+# Copyrights 2006-2012 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 use base 'XML::Compile';
 
@@ -237,6 +237,9 @@ sub compile($$@)
     # Option rename in 0.88
     $args{any_element}    ||= delete $args{anyElement};
     $args{any_attribute}  ||= delete $args{anyAttribute};
+
+    $self->namespaces->autoexpand_xsi_type($args{xsi_type})
+        if $args{xsi_type};
 
     my $transl = XML::Compile::Translate->new
      ( $action

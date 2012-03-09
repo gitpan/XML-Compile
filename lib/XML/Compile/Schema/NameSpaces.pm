@@ -1,4 +1,4 @@
-# Copyrights 2006-2011 by Mark Overmeer.
+# Copyrights 2006-2012 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -155,6 +155,38 @@ sub doesExtend($$)
     my $supertype = pack_type $node->lookupNamespaceURI($prefix), $local;
 
     $base eq $supertype ? 1 : $self->doesExtend($supertype, $base);
+}
+
+
+sub findTypeExtensions($)
+{   my ($self, $type) = @_;
+
+    my %ext;
+    if($self->find(simpleType => $type))
+    {   $self->doesExtend($_, $type) && $ext{$_}++
+            for map $_->simpleTypes, $self->allSchemas;
+    }
+    elsif($self->find(complexType => $type))
+    {   $self->doesExtend($_, $type) && $ext{$_}++
+            for map $_->complexTypes, $self->allSchemas;
+    }
+    else
+    {   error __x"cannot find base-type {type} for extensions", type => $type;
+    }
+    sort keys %ext;
+}
+
+sub autoexpand_xsi_type($)
+{   my ($self, $xi) = @_;
+    $xi or return;
+    foreach my $type (keys %$xi)
+    {   $xi->{$type} eq 'AUTO' or next;
+        my @ext = $self->findTypeExtensions($type);
+        $xi->{$type} = \@ext;
+
+        trace "discovered xsi:type choices for $type:\n  "
+          . join("\n  ", @ext);
+    }
 }
 
 

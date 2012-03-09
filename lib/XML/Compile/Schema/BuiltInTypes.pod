@@ -18,9 +18,9 @@ Different schema specifications specify different available types,
 but there is a lot over overlap.  The L<XML::Compile::Schema::Specs|XML::Compile::Schema::Specs>
 module defines the availability, but here the types are implemented.
 
-This implementation certainly does not try to be minimal in size: using
-the restriction rules and inheritance structure defined in the schema
-specification would be too slow.
+This implementation certainly does not try to be minimal in size:
+following the letter of the restriction rules and inheritance structure
+defined by the W3C schema specification would be too slow.
 
 =head1 FUNCTIONS
 
@@ -29,7 +29,13 @@ by the translator.  At that moment, they will be placed in the
 kind-of opcode tree which will process the data at run-time.
 You B<cannot call> these functions yourself.
 
-=head2 Any
+XML::Compile will automatically format the value for you.  For instance,
+a float supplied to a field defined as type Integer will be converted
+to an integer. Data supplied to a field of type base64Binary will be
+encoded as Base64 for you: you shouldn't do the conversion yourself,
+you'll get double encoding!
+
+section Any
 
 =over 4
 
@@ -154,7 +160,7 @@ precissionDecimal (Math::BigFloat) unless C<sloppy_float> is set.
 =item B<precissionDecimal>()
 
 Floating point value that closely corresponds to the floating-point
-decimal datatypes described by IEEE/ANSI754.
+decimal datatypes described by IEEE/ANSI-754.
 
 =back
 
@@ -333,8 +339,8 @@ Probably the same rules as L<anyURI()|XML::Compile::Schema::BuiltInTypes/"URI">.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.24,
-built on December 28, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.25,
+built on March 09, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -360,7 +366,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2011 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2012 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

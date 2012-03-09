@@ -1,4 +1,4 @@
-# Copyrights 2006-2011 by Mark Overmeer.
+# Copyrights 2006-2012 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -8,7 +8,7 @@ no warnings 'recursion';
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.24';
+$VERSION = '1.25';
 
 use base 'Exporter';
 
@@ -23,6 +23,12 @@ use Math::BigFloat;
 use MIME::Base64;
 
 use XML::Compile::Util qw/pack_type unpack_type/;
+use POSIX              qw/floor log10/;
+
+use Config '%Config';
+my $iv_bits   = $Config{ivsize} * 8 -1;
+my $iv_digits = floor($iv_bits * log10(2));
+my $fits_iv   = qr/^[+-]?[0-9]{1,$iv_digits}$/;
 
 
 # The XML reader calls
@@ -86,10 +92,14 @@ $builtin_types{pattern} =
 
 
 sub bigint
-{   $_[0] =~ s/\s+//g;
-    my $v = Math::BigInt->new($_[0]);
-    error __x"Value `{val}' is not a (big) integer", val => $v if $v->is_nan;
-    $v;
+{   my $v = shift;
+    $v =~ s/\s+//g;
+    return $v if $v =~ $fits_iv;
+
+    my $big = Math::BigInt->new($v);
+    error __x"Value `{val}' is not a (big) integer", val => $big
+        if $big->is_nan;
+    $big;
 }
 
 $builtin_types{integer} =
@@ -469,14 +479,11 @@ $builtin_types{language} =
  };
 
 
-sub _valid_ncname($)
+#  NCName matches pattern [\i-[:]][\c-[:]]*
+sub _ncname($)
 {  (my $name = $_[0]) =~ s/\s//;
    $name =~ m/^[a-zA-Z_](?:[\w.-]*)$/;
 }
-
-# better checks needed
-#  NCName matches pattern [\i-[:]][\c-[:]]*
-sub _ncname($) {sub { $_[0] !~ m/\:/ }}
 
 my $ids = 0;
 $builtin_types{ID} =

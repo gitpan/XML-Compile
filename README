@@ -1,5 +1,5 @@
-=== README for XML-Compile version 1.24
-=   Generated on Wed Dec 28 12:23:41 2011 by OODoc 2.00
+=== README for XML-Compile version 1.25
+=   Generated on Fri Mar  9 21:34:56 2012 by OODoc 2.00
 
 There are various ways to install this module:
 
@@ -9,16 +9,16 @@ There are various ways to install this module:
  (2) if you use Windows, have a look at http://ppm.activestate.com/
 
  (3) if you have downloaded this module manually (as root/administrator)
-       gzip -d XML-Compile-1.24.tar.gz
-       tar -xf XML-Compile-1.24.tar
-       cd XML-Compile-1.24
+       gzip -d XML-Compile-1.25.tar.gz
+       tar -xf XML-Compile-1.25.tar
+       cd XML-Compile-1.25
        perl Makefile.PL
        make          # optional
        make test     # optional
        make install
 
 For usage, see the included manual-pages or
-    http://search.cpan.org/dist/XML-Compile-1.24/
+    http://search.cpan.org/dist/XML-Compile-1.25/
 
 Please report problems to
     http://rt.cpan.org/Dist/Display.html?Queue=XML-Compile
