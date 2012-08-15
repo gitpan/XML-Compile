@@ -23,20 +23,19 @@ Three serious WARNINGS:
 
 =over 4
 
-=item .
+=item *
 
 The focus is on B<data-centric XML>, which means that mixed elements
 are not handler automatically: you need to work with XML::LibXML nodes
 yourself, on these spots.
 
-=item .
+=item *
 
-The B<schema itself is not strictly validated>, still a large number of
-compile-time errors can be reported.  On the other hand, the processed
-B<data is strictly validated> against the schema: both input and output
-will follow the specs closely (unless disabled).
+The B<data is not strictly validated>, still a large number of
+compile-time errors can be reported.  Values are checked quite thoroughly.
+Structure as well.
 
-=item .
+=item *
 
 Imports and includes, as used in the schemas, are NOT performed
 automaticly.  Schema's and such are NOT collected from internet
@@ -287,8 +286,8 @@ other modules.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.25,
-built on March 09, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.26,
+built on August 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -314,7 +313,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2012 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -1,4 +1,4 @@
-# Copyrights 2006-2012 by Mark Overmeer.
+# Copyrights 2006-2012 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -8,7 +8,7 @@ no warnings 'recursion';
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.25';
+$VERSION = '1.26';
 
 use base 'Exporter';
 

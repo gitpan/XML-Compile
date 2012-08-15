@@ -1,4 +1,4 @@
-# Copyrights 2006-2012 by Mark Overmeer.
+# Copyrights 2006-2012 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -8,7 +8,7 @@ no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.25';
+$VERSION = '1.26';
 
 
 # Errors are either in _class 'usage': called with request
@@ -632,9 +632,18 @@ sub element($)
 
     # Construct basic element handler
 
+    my $nodetype  = $qual ? $fullname : $name;
+    my $is_simple = defined $st;
+    my $nillable  = $self->isTrue($node->getAttribute('nillable') || 'false');
+
+    if(!$nillable) {}
+    elsif($is_simple)
+         { $st    = $self->makeNillableSimple($where, $nodetype, $st,  $tag) }
+    else { $elems = $self->makeNillableComplex($where,$nodetype,$elems,$tag) }
+
     my $elem_handler
       = $comps->{mixed}          ? 'makeMixedElement'
-      : (! defined $st)          ? 'makeComplexElement' # other complexType
+      : ! $is_simple             ? 'makeComplexElement' # other complexType
       : (@$attrs || @$attrs_any) ? 'makeTaggedElement'  # complex/simpleContent
       :                            'makeSimpleElement';
 
@@ -644,7 +653,6 @@ sub element($)
     # Add defaults and stuff
     my $default  = $node->getAttributeNode('default');
     my $fixed    = $node->getAttributeNode('fixed');
-    my $nillable = $node->getAttribute('nillable') || 'false';
 
     $default && $fixed
         and error __x"element can not have default and fixed at {where}"
@@ -657,12 +665,10 @@ sub element($)
 
     my $generate
       = $self->isTrue($abstract) ? 'makeElementAbstract'
-      : $self->isTrue($nillable) ? 'makeElementNillable'
       : $default                 ? 'makeElementDefault'
       : $fixed                   ? 'makeElementFixed'
       :                            'makeElement';
 
-    my $nodetype = $qual ? $fullname : $name;
     my $do1 = $self->$generate($where, $ns, $nodetype, $r, $value, $tag);
 
     # hrefs are used by SOAP-RPC
@@ -734,6 +740,9 @@ sub particle($)
             && ($node->getAttribute('default') || $node->getAttribute('fixed'))
              ? 0 : 1;
     }
+
+    $min = 0 if $self->{interpret_nillable_as_optional}
+             && $self->isTrue($node->getAttribute('nillable') || 'false');
 
     # default attribute in writer means optional, but we want to see
     # them in the reader, to see the value.

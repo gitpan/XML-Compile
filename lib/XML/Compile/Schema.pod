@@ -145,6 +145,13 @@ like the output by Data::Dumper), which can be used as template
 for creating messages.  The output contains documentation, and is
 usually much clearer than the schema itself.
 
+=item C<< $schema->template('TREE', ...) >> creates a parse tree
+
+To be able to produce Perl-text and XML examples, the templater
+generates an abstract tree from the schema.  That tree is returned
+here.  Be warned that the structure is not fixed over releases:
+add regression tests for this to your project.
+
 =back
 
 Be warned that the B<schema is not validated>; you can develop schemas
@@ -640,17 +647,21 @@ See L<XML::Compile/"Compilers">
 
 See L<XML::Compile/"Compilers">
 
-=item $obj-E<gt>B<template>('XML'|'PERL', ELEMENT, OPTIONS)
+=item $obj-E<gt>B<template>('XML'|'PERL'|'TREE', ELEMENT, OPTIONS)
 
 Schema's can be horribly complex and unreadible.  Therefore, this template
-method can be called to create an example which demonstrates how data of
-the specified ELEMENT as XML or Perl is organized in practice.
+method can be called to create an example which demonstrates how data
+of the specified ELEMENT shown as XML or Perl is organized in practice.
 
-Some OPTIONS are explained in L<XML::Compile::Translate|XML::Compile::Translate>.
-There are some extra OPTIONS defined for the final output process.
+The 'TREE' template returns the intermediate parse tree, which gets
+formatted into the XML or Perl example.  This is not a very stable
+interface: it may change without much notice.
+
+Some OPTIONS are explained in L<XML::Compile::Translate|XML::Compile::Translate>.  There are
+some extra OPTIONS defined for the final output process.
 
 The templates produced are B<not always correct>.  Please contribute
-improvements.
+improvements: read and understand the comments in the text.
 
  -Option              --Default
   abstract_types        'ERROR'
@@ -1599,8 +1610,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.25,
-built on March 09, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.26,
+built on August 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -1626,7 +1637,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2012 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2006-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

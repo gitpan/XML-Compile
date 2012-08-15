@@ -1,4 +1,4 @@
-# Copyrights 2006-2012 by Mark Overmeer.
+# Copyrights 2006-2012 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -7,7 +7,7 @@ use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '1.25';
+$VERSION = '1.26';
 
 use base 'Exporter';
 
@@ -29,6 +29,8 @@ our @EXPORT = qw/
  error_r
  error_w
  /;
+
+sub duplicate($);
 
 our $TestNS    = 'http://test-types';
 our $SchemaNS  = SCHEMA2001;
@@ -67,15 +69,28 @@ sub test_rw($$$$;$$)
     defined $writer or return;
 
     my $msg    = defined $h2 ? $h2 : $h;
-    my $wasmsg = do {no strict; eval Dumper $msg};    # clone
 
-    my $tree   = writer_test $writer, $msg;
-    my $untouched = eq_deeply $msg, $wasmsg;
+    my $dupl;
+    { no strict; $dupl = eval Dumper $msg }
+
+    my $tree   = writer_test $writer, $dupl;
+    my $untouched = eq_deeply $msg, $dupl;
 
     ok($untouched, 'not tempered with written structure');
-    $untouched or warn Dumper $msg, $wasmsg;
+    $untouched or warn Dumper $msg, $dupl;
 
     compare_xml($tree, $expect || $xml);
+}
+
+# Duplicate a complex data-structure, be sure libxml object will get
+# created again.
+sub duplicate($)
+{   my $e = shift;
+      !ref $e           ? $e
+    : ref $e eq 'ARRAY' ? [ map duplicate($_), @$e ]
+    : ref $e eq 'HASH'  ? { map +($_ => duplicate($e->{$_})), keys %$e }
+    : $e->isa('XML::LibXML::Node') ? $e->cloneNode(1)
+    : $e;   # may break with some XS objects
 }
 
 sub error_r($$$)

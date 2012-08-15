@@ -1,11 +1,11 @@
-# Copyrights 2006-2012 by Mark Overmeer.
+# Copyrights 2006-2012 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.25';
+$VERSION = '1.26';
 
 use base 'XML::Compile';
 
@@ -303,6 +303,7 @@ sub template($@)
     my ($to_perl, $to_xml)
       = $action eq 'PERL' ? (1, 0)
       : $action eq 'XML'  ? (0, 1)
+      : $action eq 'TREE' ? (0, 0)
       : error __x"template output is either in XML or PERL layout, not '{action}'"
         , action => $action;
 
@@ -366,11 +367,15 @@ sub template($@)
           , skip_header => $args{skip_header})
     }
 
-    # to_xml
-    my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
-    my $node = $transl->toXML($doc, $ast, %show
-      , indent => $indent, skip_header => $args{skip_header});
-    $node->toString(1);
+    if($to_xml)
+    {   my $doc  = XML::LibXML::Document->new('1.1', 'UTF-8');
+        my $node = $transl->toXML($doc, $ast, %show
+          , indent => $indent, skip_header => $args{skip_header});
+        return $node->toString(1);
+    }
+
+    # return tree
+    $ast;
 }
 
 #------------------------------------------
