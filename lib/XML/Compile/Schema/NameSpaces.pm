@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '1.26';
+$VERSION = '1.27';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -177,16 +177,10 @@ sub findTypeExtensions($)
 }
 
 sub autoexpand_xsi_type($)
-{   my ($self, $xi) = @_;
-    $xi or return;
-    foreach my $type (keys %$xi)
-    {   $xi->{$type} eq 'AUTO' or next;
-        my @ext = $self->findTypeExtensions($type);
-        $xi->{$type} = \@ext;
-
-        trace "discovered xsi:type choices for $type:\n  "
-          . join("\n  ", @ext);
-    }
+{   my ($self, $type) = @_;
+    my @ext = $self->findTypeExtensions($type);
+    trace "discovered xsi:type choices for $type:\n  ". join("\n  ", @ext);
+    \@ext;
 }
 
 

@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.26';
+$VERSION = '1.27';
 
 use base 'XML::Compile';
 
@@ -238,8 +238,12 @@ sub compile($$@)
     $args{any_element}    ||= delete $args{anyElement};
     $args{any_attribute}  ||= delete $args{anyAttribute};
 
-    $self->namespaces->autoexpand_xsi_type($args{xsi_type})
-        if $args{xsi_type};
+    if(my $xi = $args{xsi_type})
+    {   my $nss = $self->namespaces;
+        foreach (keys %$xi)
+        {   $xi->{$_} = $nss->autoexpand_xsi_type($_) if $xi->{$_} eq 'AUTO';
+        }
+    }
 
     my $transl = XML::Compile::Translate->new
      ( $action

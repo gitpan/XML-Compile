@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.26';
+$VERSION = '1.27';
 
 use base 'XML::Compile::Translate';
 
@@ -455,12 +455,13 @@ sub makeNillableSimple
 
 
 sub makeNillableComplex
-{   my ($self, $path, $childname, $elem, $tag) = @_;
-    my ($name, $do) = @$elem;
+{   my ($self, $path, $childname, $elems, $tag) = @_;
+    my ($name, $do) = @$elems;
 
     $self->_registerNSprefix(xsi => SCHEMA2001i, 0);
     my $nilattr = $self->makeTagQualified($path, undef, 'nil', SCHEMA2001i);
 
+    $do ||= sub { () };
     my $r = sub
       { my ($doc, $value) = @_;
         defined $value or return;
@@ -511,7 +512,8 @@ sub makeComplexElement
 {   my ($self, $path, $tag, $elems, $attrs, $any_attr) = @_;
     my @elems = odd_elements @$elems;
     my @attrs = @$attrs;
-    my $tags  = join ', ', even_elements(@$elems), even_elements(@attrs);
+    my $tags  = join ', ', grep defined
+      , even_elements(@$elems), even_elements(@attrs);
     my @anya  = @$any_attr;
     my $iut   = $self->{ignore_unused_tags};
 

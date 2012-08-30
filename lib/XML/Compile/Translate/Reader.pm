@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 2.00.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.26';
+$VERSION = '1.27';
 
 use base 'XML::Compile::Translate';
 
@@ -572,6 +572,7 @@ sub makeNillableSimple
 sub makeNillableComplex
 {   my ($self, $path, $childname, $do, $tag) = @_;
     my ($t, $run) = @$do;
+    $run ||= sub {()};
 
     my $r = sub
       { my $tree = shift;
