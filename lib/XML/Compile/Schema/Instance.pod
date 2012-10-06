@@ -174,8 +174,8 @@ anyway).
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.27,
-built on August 31, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.28,
+built on October 06, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

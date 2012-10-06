@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.27';
+$VERSION = '1.28';
 
 use base 'XML::Compile::Translate';
 
@@ -54,7 +54,6 @@ sub actsAs($)
 {   my ($self, $as) = @_;
        ($as eq 'READER' && $self->{_output} eq 'PERL')
     || ($as eq 'WRITER' && $self->{_output} eq 'XML')
-
 }
 
 sub makeWrapperNs($$$$$)
@@ -65,8 +64,9 @@ sub makeWrapperNs($$$$$)
 
     foreach my $entry (sort {$a->{prefix} cmp $b->{prefix}} values %$index)
     {   $entry->{used} or next;
-        $filter->($entry->{uri}, $entry->{prefix}) or next;
-        push @entries, [ $entry->{uri}, $entry->{prefix} ];
+        my ($prefix, $uri) = @{$entry}{'prefix', 'uri'};
+        $filter->($uri, $prefix) or next;
+        push @entries, [ $uri, $prefix ];
         $entry->{used} = 0;
     }
 
@@ -114,7 +114,7 @@ sub makeElementWrapper
 sub _block($@)
 {   my ($self, $block, $path, @pairs) = @_;
     bless
-    sub { my @elems  = map { $_->() } odd_elements @pairs;
+    sub { my @elems  = map { $_->()    } odd_elements @pairs;
           my @tags   = map { $_->{tag} } @elems;
 
           local $" = ', ';
@@ -192,10 +192,9 @@ sub makeElementHref
 
 sub makeElement
 {   my ($self, $path, $ns, $childname, $do) = @_;
-    sub {
-       my $h = $do->(@_);
-       $h->{_NAME} = $childname;
-       $h;
+    sub { my $h = $do->(@_);
+          $h->{_NAME} = $childname;
+          $h;
     };
 }
 
@@ -228,31 +227,11 @@ sub makeElementAbstract
     };
 }
 
-sub makeNillableSimple
-{   my ($self, $path, $childname, $do) = @_;
-    sub { ( $do->(@_), struct => "is nillable, hence value or 'NIL'" ) };
-}
-
-sub makeNillableComplex
-{   my ($self, $path, $childname, $do, $tag) = @_;
-    my ($t, $run) = @$do;
-
-    my $r = sub
-      { my $h = $run->(@_);
-        $h->{_NAME} = $childname;
-        push @{$h->{struct}}, "is nillable, so may be +{_ => 'NIL', %attrs}";
-        $h;
-      };
-    [ $tag => $r ];
-}
-
-
 sub makeComplexElement
-{   my ($self, $path, $tag, $elems, $attrs, $any_attr, $type) = @_;
+{   my ($self, $path, $tag, $elems, $attrs, $any_attr, $type, $is_nillable)=@_;
     my @parts = (odd_elements(@$elems, @$attrs), @$any_attr);
 
     sub { my (@attrs, @elems);
-
           if($recurse{$tag})
           {   return
               +{ kind   => 'complex'
@@ -281,7 +260,7 @@ sub makeComplexElement
           $recurse{$tag}--;
 
           +{ kind   => 'complex'
-#          , struct => "$tag is complex"  # too obvious to mention
+           , struct => ($is_nillable ? "is nillable, as: $tag => NIL" : undef)
            , tag    => $tag
            , attrs  => \@attrs
            , elems  => \@elems
@@ -291,17 +270,21 @@ sub makeComplexElement
 }
 
 sub makeTaggedElement
-{   my ($self, $path, $tag, $st, $attrs, $attrs_any, $type) = @_;
+{   my ($self, $path, $tag, $st, $attrs, $attrs_any, $type, $is_nillable) = @_;
     my @parts = (odd_elements(@$attrs), @$attrs_any);
 
     sub { my @attrs  = map {$_->()} @parts;
           my %simple = $st->();
+
+          my @struct = 'string content of the container';
+          push @struct, $simple{struct} if $simple{struct};
+          push @struct, 'is nillable, hence value or NIL' if $is_nillable;
+
           my %content =
-            ( tag => '_'
-            , struct  => ['string content of the container']
+            ( tag     => '_'
+            , struct  => \@struct
+            , example => ($simple{example} || 'Hello, World!')
             );
-          push @{$content{struct}}, $simple{struct} if $simple{struct};
-          $content{example} = $simple{example} || 'Hello, World!';
           $content{_TYPE}   = $simple{_TYPE}   if $simple{_TYPE};
 
           +{ kind    => 'tagged'
@@ -315,12 +298,15 @@ sub makeTaggedElement
 }
 
 sub makeMixedElement
-{   my ($self, $path, $tag, $elems, $attrs, $attrs_any, $type) = @_;
+{   my ($self, $path, $tag, $elems, $attrs, $attrs_any, $type, $is_nillable)=@_;
     my @parts = (odd_elements(@$attrs), @$attrs_any);
+
+    my @struct = 'mixed content cannot be processed automatically';
+    push @struct, 'is nillable' if $is_nillable;
 
     my %mixed =
      ( tag     => '_'
-     , struct  => "mixed content cannot be processed automatically"
+     , struct  => \@struct
      , example => "XML::LibXML::Element->new('$tag')"
      );
 
@@ -342,9 +328,11 @@ sub makeMixedElement
 }
 
 sub makeSimpleElement
-{   my ($self, $path, $tag, $st, undef, undef, $type) = @_;
-    sub { +{ kind    => 'simple'
-#          , struct  => "elem $tag is a single value"  # too obvious
+{   my ($self, $path, $tag, $st, undef, undef, $type, $is_nillable) = @_;
+    sub { my @struct;
+          push @struct, 'is nillable, hence value or NIL' if $is_nillable;
+          +{ kind    => 'simple'
+           , struct  => \@struct
            , tag     => $tag
            , $st->()
            };
@@ -678,13 +666,6 @@ sub _perlAny($$)
 {   my ($self, $ast, $args) = @_;
 
     my @lines;
-    if($ast->{struct} && $args->{show_struct})
-    {   my $struct = $ast->{struct};
-        my @struct = ref $struct ? @$struct : $struct;
-        s/^/# /gm for @struct;
-        push @lines, @struct;
-    }
-
     if($ast->{_TYPE} && $args->{show_type})
     {   my $pref = $self->prefixed($ast->{_TYPE});
         if($pref)
@@ -692,6 +673,13 @@ sub _perlAny($$)
               , $pref =~ m/^[aiou]/i && $pref !~ m/^(uni|eu)/i
               ? "# is an $pref" : "# is a $pref";
         }
+    }
+
+    if($ast->{struct} && $args->{show_struct})
+    {   my $struct = $ast->{struct};
+        my @struct = ref $struct ? @$struct : $struct;
+        s/^/# /gm for @struct;
+        push @lines, @struct;
     }
 
     push @lines, "# $ast->{occur}"
@@ -829,6 +817,10 @@ _HEADER
     {   $xml->insertBefore($header, $xml->firstChild);
         $xml->insertBefore($doc->createTextNode("\n  "), $header);
     }
+
+    # I use xsi:type myself, too late for the usual "used" counter
+    $ast->{'xmlns:xsi'} ||= SCHEMA2001i
+        if $args{show_type};
 
     # add info about name-spaces
     foreach (sort keys %$ast)

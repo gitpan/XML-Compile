@@ -7,10 +7,10 @@ use strict;
 
 package XML::Compile::Iterator;
 use vars '$VERSION';
-$VERSION = '1.27';
+$VERSION = '1.28';
 
 
-use XML::Compile::Util  qw/pack_type type_of_node/;
+use XML::Compile::Util  qw/pack_type type_of_node SCHEMA2001i/;
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
 
@@ -108,6 +108,13 @@ sub nodeType() { type_of_node(shift->node) || '' }
 sub nodeLocal()
 {   my $node = shift->node or return '';
     $node->localName;
+}
+
+
+sub nodeNil()
+{   my $node = shift->node or return 0;
+    my $nil  = $node->getAttributeNS(SCHEMA2001i, 'nil') || '';
+    $nil eq 'true' || $nil eq '1';
 }
 
 
