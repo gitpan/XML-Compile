@@ -8,7 +8,7 @@ no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 
 # Errors are either in _class 'usage': called with request
@@ -1513,9 +1513,6 @@ sub findHooks($$$)
 {   my ($self, $path, $type, $node) = @_;
     # where is before, replace, after
 
-#warn $type;
-#use Data::Dumper;
-#warn Dumper $self->{hooks};
     my %hooks;
     foreach my $hook (@{$self->{hooks}})
     {   my $match;

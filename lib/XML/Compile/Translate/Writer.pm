@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 use base 'XML::Compile::Translate';
 
@@ -908,13 +908,13 @@ sub makeAnyAttribute
     sub { my ($doc, $values) = @_;
 
           my @res;
-          foreach my $label (keys %$values)
+          foreach my $label (sort keys %$values)
           {   my ($type, $ns, $local);
               if(substr($label, 0, 1) eq '{')
               {   ($ns, $local) = unpack_type $label;
                   $type         = $label;
               }
-              elsif(index($type, ':') >= 0)
+              elsif(index($label, ':') >= 0)
               {   (my $prefix, $local) = split ':', $label, 2;
                   $ns    = $self->namespaceForPrefix($prefix);
                   $type  = pack_type $ns, $local;
@@ -955,7 +955,7 @@ sub makeAnyElement
     sub { my ($doc, $values) = @_;
           my @res;
 
-          foreach my $label (keys %$values)
+          foreach my $label (sort keys %$values)
           {   my ($type, $ns, $local);
               if(substr($label, 0, 1) eq '{')
               {   ($ns, $local) = unpack_type $label;

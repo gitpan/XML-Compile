@@ -7,7 +7,7 @@ use strict;
 
 package TestTools;
 use vars '$VERSION';
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 use base 'Exporter';
 

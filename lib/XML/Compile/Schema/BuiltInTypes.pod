@@ -24,7 +24,21 @@ defined by the W3C schema specification would be too slow.
 
 =head1 FUNCTIONS
 
-The functions named in this chapter are all used at compile-time
+=head2 Real functions
+
+=over 4
+
+=item B<builtin_type_info>(TYPE)
+
+Returns the configuration for TYPE, which is a HASH.  Be aware that
+the information in this HASH will change over time without too much
+notice.  Implement regression-tests in this if you use it!
+
+=back
+
+=head2 The Types
+
+The functions named in this section are all used at compile-time
 by the translator.  At that moment, they will be placed in the
 kind-of opcode tree which will process the data at run-time.
 You B<cannot call> these functions yourself.
@@ -35,7 +49,7 @@ to an integer. Data supplied to a field of type base64Binary will be
 encoded as Base64 for you: you shouldn't do the conversion yourself,
 you'll get double encoding!
 
-section Any
+=head3 Any
 
 =over 4
 
@@ -52,7 +66,7 @@ to represent the passed values.
 
 =back
 
-=head2 Ungrouped types
+=head3 Ungrouped types
 
 =over 4
 
@@ -69,7 +83,7 @@ The reader will return '0' (also when the XML contains the string
 
 =back
 
-=head2 Big Integers
+=head3 Big Integers
 
 Schema's define integer types which are derived from the C<decimal>
 type.  These values can grow enormously large, and therefore can only be
@@ -107,7 +121,7 @@ Value up-to 20 digits.
 
 =back
 
-=head2 Integers
+=head3 Integers
 
 =over 4
 
@@ -131,7 +145,7 @@ unsigned 16-bits value.
 
 =back
 
-=head2 Floating-point
+=head3 Floating-point
 
 =over 4
 
@@ -164,7 +178,7 @@ decimal datatypes described by IEEE/ANSI-754.
 
 =back
 
-=head2 Encoding
+=head3 Encoding
 
 =over 4
 
@@ -180,7 +194,7 @@ hex encoded, two hex digits per byte.
 
 =back
 
-=head2 Dates
+=head3 Dates
 
 =over 4
 
@@ -234,7 +248,7 @@ An moment in time, as can happen every day.
 
 =back
 
-=head2 Duration
+=head3 Duration
 
 =over 4
 
@@ -257,7 +271,7 @@ The C<P> is obligatory, the C<n[YM]> are optional.
 
 =back
 
-=head2 Strings
+=head3 Strings
 
 =over 4
 
@@ -291,7 +305,7 @@ string are ignored.
 
 =back
 
-=head2 URI
+=head3 URI
 
 =over 4
 
@@ -318,7 +332,7 @@ be translated into an URI object: it may not be used that way.
 
 =back
 
-=head2 only in 1999 and 2000/10 schemas
+=head3 only in 1999 and 2000/10 schemas
 
 =over 4
 
@@ -339,8 +353,8 @@ Probably the same rules as L<anyURI()|XML::Compile::Schema::BuiltInTypes/"URI">.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.28,
-built on October 06, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.29,
+built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

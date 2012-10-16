@@ -8,11 +8,11 @@ no warnings 'recursion';
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.28';
+$VERSION = '1.29';
 
 use base 'Exporter';
 
-our @EXPORT = qw/%builtin_types/;
+our @EXPORT = qw/%builtin_types builtin_type_info/;
 
 our %builtin_types;
 
@@ -29,6 +29,9 @@ use Config '%Config';
 my $iv_bits   = $Config{ivsize} * 8 -1;
 my $iv_digits = floor($iv_bits * log10(2));
 my $fits_iv   = qr/^[+-]?[0-9]{1,$iv_digits}$/;
+
+
+sub builtin_type_info($) { $builtin_types{$_[0]} }
 
 
 # The XML reader calls
