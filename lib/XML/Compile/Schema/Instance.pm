@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '1.29';
+$VERSION = '1.30';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -231,9 +231,9 @@ sub find($$)
      $info{final}    =  $final eq 'true' || $final eq '1';
 
      my $local = $node->localName;
-     if($local eq 'element')      { $info{efd} = $node->getAttribute('form') }
-     elsif($local eq 'attribute') { $info{afd} = $node->getAttribute('form') }
-     $info{efd} ||= $self->{efd};
+        if($local eq 'element')  { $info{efd} = $node->getAttribute('form') }
+     elsif($local eq 'attribute'){ $info{afd} = $node->getAttribute('form') }
+     $info{efd} ||= $self->{efd};   # both needed for nsContext
      $info{afd} ||= $self->{afd};
      \%info;
 }

@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.29';
+$VERSION = '1.30';
 
 use base 'XML::Compile::Translate';
 

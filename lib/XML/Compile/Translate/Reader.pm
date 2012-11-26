@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 2.00.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.29';
+$VERSION = '1.30';
 
 use base 'XML::Compile::Translate';
 
@@ -911,7 +911,6 @@ sub makeSubstgroup
 
           my $do   = $do{$type}
               or return;
-
           my @subst = $do->[1]($tree->descend);
           $tree->nextChild;
           @subst ? ($do->[0] => $subst[1]) : ();   # key-rewrite

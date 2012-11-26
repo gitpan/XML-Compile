@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::Iterator;
 use vars '$VERSION';
-$VERSION = '1.29';
+$VERSION = '1.30';
 
 
 use XML::Compile::Util  qw/pack_type type_of_node SCHEMA2001i/;
