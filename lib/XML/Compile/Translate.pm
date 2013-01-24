@@ -1,14 +1,14 @@
-# Copyrights 2006-2012 by [Mark Overmeer].
+# Copyrights 2006-2013 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.00.
+# Pod stripped from pm file by OODoc 2.01.
 use warnings;
 use strict;
 no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.30';
+$VERSION = '1.31';
 
 
 # Errors are either in _class 'usage': called with request
@@ -213,7 +213,7 @@ sub topLevel($$)
     elsif($qual eq 'NONE') { $elems_qual = 0 }
     elsif($qual eq 'TOP')
     {   unless($elems_qual)
-        {   # explitly overrule the name-space qualification of the
+        {   # explicitly overrule the name-space qualification of the
             # top-level element, which is dirty but people shouldn't
             # use unqualified schemas anyway!!!
             $node->removeAttribute('form');   # when in schema
@@ -703,7 +703,6 @@ sub element($)
 
             my $altnodeid = $altnode->nodePath.'#'.$fullname;
             delete $self->{_created}{$altnodeid}; # clean nesting cache
-
             $alt{$alttype} = $self->element($tree->descend($altnode));
         }
         $do4 = $self->makeXsiTypeSwitch($where, $name, $comptype, \%alt);

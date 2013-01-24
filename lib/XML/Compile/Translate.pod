@@ -160,7 +160,7 @@ not produce invalid data.
 
 Checking whether the number of occurrences for an item are between
 C<minOccurs> and C<maxOccurs> (implied for C<all>, C<sequence>, and
-C<choice> or explictly specified) takes time.  Of course, in cases
+C<choice> or explicitly specified) takes time.  Of course, in cases
 errors must be handled.  When this option is set to C<false>, 
 only distinction between single and array elements is made.
 
@@ -200,7 +200,7 @@ the schemas is still in-tact, but name-space collission may appear.
 Per schema, it can be specified whether the elements and attributes
 defined in-there need to be used qualified (with prefix) or not.
 This can cause horrible output when within an unqualified schema
-elements are used from an other schema which is qualified.
+elements are used from another schema which is qualified.
 
 The suggested solution in articles about the subject is to provide
 people with both a schema which is qualified as one which is not.
@@ -245,7 +245,7 @@ The HASH structure looks like this:
     , prefixes => \%namespaces
     );
 
-  # share the same namespace defs with an other component
+  # share the same namespace defs with another component
   my $other = $schema->compile
     ( WRITER => ...
     , prefixes => \%namespaces
@@ -348,7 +348,7 @@ be used.
   sub want_block($$$$) ( my ($type,$ns,$local,$path) = @_; undef}
   $schema->blockNamespace(\&want_block);
 
-It is very well posible that the blocking of some namespaces breaks the
+It is very well possible that the blocking of some namespaces breaks the
 validness of messages: when those elements are required but set to be
 ignored.  There is no way to detect this, on the moment.
 
@@ -394,8 +394,8 @@ element does not contains sub-elements, otherwise the XML node.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.30,
-built on November 26, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.31,
+built on January 24, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -423,7 +423,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
+Copyrights 2006-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

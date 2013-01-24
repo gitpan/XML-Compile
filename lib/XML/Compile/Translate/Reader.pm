@@ -1,10 +1,10 @@
-# Copyrights 2006-2012 by [Mark Overmeer].
+# Copyrights 2006-2013 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.00.
+# Pod stripped from pm file by OODoc 2.01.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.30';
+$VERSION = '1.31';
 
 use base 'XML::Compile::Translate';
 
@@ -1039,9 +1039,13 @@ sub makeXsiTypeSwitch($$$$)
                 or error __x"specified xsi:type list for `{default}' does not contain `{got}'"
                      , default => $default_type, got => $type;
         }
-        else { ($alt, $code) = ($default_type, $types->{$default_type}) }
+        else
+        {   ($alt, $code) = ($default_type, $types->{$default_type});
+        }
 
         my ($t, $d) = $code->($tree);
+        defined $t or return ();
+
         $d = { _ => $d } if ref $d ne 'HASH';
         $d->{XSI_TYPE} ||= $alt;
         ($t, $d);

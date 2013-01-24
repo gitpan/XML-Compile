@@ -277,7 +277,7 @@ the XML structure:
 
 =head3 Typemap to Object
 
-An other option is to implement an object factory: one object which creates
+Another option is to implement an object factory: one object which creates
 other objects.  In this case, the C<$xmltype> parameter can come of use,
 to have one object spawning many different other objects.
 
@@ -331,8 +331,8 @@ with some extra checks.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.30,
-built on November 26, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.31,
+built on January 24, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -360,7 +360,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2006-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
+Copyrights 2006-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
