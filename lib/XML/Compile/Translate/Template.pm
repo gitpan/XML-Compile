@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.31';
+$VERSION = '1.32';
 
 use base 'XML::Compile::Translate';
 
@@ -232,7 +232,9 @@ sub makeComplexElement
     my @parts = (odd_elements(@$elems, @$attrs), @$any_attr);
 
     sub { my (@attrs, @elems);
-          if($recurse{$tag})
+          my $is_pseudo_type = $type !~ m/^{/;  # like "unnamed complex"
+
+          if(!$is_pseudo_type && $recurse{$type})
           {   return
               +{ kind   => 'complex'
                , struct => 'probably a recursive complex'
@@ -241,7 +243,7 @@ sub makeComplexElement
                };
           }
 
-          if($reuse{$tag})
+          if(!$is_pseudo_type && $reuse{$type})
           {   return
               +{ kind   => 'complex'
                , struct => 'complex structure shown above'
@@ -250,14 +252,14 @@ sub makeComplexElement
                };
           }
 
-          $recurse{$tag}++;
-          $reuse{$tag}++;
+          $recurse{$type}++;
+          $reuse{$type}++;
           foreach my $part (@parts)
           {   my $child = $part->();
               if($child->{attr}) { push @attrs, $child }
               else               { push @elems, $child }
           }
-          $recurse{$tag}--;
+          $recurse{$type}--;
 
           +{ kind   => 'complex'
            , struct => ($is_nillable ? "is nillable, as: $tag => NIL" : undef)
