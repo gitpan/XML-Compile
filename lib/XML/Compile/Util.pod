@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::Util - Utility routines for XML::Compile components
@@ -85,8 +87,8 @@ Translate an XML::LibXML::Node into a packed type.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.32,
-built on March 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.33,
+built on May 03, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

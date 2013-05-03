@@ -8,7 +8,7 @@ no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.32';
+$VERSION = '1.33';
 
 
 # Errors are either in _class 'usage': called with request
@@ -205,7 +205,7 @@ sub topLevel($$)
     my $elems_qual = $top->{efd} eq 'qualified';
     my $qual
       = exists $self->{elements_qualified} ? ($self->{elements_qualified} || 0)
-      : $elems_qual ? 'ALL' : $top->{ns}  ? 'TOP' : 'NONE';
+      : $elems_qual ? 'ALL' : 'NONE';
 
     my $remove_form_attribute;
 

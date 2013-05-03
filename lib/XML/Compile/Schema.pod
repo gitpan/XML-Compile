@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::Schema - Compile a schema into CODE
@@ -159,10 +161,16 @@ which do work well with this module, but are not valid according to W3C.
 In many cases, however, the translater will refuse to accept mistakes:
 mainly because it cannot produce valid code.
 
+See L<documentation in base class|XML::Compile/"DESCRIPTION">.
+ 
 =head1 METHODS
 
+See L<documentation in base class|XML::Compile/"METHODS">.
+ 
 =head2 Constructors
 
+See L<documentation in base class|XML::Compile/"Constructors">.
+ 
 =over 4
 
 =item XML::Compile::Schema-E<gt>B<new>([XMLDATA], OPTIONS)
@@ -238,6 +246,8 @@ serialization of objects.
 
 =head2 Accessors
 
+See L<documentation in base class|XML::Compile/"Accessors">.
+ 
 =over 4
 
 =item $obj-E<gt>B<addHook>(HOOKDATA|HOOK|undef)
@@ -272,6 +282,9 @@ Collect all the schemas defined in the XML data.  The XML parameter
 must be a XML::LibXML node, therefore it is advised to use
 L<importDefinitions()|XML::Compile::Schema/"Administration">, which has a much more flexible way to
 specify the data.
+
+When the object extends L<XML::Compile::Cache|XML::Compile::Cache>, the prefixes declared
+on the schema element will be taken as default prefixes.
 
  -Option                --Default
   attribute_form_default  <undef>
@@ -351,6 +364,8 @@ example: use other Schema
 
 =head2 Compilers
 
+See L<documentation in base class|XML::Compile/"Compilers">.
+ 
 =over 4
 
 =item $obj-E<gt>B<compile>(('READER'|'WRITER'), TYPE, OPTIONS)
@@ -666,7 +681,7 @@ improvements: read and understand the comments in the text.
  -Option              --Default
   abstract_types        'ERROR'
   attributes_qualified  <undef>
-  elements_qualified    <undef>
+  elements_qualified    'TOP'
   include_namespaces    <true>
   indent                " "
   key_rewrite           []
@@ -709,6 +724,8 @@ Skip the comment header from the output.
 
 =head2 Administration
 
+See L<documentation in base class|XML::Compile/"Administration">.
+ 
 =over 4
 
 =item $obj-E<gt>B<doesExtend>(EXTTYPE, BASETYPE)
@@ -797,8 +814,12 @@ See L<XML::Compile/"Administration">
 
 =head1 DETAILS
 
+See L<documentation in base class|XML::Compile/"DETAILS">.
+ 
 =head2 Comparison
 
+See L<documentation in base class|XML::Compile/"Comparison">.
+ 
 =head2 Collecting definitions
 
 When starting an application, you will need to read the schema
@@ -1618,8 +1639,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.32,
-built on March 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.33,
+built on May 03, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

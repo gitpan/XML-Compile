@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::Translate::Reader - translate XML to HASH
@@ -18,50 +20,20 @@ The translator understands schemas, but does not encode that into
 actions.  This module implements those actions to translate from XML
 into a (nested) Perl HASH structure.
 
-=head2 Unsupported features
-
+See L<documentation in base class|XML::Compile::Translate/"DESCRIPTION">.
+ 
 =head1 METHODS
 
-=head2 Constructors
-
-=over 4
-
-=item $obj-E<gt>B<new>(TRANSLATOR, OPTIONS)
-
-See L<XML::Compile::Translate/"Constructors">
-
-=item $obj-E<gt>B<register>(NAME)
-
-=item XML::Compile::Translate::Reader-E<gt>B<register>(NAME)
-
-See L<XML::Compile::Translate/"Constructors">
-
-=back
-
-=head2 Attributes
-
-=head2 Handlers
-
-=over 4
-
-=item XML::Compile::Translate::Reader-E<gt>B<compile>(ELEMENT|ATTRIBUTE|TYPE, OPTIONS)
-
-See L<XML::Compile::Translate/"Handlers">
-
-=back
-
+See L<documentation in base class|XML::Compile::Translate/"METHODS">.
+ 
 =head1 DETAILS
 
+See L<documentation in base class|XML::Compile::Translate/"DETAILS">.
+ 
 =head2 Translator options
 
-=head3 performance optimization
-
-=head3 qualified XML
-
-=head3 Name-spaces
-
-=head3 Wildcards handlers
-
+See L<documentation in base class|XML::Compile::Translate/"Translator options">.
+ 
 =head2 Processing Wildcards
 
 If you want to collect information from the XML structure, which is
@@ -215,7 +187,8 @@ L<XML::LibXML::Simple|XML::LibXML::Simple> to translate a part of your tree.  Si
 
  use XML::LibXML::Simple  qw/XMLin/;
  $schema->addHook
-   ( type    => ...type-definition...
+   ( type    => 'tns:xyz'     # or pack_type($tns,'xyz')
+  #  path    => qr!/company$! # by element name
    , replace =>
        sub { my ($xml, $args, $path, $type, $r) = @_;
              ($type => XMLin($xml, ...));
@@ -229,12 +202,12 @@ the data collected and the path.  Be careful that the collected data
 might be a SCALAR (for simpleType).  Return a HASH or a SCALAR.  C<undef>
 may work, unless it is the value of a required element you throw awy.
 
-This hook also offers a predefined C<PRINT_PATH>.  Besides, it has
-C<XML_NODE>, C<NODE_TYPE>, C<ELEMENT_ORDER>, and C<ATTRIBUTE_ORDER>, which
-will result in additional fields in the HASH, respectively containing the
-NODE which was processed (an XML::LibXML::Element), the type_of_node,
-the element names, and the attribute names.  The keys start with an
-underscore C<_>.
+This hook also offers a predefined C<PRINT_PATH>.  Besides, it
+has C<INCLUDE_PATH>, C<XML_NODE>, C<NODE_TYPE>, C<ELEMENT_ORDER>,
+and C<ATTRIBUTE_ORDER>, which will result in additional fields in
+the HASH, respectively containing the NODE which was processed (an
+XML::LibXML::Element), the type_of_node, the element names, and the
+attribute names.  The keys start with an underscore C<_>.
 
 =head2 Typemaps
 
@@ -331,8 +304,8 @@ with some extra checks.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.32,
-built on March 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.33,
+built on May 03, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

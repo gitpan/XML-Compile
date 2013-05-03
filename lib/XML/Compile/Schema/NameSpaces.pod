@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::Schema::NameSpaces - Connect name-spaces from schemas
@@ -135,8 +137,8 @@ This method implements L<XML::Compile::Schema::useSchema()|XML::Compile::Schema/
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.32,
-built on March 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.33,
+built on May 03, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

@@ -1,6 +1,10 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::Iterator - reduce view on a node tree
+
+=head1 SYNOPSIS
 
 =head1 DESCRIPTION
 
@@ -128,8 +132,8 @@ Returns the textContent of the L<node()|XML::Compile::Iterator/"Attributes">, or
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.32,
-built on March 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.33,
+built on May 03, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

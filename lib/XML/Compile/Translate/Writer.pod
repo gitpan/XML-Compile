@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::Translate::Writer - translate HASH to XML
@@ -18,50 +20,20 @@ The translator understands schemas, but does not encode that into
 actions.  This module implements those actions to translate from
 a (nested) Perl HASH structure onto XML.
 
-=head2 Unsupported features
-
+See L<documentation in base class|XML::Compile::Translate/"DESCRIPTION">.
+ 
 =head1 METHODS
 
-=head2 Constructors
-
-=over 4
-
-=item $obj-E<gt>B<new>(TRANSLATOR, OPTIONS)
-
-See L<XML::Compile::Translate/"Constructors">
-
-=item $obj-E<gt>B<register>(NAME)
-
-=item XML::Compile::Translate::Writer-E<gt>B<register>(NAME)
-
-See L<XML::Compile::Translate/"Constructors">
-
-=back
-
-=head2 Attributes
-
-=head2 Handlers
-
-=over 4
-
-=item XML::Compile::Translate::Writer-E<gt>B<compile>(ELEMENT|ATTRIBUTE|TYPE, OPTIONS)
-
-See L<XML::Compile::Translate/"Handlers">
-
-=back
-
+See L<documentation in base class|XML::Compile::Translate/"METHODS">.
+ 
 =head1 DETAILS
 
+See L<documentation in base class|XML::Compile::Translate/"DETAILS">.
+ 
 =head2 Translator options
 
-=head3 performance optimization
-
-=head3 qualified XML
-
-=head3 Name-spaces
-
-=head3 Wildcards handlers
-
+See L<documentation in base class|XML::Compile::Translate/"Translator options">.
+ 
 =head2 Processing Wildcards
 
 Complex elements can define C<any> (element) and C<anyAttribute> components,
@@ -240,8 +212,8 @@ writer considerably.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.32,
-built on March 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.33,
+built on May 03, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

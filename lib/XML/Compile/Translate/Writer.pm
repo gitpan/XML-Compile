@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.32';
+$VERSION = '1.33';
 
 use base 'XML::Compile::Translate';
 
