@@ -266,7 +266,7 @@ nodes will be skipped.
 =head2 Comparison
 
 Where other Perl modules (like SOAP::WSDL) help you using these schemas
-(often with a lot of run-time [XPath] searches), XML::Compile takes a
+(often with a lot of run-time XPath searches), XML::Compile takes a
 different approach: instead of run-time processing of the specification,
 it will first compile the expected structure into a pure Perl CODE
 reference, and then use that to process the data as often as needed.
@@ -279,17 +279,18 @@ quite a number of modules simply ignore that.
 
 Next to this, data-types are formatted and processed correctly; for
 instance, the specification prescribes that the C<Integer> data-type
-must accept values of at least 18 digits... not just Perl's idea of longs.
+must accept values of at least 18 digits... not fitting in Perl's idea
+of longs.
 
-XML::Compile supports the more complex data-types like C<list>, C<union>,
-C<substitutionGroup> (unions on complex type level), and even the
-nasty C<any> and C<anyAttribute>, which is rarely the case for the
+XML::Compile also supports all more complex data-types like C<list>,
+C<union>, C<substitutionGroup> (unions on complex type level), and even
+the nasty C<any> and C<anyAttribute>, which is rarely the case for the
 other modules.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.33,
-built on May 03, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.34,
+built on May 13, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -304,14 +305,12 @@ L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
 L<XML::Compile::RPC>,
-L<XML::Rewrite>,
-L<XML::eXistDB>,
+L<XML::Rewrite>
 and
 L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
-F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
-
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile> .
 For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 

@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::NameSpaces;
 use vars '$VERSION';
-$VERSION = '1.33';
+$VERSION = '1.34';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';

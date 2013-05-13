@@ -8,7 +8,7 @@ no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.33';
+$VERSION = '1.34';
 
 
 # Errors are either in _class 'usage': called with request
