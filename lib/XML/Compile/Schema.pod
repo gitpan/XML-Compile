@@ -29,6 +29,7 @@ XML::Compile::Schema - Compile a schema into CODE
  $schema->addSchemas($tree);
 
  # three times the same: well-known url, filename in schemadir, url
+ # Just as example: usually not needed.
  $schema->importDefinitions('http://www.w3.org/2001/XMLSchema');
  $schema->importDefinitions('2001-XMLSchema.xsd');
  $schema->importDefinitions(SCHEMA2001);  # from ::Util
@@ -1639,8 +1640,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.34,
-built on May 13, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.35,
+built on June 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
