@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.35';
+$VERSION = '1.36';
 
 use base 'XML::Compile::Translate';
 
@@ -1048,9 +1048,9 @@ sub makeHook($$$$$$)
 
     return sub {()} if $replace && grep {$_ eq 'SKIP'} @$replace;
 
-    my @replace = $replace ? map {$self->_decodeReplace($path,$_)} @$replace:();
-    my @before  = $before  ? map {$self->_decodeBefore($path,$_) } @$before :();
-    my @after   = $after   ? map {$self->_decodeAfter($path,$_)  } @$after  :();
+    my @replace = $replace ? map $self->_decodeReplace($path,$_), @$replace :();
+    my @before  = $before  ? map $self->_decodeBefore($path,$_),  @$before  :();
+    my @after   = $after   ? map $self->_decodeAfter($path,$_),   @$after   :();
 
     sub
     {  my ($doc, $val) = @_;
@@ -1071,7 +1071,7 @@ sub makeHook($$$$$$)
        }
 
        $xml;
-     }
+    };
 }
 
 sub _decodeBefore($$)

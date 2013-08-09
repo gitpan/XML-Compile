@@ -162,15 +162,15 @@ which do work well with this module, but are not valid according to W3C.
 In many cases, however, the translater will refuse to accept mistakes:
 mainly because it cannot produce valid code.
 
-See L<documentation in base class|XML::Compile/"DESCRIPTION">.
+See L<documentation in the base class|XML::Compile/"DESCRIPTION">.
  
 =head1 METHODS
 
-See L<documentation in base class|XML::Compile/"METHODS">.
+See L<documentation in the base class|XML::Compile/"METHODS">.
  
 =head2 Constructors
 
-See L<documentation in base class|XML::Compile/"Constructors">.
+See L<documentation in the base class|XML::Compile/"Constructors">.
  
 =over 4
 
@@ -247,7 +247,7 @@ serialization of objects.
 
 =head2 Accessors
 
-See L<documentation in base class|XML::Compile/"Accessors">.
+See L<documentation in the base class|XML::Compile/"Accessors">.
  
 =over 4
 
@@ -338,9 +338,11 @@ for increased compile performance, or to avoid buggy constructs.
 These values can also be passed with L<new(block_namespace)|XML::Compile::Schema/"Constructors"> and
 L<compile(block_namespace)|XML::Compile::Schema/"Compilers">.
 
-=item $obj-E<gt>B<hooks>()
+=item $obj-E<gt>B<hooks>([READER|WRITER])
 
 Returns the LIST of defined hooks (as HASHes).
+[1.36] When an action parameter is provided, it will only return a list
+with hooks added with that action value or no action at all.
 
 =item $obj-E<gt>B<useSchema>(SCHEMA, [SCHEMA])
 
@@ -365,7 +367,7 @@ example: use other Schema
 
 =head2 Compilers
 
-See L<documentation in base class|XML::Compile/"Compilers">.
+See L<documentation in the base class|XML::Compile/"Compilers">.
  
 =over 4
 
@@ -576,7 +578,7 @@ error in the XML-Scheme tree.
 =item permit_href => BOOLEAN
 
 When parsing SOAP-RPC encoded messages, the elements may have a C<href>
-attribute, pointing to an object with C<id>.  The READER will return the
+attribute pointing to an object with C<id>.  The READER will return the
 unparsed, unresolved node when the attribute is detected, and the SOAP-RPC
 decoder will have to discover and resolve it.
 
@@ -725,7 +727,7 @@ Skip the comment header from the output.
 
 =head2 Administration
 
-See L<documentation in base class|XML::Compile/"Administration">.
+See L<documentation in the base class|XML::Compile/"Administration">.
  
 =over 4
 
@@ -815,11 +817,11 @@ See L<XML::Compile/"Administration">
 
 =head1 DETAILS
 
-See L<documentation in base class|XML::Compile/"DETAILS">.
+See L<documentation in the base class|XML::Compile/"DETAILS">.
  
 =head2 Comparison
 
-See L<documentation in base class|XML::Compile/"Comparison">.
+See L<documentation in the base class|XML::Compile/"Comparison">.
  
 =head2 Collecting definitions
 
@@ -1285,7 +1287,18 @@ evaluated before the global hooks.
 
 =head3 general syntax
 
-Each hook has two kinds of parameters: selectors and processors.
+Each hook has three kinds of parameters:
+
+=over 4
+
+=item . selectors
+
+=item . processors
+
+=item . action ('READER' or 'WRITER', defaults to both)
+
+=back
+
 Selectors define the schema component of which the processing is modified.
 When one of the selectors matches, the processing information for the hook
 is used.  When no selector is specified, then the hook will be used on all
@@ -1640,8 +1653,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.35,
-built on June 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.36,
+built on August 10, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

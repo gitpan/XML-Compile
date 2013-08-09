@@ -10,7 +10,7 @@ On this page, a wild collection of questions are answered.  If you have
 contributions either in question or as answer, then please contribute
 via the mailinglist.
 
-See also XML::Compile::SOAP::FAQ.
+See also L<XML::Compile::SOAP::FAQ|XML::Compile::SOAP::FAQ>.
 
 =head2 The data structure
 
@@ -182,7 +182,7 @@ when an external schema is "loaded" "dynamically" into another schema.
   my $schema     = XML::Compile::Cache->new(....);
   $schema->addSchemaDirs($schema_dir);
   $schema->importDefinitions($xyz_xsd, target_namespace => $xyz_ns);
-  $schema->prefixes(xyz => $xyz_ns);
+  $schema->addPrefixes(xyz => $xyz_ns);
   $schema->addKeyRewrite('PREFIXED(xyz)');
 
 The schema "forgets" to mention its C<targetNamespace>, so it is
@@ -214,8 +214,8 @@ Try turning on debugging with:
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.35,
-built on June 28, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.36,
+built on August 10, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

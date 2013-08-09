@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '1.35';
+$VERSION = '1.36';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -58,7 +58,7 @@ sub sgs() { shift->{sgs} }
 sub type($) { $_[0]->{types}{$_[1]} }
 
 
-sub element($) { $_[0]->{elements}{$_[1]} }
+sub element($) { $_[0]->{element}{$_[1]} }
 
 
 sub elements()        { keys %{shift->{element}} }

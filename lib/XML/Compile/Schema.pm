@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.35';
+$VERSION = '1.36';
 
 use base 'XML::Compile';
 
@@ -74,7 +74,11 @@ sub addHooks(@)
 }
 
 
-sub hooks() { @{shift->{hooks}} }
+sub hooks(;$)
+{   my $hooks = shift->{hooks};
+    my $dir   = shift or return @$hooks;
+    grep +(!$_->{action} || $_->{action} eq $dir), @$hooks;
+}
 
 
 sub addTypemaps(@)
@@ -221,7 +225,7 @@ sub compile($$@)
     my $nss   = $self->namespaces;
 
     my ($h1, $h2) = (delete $args{hook}, delete $args{hooks});
-    my @hooks = $self->hooks;
+    my @hooks = $self->hooks($action);
     push @hooks, ref $h1 eq 'ARRAY' ? @$h1 : $h1 if $h1;
     push @hooks, ref $h2 eq 'ARRAY' ? @$h2 : $h2 if $h2;
 
