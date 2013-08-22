@@ -8,7 +8,7 @@ no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.36';
+$VERSION = '1.37';
 
 
 # Errors are either in _class 'usage': called with request
@@ -657,7 +657,7 @@ sub element($)
       :                            'makeSimpleElement';
 
     my $r = $self->$elem_handler
-       ( $where, $tag, ($st||$elems), $attrs, $attrs_any, $comptype, $nillable);
+      ( $where, $tag, ($st||$elems), $attrs, $attrs_any, $comptype, $nillable);
 
     # Add defaults and stuff
     my $default  = $node->getAttributeNode('default');
@@ -687,6 +687,7 @@ sub element($)
     # Implement hooks
     my ($before, $replace, $after)
       = $self->findHooks($where, $comptype, $node);
+
     my $do3
       = ($before || $replace || $after)
       ? $self->makeHook($where, $do2, $tag, $before, $replace, $after)
@@ -1426,7 +1427,6 @@ sub complexContent($$)
     # attributes: id, mixed = boolean
     # content: annotation?, (restriction | extension)
 
-my $path = $tree->path;
     my $node = $tree->node;
     if(my $m = $node->getAttribute('mixed'))
     {   $mixed = $self->isTrue($m)

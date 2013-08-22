@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.36';
+$VERSION = '1.37';
 
 use base 'XML::Compile::Translate';
 
@@ -99,7 +99,7 @@ sub typemapToHooks($$)
 
         }
 
-        push @$hooks, { type => $type, before => $hook };
+        push @$hooks, +{action => 'WRITER', type => $type, before => $hook};
     }
     $hooks;
 }
