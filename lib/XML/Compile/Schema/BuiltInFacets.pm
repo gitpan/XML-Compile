@@ -8,7 +8,7 @@ no warnings 'recursion';
 
 package XML::Compile::Schema::BuiltInFacets;
 use vars '$VERSION';
-$VERSION = '1.37';
+$VERSION = '1.38';
 
 use base 'Exporter';
 

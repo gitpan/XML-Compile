@@ -355,8 +355,8 @@ Probably the same rules as L<anyURI()|XML::Compile::Schema::BuiltInTypes/"URI">.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.37,
-built on August 22, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.38,
+built on September 10, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

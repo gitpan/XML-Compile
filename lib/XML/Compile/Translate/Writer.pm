@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.37';
+$VERSION = '1.38';
 
 use base 'XML::Compile::Translate';
 
@@ -325,7 +325,7 @@ sub makeBlockHandler
     if($min==0 && $max eq 'unbounded')
     {   my $code = sub {
             my $doc    = shift;
-            my $values = delete shift->{$multi};
+            my $values = $_[0] ? delete shift->{$multi} : undef;
               ref $values eq 'ARRAY' ? (map {$process->($doc, {%$_})} @$values)
             : defined $values        ? $process->($doc, $values)
             :                          (undef);
@@ -336,7 +336,7 @@ sub makeBlockHandler
     if($max eq 'unbounded')
     {   my $code = sub {
             my $doc    = shift;
-            my $values = delete shift->{$multi};
+            my $values = $_[0] ? delete shift->{$multi} : undef;
             my @values = ref $values eq 'ARRAY' ? @$values
                        : defined $values ? $values : ();
 

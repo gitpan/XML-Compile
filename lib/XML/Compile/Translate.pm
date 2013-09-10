@@ -8,7 +8,7 @@ no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.37';
+$VERSION = '1.38';
 
 
 # Errors are either in _class 'usage': called with request
@@ -1012,6 +1012,8 @@ sub attributeOne($)
 
     my $node = $tree->node;
     my ($type, $tns);
+    local @$self{ qw/elems_qual attrs_qual tns/ }
+        = @$self{ qw/elems_qual attrs_qual tns/ };
 
     my($ref, $name, $form, $typeattr);
     if(my $refattr =  $node->getAttribute('ref'))
@@ -1024,13 +1026,8 @@ sub attributeOne($)
                  , name => $refname, where => $where, _class => 'schema';
 
         $ref        = $def->{node};
-        local $self->{tns} = $tns = $def->{ns};
-        my $attrs_qual = $def->{efd} eq 'qualified';
-        if(exists $self->{attributes_qualified})
-        {   my $qual = $self->{attributes_qualified} || 0;
-            $attrs_qual = $qual eq 'ALL' ? 1 : $qual eq 'NONE' ? 0 : $qual;
-        }
-        local $self->{attrs_qual} = $attrs_qual;
+        @$self{ qw/elems_qual attrs_qual tns/ }
+            = $self->nsContext($def);
 
         $name       = $ref->getAttribute('name')
             or error __x"ref attribute without name at {where}"
