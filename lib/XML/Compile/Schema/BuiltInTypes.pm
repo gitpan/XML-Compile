@@ -8,7 +8,7 @@ no warnings 'recursion';
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.38';
+$VERSION = '1.39';
 
 use base 'Exporter';
 
@@ -304,7 +304,7 @@ $builtin_types{sloppy_float} =
 
 $builtin_types{base64Binary} =
  { parse   => sub { eval { decode_base64 $_[0] } }
- , format  => sub { eval { encode_base64 $_[0] } }
+ , format  => sub { eval { encode_base64 $_[0],'' } }
  , check   => sub { !$@ }
  , example => 'decoded bytes'
  , extends => 'anyAtomicType'

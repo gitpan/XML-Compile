@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 2.01.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.38';
+$VERSION = '1.39';
 
 use base 'XML::Compile::Translate';
 
@@ -695,7 +695,7 @@ sub makeSimpleElement
 
       $is_nillable
     ? sub { my $tree  = shift or return $st->(undef);
-            my $value = $tree->nodeNil ? 'NIL' : $st->($tree);
+            my $value = (ref $tree && $tree->nodeNil) ? 'NIL' : $st->($tree);
             defined $value ? ($tag => $value) : ();
           }
     : sub { my $value = $st->(@_);

@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile::Schema::Instance;
 use vars '$VERSION';
-$VERSION = '1.38';
+$VERSION = '1.39';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
@@ -17,7 +17,7 @@ use XML::Compile::Util qw/pack_type unpack_type/;
 
 my @defkinds = qw/element attribute simpleType complexType
                   attributeGroup group/;
-my %defkinds = map { ($_ => 1) } @defkinds;
+my %defkinds = map +($_ => 1), @defkinds;
 
 
 sub new($@)
@@ -225,7 +225,7 @@ sub find($$)
      $self->{$kind}{$full} = \%info;
 
      my $abstract    = $node->getAttribute('abstract') || '';
-     $info{abstract} =  $abstract eq 'true' || $abstract eq '1';
+     $info{abstract} = $abstract eq 'true' || $abstract eq '1';
 
      my $final       = $node->getAttribute('final') || '';
      $info{final}    =  $final eq 'true' || $final eq '1';

@@ -8,7 +8,7 @@ use strict;
 
 package XML::Compile;
 use vars '$VERSION';
-$VERSION = '1.38';
+$VERSION = '1.39';
 
 
 use Log::Report 'xml-compile';
@@ -125,7 +125,7 @@ sub dataToXML($)
     }
     else
     {   my $data = "$raw";
-        $data = substr($data, 0, 39) . '...' if length($data) > 40;
+        $data = substr($data, 0, 59) . '...' if length($data) > 60;
         error __x"don't known how to interpret XML data\n   {data}"
            , data => $data;
     }
