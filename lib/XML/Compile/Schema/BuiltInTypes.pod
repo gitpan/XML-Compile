@@ -216,8 +216,15 @@ because the default is not defined in the standard. For that reason,
 the C<dateTimeStamp> got introduced, which requires the timezone.
 
 When a decimal value is passed, it is interpreted as C<time> value in UTC,
-and will be formatted as required. When reading, the date string will
-not be parsed.
+and will be formatted as required.  This will not work when the dateTime
+extended type has facet C<explicitTimeZome="prohibited">.
+
+When reading, the date string will not be parsed.  Parsing timestamps
+is quite expensive, therefore not preformed automatically.   You may try
+Time::Local in combination with Date::Parse, or Time::Piece::ISO.
+Be very careful with the timezone settings in your program, which effects
+C<mktime> which is used by these implementations.  Best to run your
+application in GMT/UTC/UCT/Z.
 
 =item B<dateTimeStamp>()
 
@@ -355,8 +362,8 @@ Probably the same rules as L<anyURI()|XML::Compile::Schema::BuiltInTypes/"URI">.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.39,
-built on October 11, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.40,
+built on November 26, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
