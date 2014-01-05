@@ -1,6 +1,7 @@
 ChangeLog
 MANIFEST
 Makefile.PL
+README
 README.todo
 bin/schema2example
 bin/xml2yaml
@@ -22,19 +23,32 @@ html/other/manuals/list.html
 html/other/methods/index.html
 html/other/xml.css
 lib/XML/Compile.pm
+lib/XML/Compile.pod
 lib/XML/Compile/FAQ.pod
 lib/XML/Compile/Iterator.pm
+lib/XML/Compile/Iterator.pod
 lib/XML/Compile/Schema.pm
+lib/XML/Compile/Schema.pod
 lib/XML/Compile/Schema/BuiltInFacets.pm
+lib/XML/Compile/Schema/BuiltInFacets.pod
 lib/XML/Compile/Schema/BuiltInTypes.pm
+lib/XML/Compile/Schema/BuiltInTypes.pod
 lib/XML/Compile/Schema/Instance.pm
+lib/XML/Compile/Schema/Instance.pod
 lib/XML/Compile/Schema/NameSpaces.pm
+lib/XML/Compile/Schema/NameSpaces.pod
 lib/XML/Compile/Schema/Specs.pm
+lib/XML/Compile/Schema/Specs.pod
 lib/XML/Compile/Translate.pm
+lib/XML/Compile/Translate.pod
 lib/XML/Compile/Translate/Reader.pm
+lib/XML/Compile/Translate/Reader.pod
 lib/XML/Compile/Translate/Template.pm
+lib/XML/Compile/Translate/Template.pod
 lib/XML/Compile/Translate/Writer.pm
+lib/XML/Compile/Translate/Writer.pod
 lib/XML/Compile/Util.pm
+lib/XML/Compile/Util.pod
 lib/XML/Compile/xsd/1998-namespace.xsd
 lib/XML/Compile/xsd/1999-XMLSchema-part2.xsd
 lib/XML/Compile/xsd/1999-XMLSchema.xsd
@@ -91,3 +105,5 @@ t/90nons.t
 t/91noqual.t
 t/TestTools.pm
 xt/99pod.t
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

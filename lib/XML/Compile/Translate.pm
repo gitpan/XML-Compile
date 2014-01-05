@@ -1,8 +1,15 @@
+# Copyrights 2006-2014 by [Mark Overmeer].
+#  For other contributors see ChangeLog.
+# See the manual pages for details on the licensing terms.
+# Pod stripped from pm file by OODoc 2.01.
 use warnings;
 use strict;
 no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
+use vars '$VERSION';
+$VERSION = '1.41';
+
 
 # Errors are either in _class 'usage': called with request
 #                         or 'schema': syntax error in schema
@@ -33,66 +40,6 @@ my $ignore_elements = qr/^(?:notation|annotation|$id_constraints|$assertions)$/;
 my $particle_blocks = qr/^(?:sequence|choice|all|group)$/;
 my $attribute_defs  = qr/^(?:attribute|attributeGroup|anyAttribute)$/;
 
-=chapter NAME
-
-XML::Compile::Translate - create an XML data parser
-
-=chapter SYNOPSIS
-
- # for internal use only
- my $code = XML::Compile::Translate->compile(...);
-
-=chapter DESCRIPTION
-
-This module converts a schema type definition into a code
-reference which can be used to interpret a schema.  The sole public
-function in this package is M<compile()>, and is called by
-M<XML::Compile::Schema::compile()>, which does a lot of set-ups.
-Please do not try to use this package directly!
-
-The code in this package interprets schemas; it understands, for
-instance, how complexType definitions work.  Then, when the
-schema syntax is decoded, it will knot the pieces together into
-one CODE reference which can be used in the main user program.
-
-=section Unsupported features
-
-This implementation is work in progress, but by far most structures in
-W3C schemas are implemented (and tested!).
-
-Missing are
- schema noNamespaceSchemaLocation
- any ##local
- anyAttribute ##local
-
-Some things do not work in schemas anyway: C<import>, C<include>.  They
-only work if everyone always has a working connection to internet.  You
-have to require them manually.  Include also does work, because it does not
-use namespaces.  (see M<XML::Compile::Schema::importDefinitions()>)
-
-Ignored, because not for our purpose is the search optimization
-information: C<key, unique, keyref, selector, field>, and de schema
-documentation: C<notation, annotation>.  Compile the schema schema itself
-to interpret the message if you need them.
-
-A few nuts are still to crack:
- openContent
- facets on dates and base64Binary
- final is not protected
-
-Of course, the latter list is all fixed in next release ;-)
-See chapter L</DETAILS> for more on how the tune the translator.
-
-=chapter METHODS
-
-=section Constructors
-
-=method new TRANSLATOR, OPTIONS
-The OPTIONS are described in M<XML::Compile::Schema::compile()>.  Those
-descriptions will probably move here, eventually.
-
-=requires nss L<XML::Compile::Schema::NameSpaces>
-=cut
 
 sub new($@)
 {   my ($baseclass, $trans) = (shift, shift);
@@ -112,13 +59,6 @@ sub init($)
     $self;
 }
 
-=ci_method register NAME
-Register a new back-end.
-=example
- use XML::Compile::Translate::SomeBackend;
- XML::Compile::Translate::SomeBackend->register('SomeNAME');
- my $coderef = $schemas->compile('SomeNAME' => ...);
-=cut
 
 sub register($)
 {  my ($class, $name) = @_;
@@ -128,23 +68,10 @@ sub register($)
    $translators{$name} = $class;
 }
 
-=section Attributes
-=cut
 
 # may disappear, so not documented publicly (yet)
 sub actsAs($) { panic "not implemented" }
 
-=section Handlers
-
-=c_method compile ELEMENT|ATTRIBUTE|TYPE, OPTIONS
-Do not call this function yourself, but use
-M<XML::Compile::Schema::compile()> (or wrappers around that).
-
-This function returns a CODE reference, which can translate
-between Perl datastructures and XML, based on a schema.  Before
-this method is called is the schema already translated into
-a table of types.
-=cut
 
 sub compile($@)
 {   my ($self, $item, %args) = @_;
@@ -1683,284 +1610,5 @@ sub blocked($$$)
     $self->makeBlocked($path, $class, $type);
 }
 
-=chapter DETAILS
-
-=section Translator options
-
-=subsection performance optimization
-
-The M<XML::Compile::Schema::compile()> method (and wrappers) defines
-a set options to improve performance or usability.  These options
-are translated into the executed code: compile time, not run-time!
-
-The following options with their implications:
-
-=over 4
-
-=item sloppy_integers BOOLEAN
-
-The C<integer> type, as defined by the schema built-in specification,
-accepts really huge values.  Also the derived types, like
-C<nonNegativeInteger> can contain much larger values than Perl's
-internal C<long>.  Therefore, the module will start to use M<Math::BigInt>
-for these types if needed.
-
-However, in most cases, people design C<integer> where an C<int> suffices.
-The use of big-int values comes with heigh performance costs.  Set this
-option to C<true> when you are sure that ALL USES of C<integer> in the
-scheme will fit into signed longs (are between -2147483648 and 2147483647
-inclusive)
-
-If you do not want limit the number-space, you can safely add
-  use Math::BigInt try => 'GMP'
-to the top of your main program, and install M<Math::BigInt::GMP>.  Then,
-a C library will do the work, much faster than the Perl implementation.
-
-=item sloppy_floats BOOLEAN
-
-The float types of XML are all quite big, and may be NaN, INF, and -INF.
-Perl's normal floats do not, and therefore M<Math::BigFloat> is used.  This,
-however, is slow.
-
-When this option is true, your application will crash on any value which
-is not understood by Perl's internal float implementation... but run much
-faster.
-
-=item check_values BOOLEAN
-
-Check the validity of the values, before parsing them.  This will
-report errors for the reader, instead of crashes.  The writer will
-not produce invalid data.
-
-=item check_occurs BOOLEAN
-
-Checking whether the number of occurrences for an item are between
-C<minOccurs> and C<maxOccurs> (implied for C<all>, C<sequence>, and
-C<choice> or explicitly specified) takes time.  Of course, in cases
-errors must be handled.  When this option is set to C<false>, 
-only distinction between single and array elements is made.
-
-=item ignore_facets BOOLEAN
-
-Facets limit field content in the restriction block of a simpleType.
-When this option is C<true>, no checks are performed on the values.
-In some cases, this may cause problems: especially with whiteSpace and
-digits of floats.  However, you may be able to control this yourself.
-In most cases, luck even plays a part in this.  Less checks means a
-better performance.
-
-Simple type restrictions are not implemented by other XML perl
-modules.  When the schema is nicely detailed, this will give
-extra security.
-
-=item validation BOOLEAN
-
-When used, it overrules the above C<check_values>, C<check_occurs>, and
-C<ignore_facets> options.  A true value enables all checks, a false
-value will disable them all.  Of course, the latter is the fastest but
-also less secure: your program will need to validate the values in some
-other way.
-
-XML::LibXML has its own validate method, but I have not yet seen any
-performance figures on that.  If you use it, however, it is of course
-a good idea to turn XML::Compile's validation off.
-
-=back
-
-=subsection qualified XML
-
-The produced XML may not use the name-spaces as defined by the schemas,
-just to simplify the input and output.  The structural definition of
-the schemas is still in-tact, but name-space collission may appear.
-
-Per schema, it can be specified whether the elements and attributes
-defined in-there need to be used qualified (with prefix) or not.
-This can cause horrible output when within an unqualified schema
-elements are used from another schema which is qualified.
-
-The suggested solution in articles about the subject is to provide
-people with both a schema which is qualified as one which is not.
-Perl is known to be blunt in its approach: we simply define a flag
-which can force one of both on all schemas together, using
-C<elements_qualified> and C<attributes_qualified>.  May people and
-applications do not understand name-spaces sufficiently, and these
-options may make your day!
-
-=subsection Name-spaces
-
-The translator does respect name-spaces, but not all senders and
-receivers of XML are name-space capable.  Therefore, you have some
-options to interfere.
-
-=over 4
-
-=item prefixes HASH|ARRAY-of-PAIRS
-The translator will create XML elements (WRITER) which use name-spaces,
-based on its own name-space/prefix mapping administration.  This is
-needed because the XML tree is created bottom-up, where XML::LibXML
-namespace management can only handle this top-down.
-
-When your pass your own HASH as argument, you can explicitly specify the
-prefixes you like to be used for which name-space.  Found name-spaces
-will be added to the HASH, as well the use count.  When a new name-space
-URI is discovered, an attempt is made to use the prefix as found in
-the schema. Prefix collisions are actively avoided: when two URIs want
-the same prefix, a sequence number is added to one of them which makes
-it unique.
-
-The HASH structure looks like this:
-
-  my %namespaces =
-    ( myns => { uri => 'myns', prefix => 'mypref', used => 1}
-    , ...  => { uri => ... }
-    );
-
-  my $make = $schema->compile
-    ( WRITER => ...
-    , prefixes => \%namespaces
-    );
-
-  # share the same namespace defs with another component
-  my $other = $schema->compile
-    ( WRITER => ...
-    , prefixes => \%namespaces
-    );
-
-When used is specified and larger than 0, then the namespace will
-appear in the top-level output element (unless C<include_namespaces>
-is false).
-
-Initializing using an ARRAY is a little simpler:
-
- prefixes => [ mypref => 'myns', ... => ... ];
-
-However, be warned that this does not work well with a false value
-for C<include_namespaces>: detected namespaces are added to an
-internal HASH now, which is not returned; that information is lost.
-You will need to know each used namespace beforehand.
-
-=item include_namespaces BOOLEAN|CODE
-When true and WRITER, the top level returned XML element will contain
-the prefix definitions.  Only name-spaces which are actually used
-will be included (a count is kept by the translator).  It may
-very well list name-spaces which are not in the actual output
-because the fields which require them are not included for there is
-not value for those fields.
-
-If you like to combine XML output from separate translated parts
-(for instance in case of generating SOAP), you may want to delay
-the inclusion of name-spaces until a higher level of the XML
-hierarchy which is produced later.
-
-When a CODE reference is passed, it will be called for each used
-namespace, with the uri and prefix as parameters.  Only when the CODE
-returns true, the namespace declaration will be included.
-
-When the compilation produces an attribute, then this option cannot
-be used.
-
-=item namespace_reset BOOLEAN
-You can pass the same HASH to a next call to a reader or writer to get
-consistent name-space usage.  However, when C<include_namespaces> is
-used, you may get ghost name-space listings.  This option will reset
-the counts on all defined name-spaces.
-
-=item use_default_namespace BOOLEAN (added in release 0.57)
-When a true value, the blank prefix will be used for the first namespace
-URI which requires a auto-generated prefix.  However, in quite some
-environments, people mix horrible non-namespace qualified elements with 
-nice namespace qualified elements.  In such situations, namespace the
-qualified-but-default prefix (i.e., no prefix) is confusing.  Therefore,
-the option defaults to false: do not use the invisible prefix.
-
-You may explicitly specify a blank prefix with C<prefixes>,
-which will be used when applicable.
-
-=item block_namespace NAMESPACE|TYPE|HASH|CODE|ARRAY
-
-[1.06] Available on global scale via
-M<XML::Compile::Schema::new(block_namespace)> or
-M<XML::Compile::Schema::blockNamespace()>, and for a single compiled
-instance via M<XML::Compile::Schema::compile(block_namespace)>.
-
-Some schemas include other schemas which you do not need.  For instance,
-the other schema is only used in rare cases, or the other schema defines
-deprecated types and elements.  Of course, you can simply not load those
-schemas... however: the main schema may refer to those types and elements
-you do not need.  So, with this option, you can make the compilation to
-ignore whole namespaces and specific elements or types.
-
-The NAMESPACE is a uri, which will disable use of any element or type
-defined in that space.  You may also provide a specific full TYPE (toplevel
-element or type name).  You may also give an LIST or ARRAY of these, but
-then a HASH is much more suitable: with linear lookup time.
-
-When you provide a CODE reference, it will be called for each type
-and element to be judged.  Passed are C<$type>, C<$ns>, C<$local>,
-and C<$path>.  The C<$ns/$local> is the decomposition of C<$type>.
-When the CODE returns C<undef>, then it is undecisive, letting other
-rules decide.  When it returns C<0>, then the thing will not be blocked
-(whatever the other rules decide).  In other cases, the thing will not
-be used.
-
-  # block a whole namespace
-  $schema->blockNamespace("http://xyz.example.com");
-
-  # block only a single element or typedef
-  $schema->blockNamespace("{http://xyz.example.com}buggy");
-
-  # block $ns1 and $type1, unblock $ns2
-  $schema->blockNamespace( {$ns1 => 1, $ns2 => 0, $type1 => 1} );
-
-  $schema->blockNamespace($ns1, $type1);
-  $schema->compile(..., block_namespace => [$ns1, $type1]);
-  $schema->new(..., block_namespace => [$ns1, $type1]);
-
-  # very flexible
-  sub want_block($$$$) ( my ($type,$ns,$local,$path) = @_; undef}
-  $schema->blockNamespace(\&want_block);
-
-It is very well possible that the blocking of some namespaces breaks the
-validness of messages: when those elements are required but set to be
-ignored.  There is no way to detect this, on the moment.
-
-=back
-
-=subsection Wildcards handlers
-
-Wildcards are a serious complication: the C<any> and C<anyAttribute>
-entities do not describe exactly what can be found, which seriously
-hinders the quality of validation and the preparation of M<XML::Compile>.
-Therefore, if you use them then you need to process that parts of
-XML yourself.  See the various backends on how to create or process
-these elements.
-
-Automatic decoding is problematic: you do not know what to expect, so
-cannot prepare for these data-structures compile-time.  However,
-M<XML::Compile::Cache> offers a way out: you can declare the handlers
-for these "any" components and therewith be prepared for them.  With
-C<XML::Compile::Cache::new(allow_undeclared)>, you can permit run-time
-compilation of  the found components.
-
-=over 4
-
-=item any_element CODE|'TAKE_ALL'|'SKIP_ALL'
-[0.89] This will be called when the type definition contains an C<any>
-definition, after processing the other element components.  By
-default, all C<any> specifications will be ignored.
-
-=item any_attribute CODE|'TAKE_ALL'|'SKIP_ALL'
-[0.89] This will be called when the type definitions contains an
-C<anyAttribute> definition, after processing the other attributes.
-By default, all C<anyAttribute> specifications will be ignored.
-
-=item any_type CODE
-[1.07] Called for processing an "xsd:anyType" element.  Currently only
-supported for the reader.  By default, it returns a string when the
-element does not contains sub-elements, otherwise the XML node.
-
-=back
-
-=cut
 
 1;

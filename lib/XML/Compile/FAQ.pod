@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::FAQ - frequently asked questions
@@ -8,7 +10,7 @@ On this page, a wild collection of questions are answered.  If you have
 contributions either in question or as answer, then please contribute
 via the mailinglist.
 
-See also M<XML::Compile::SOAP::FAQ>.
+See also L<XML::Compile::SOAP::FAQ|XML::Compile::SOAP::FAQ>.
 
 =head2 The data structure
 
@@ -101,8 +103,11 @@ version of them on the moment you start the application.  There are two
 major problems with that:
 
 =over 4
+
 =item . you may not have (a working) internet connection on that moment
+
 =item . remote changes in the spec may break your application unexpectedly
+
 =back
 
 In general, IMO as author of the XML::Compile suite, you should B<never>
@@ -206,4 +211,40 @@ know which of the alternatives was "the best" alternative.
 Try turning on debugging with:
 
   use Log::Report  mode => "DEBUG";
+
+=head1 SEE ALSO
+
+This module is part of XML-Compile distribution version 1.41,
+built on January 05, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+
+Other distributions in this suite:
+L<XML::Compile>,
+L<XML::Compile::SOAP>,
+L<XML::Compile::WSDL11>,
+L<XML::Compile::SOAP12>,
+L<XML::Compile::SOAP::Daemon>,
+L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
+L<XML::Compile::WSS::Signature>,
+L<XML::Compile::Tester>,
+L<XML::Compile::Cache>,
+L<XML::Compile::Dumper>,
+L<XML::Compile::RPC>,
+L<XML::Rewrite>
+and
+L<XML::LibXML::Simple>.
+
+Please post questions or ideas to the mailinglist at
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile> .
+For live contact with other developers, visit the C<#xml-compile> channel
+on C<irc.perl.org>.
+
+=head1 LICENSE
+
+Copyrights 2006-2014 by [Mark Overmeer]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
 

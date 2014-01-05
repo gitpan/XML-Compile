@@ -1,7 +1,14 @@
+# Copyrights 2006-2014 by [Mark Overmeer].
+#  For other contributors see ChangeLog.
+# See the manual pages for details on the licensing terms.
+# Pod stripped from pm file by OODoc 2.01.
 use warnings;
 use strict;
 
 package TestTools;
+use vars '$VERSION';
+$VERSION = '1.41';
+
 use base 'Exporter';
 
 use XML::LibXML;

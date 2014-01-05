@@ -1,8 +1,15 @@
+# Copyrights 2006-2014 by [Mark Overmeer].
+#  For other contributors see ChangeLog.
+# See the manual pages for details on the licensing terms.
+# Pod stripped from pm file by OODoc 2.01.
 use warnings;
 use strict;
 no warnings 'recursion';
 
 package XML::Compile::Schema::BuiltInFacets;
+use vars '$VERSION';
+$VERSION = '1.41';
+
 use base 'Exporter';
 
 our @EXPORT = qw/builtin_facet/;
@@ -20,28 +27,6 @@ use POSIX              qw/DBL_MAX_10_EXP DBL_DIG/;
 use constant INT_MAX => int((sprintf"%u\n",-1)/2);
 use constant INT_MIN => -1 - INT_MAX;
 
-=chapter NAME
-
-XML::Compile::Schema::BuiltInFacets - handling of built-in facet checks
-
-=chapter SYNOPSIS
-
- # Not for end-users
- use XML::Compile::Schema::BuiltInFacets qw/builtin_facet/
-
-=chapter DESCRIPTION
-
-This package implements the facet checks.  Facets are used to
-express restrictions on variable content which need to be checked
-dynamically.
-
-The content is not for end-users, but called by the schema translator.
-
-=chapter FUNCTIONS
-
-=function builtin_facet PATH, ARGS, TYPE, [VALUE]
-
-=cut
 
 my %facets_simple =
   ( enumeration     => \&_enumeration

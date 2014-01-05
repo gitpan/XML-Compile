@@ -1,5 +1,12 @@
+# Copyrights 2006-2014 by [Mark Overmeer].
+#  For other contributors see ChangeLog.
+# See the manual pages for details on the licensing terms.
+# Pod stripped from pm file by OODoc 2.01.
 
 package XML::Compile::Translate::Template;
+use vars '$VERSION';
+$VERSION = '1.41';
+
 use base 'XML::Compile::Translate';
 
 use strict;
@@ -14,31 +21,6 @@ use List::Util  qw/max/;
 our $VERSION;         # OODoc adds $VERSION to the script
 $VERSION ||= 'undef';
 
-=chapter NAME
-
-XML::Compile::Translate::Template - create an XML or PERL example
-
-=chapter SYNOPSIS
-
- my $schema = XML::Compile::Schema->new(...);
- print $schema->template(XML  => $type, ...);
- print $schema->template(PERL => $type, ...);
-
- # script as wrapper for this module
- schema2example -f XML ...
-
-=chapter DESCRIPTION
-
-The translator understands schemas, but does not encode that into
-actions.  This module interprets the parse results of the translator,
-and creates a kind of abstract syntax tree from it, which can be used
-for documentational purposes.  Then, it implements to ways to represent
-that knowledge: as an XML or a Perl example of the data-structure which
-the schema describes.
-
-=chapter METHODS
-
-=cut
 
 sub makeTagQualified
 {   my ($self, $path, $node, $local, $ns) = @_;
@@ -937,50 +919,5 @@ sub makeBlocked($$$)
     panic "namespace blocking not yet supported for Templates";
 }
 
-=chapter DETAILS
-
-=section Processing Wildcards
-Wildcards are not (yet) supported.
-
-=section Schema hooks
-Hooks are implemented since version 0.82.  They can be used to
-improve the template output.
-
-=subsection hooks executed before the template is generated
-None defined yet.
-
-=subsection hooks executed as replacement
-
-The predefined hook C<COLLAPSE> can be used to remove the extensive
-listing of some elements.  Usually used with a type of which you
-know the structure or which is repeated often.
-
-=subsection hooks for post-processing, after the data is collected
-None defined yet.
-
-=section Typemaps
-Typemaps are currently only available to improve the PERL output.
-
-=subsection Typemaps for PERL template output
-
-You can pass C<< &function_name >> to indicate that the code reference
-with variable name C<< $function_name >> will be called.  Mind the change
-of C<< & >> into C<< $ >>.
-
-When C<< $object_name >> is provided, then that object is an interface
-object, which will be called for the indicated type.
-
-In case class name (any bareword will do) is specified, it is shown
-as a call to the C<toXML()> instance method call from some data object
-of the specified class.
-
-=example typemaps with template
-  $schemas->template(PERL => $some_type, typemap =>
-    { $type1 => '&myfunc'   # $myfunc->('WRITER', ...)
-    , $type2 => '$interf'   # $interf->($object, ...)
-    , $type3 => 'My::Class'
-    });
-
-=cut
 
 1;
