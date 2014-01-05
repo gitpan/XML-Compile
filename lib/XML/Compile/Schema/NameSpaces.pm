@@ -1,15 +1,8 @@
-# Copyrights 2006-2013 by [Mark Overmeer].
-#  For other contributors see ChangeLog.
-# See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.01.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::NameSpaces;
-use vars '$VERSION';
-$VERSION = '1.40';
-
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 
@@ -18,6 +11,30 @@ use XML::Compile::Util
 
 use XML::Compile::Schema::BuiltInTypes qw/%builtin_types/;
 
+=chapter NAME
+
+XML::Compile::Schema::NameSpaces - Connect name-spaces from schemas
+
+=chapter SYNOPSIS
+ # Used internally by XML::Compile::Schema
+ my $nss = XML::Compile::Schema::NameSpaces->new;
+ $nss->add($schema);
+
+=chapter DESCRIPTION
+
+This module keeps overview on a set of namespaces, collected from various
+schema files.  Per XML namespace, it will collect a list of fragments
+which contain definitions for the namespace, each fragment comes from a
+different source.  These fragments are searched in reverse order when
+an element or type is looked up (the last definitions overrule the
+older definitions).
+
+=chapter METHODS
+
+=section Constructors
+
+=method new OPTIONS
+=cut
 
 sub new($@)
 {   my $class = shift;
@@ -32,22 +49,44 @@ sub init($)
     $self;
 }
 
+=section Accessors
+
+=method list
+Returns the list of name-space URIs defined.
+=cut
 
 sub list() { keys %{shift->{tns}} }
 
+=method namespace URI
+Returns a list of M<XML::Compile::Schema::Instance> objects which have
+the URI as target namespace.
+=cut
 
 sub namespace($)
 {   my $nss  = $_[0]->{tns}{$_[1]};
     $nss ? @$nss : ();
 }
 
+=method add SCHEMA, [SCHEMAS]
+Add M<XML::Compile::Schema::Instance> objects to the internal
+knowledge of this object.
+=cut
 
 sub add(@)
 {   my $self = shift;
     foreach my $instance (@_)
-    {   unshift @{$self->{tns}{$_}}, $instance
-	    for $instance->tnses;
+    {   # With the "new" targetNamespace attribute on any attribute, one
+        # schema may have contribute to multiple tns's.  Also, I have
+        # encounted schema's without elements, but <import>
+        my @tnses = $instance->tnses;
+        @tnses or @tnses = '(none)';
 
+        # newest definitions overrule earlier.
+        unshift @{$self->{tns}{$_}}, $instance
+            for @tnses;
+
+        # inventory where to find definitions which belong to some
+        # substitutionGroup.
         while(my($base,$ext) = each %{$instance->sgs})
         {   $self->{sgs}{$base}{$_} ||= $instance for @$ext;
         }
@@ -55,6 +94,15 @@ sub add(@)
     @_;
 }
 
+=method use OBJECT
+Use any other M<XML::Compile::Schema> extension as fallback, if the
+M<find()> does not succeed for the current object.  Searches for
+definitions do not recurse into the used object.
+
+Returns the list of all used OBJECTS.
+This method implements M<XML::Compile::Schema::useSchema()>.
+
+=cut
 
 sub use($)
 {   my $self = shift;
@@ -62,15 +110,30 @@ sub use($)
     @{$self->{use}};
 }
 
+=method schemas URI
+We need the name-space; when it is lacking then import must help, but that
+must be called explicitly.
+=cut
 
 sub schemas($) { $_[0]->namespace($_[1]) }
 
+=method allSchemas
+Returns a list of all known schema instances.
+=cut
 
 sub allSchemas()
 {   my $self = shift;
     map {$self->schemas($_)} $self->list;
 }
 
+=method find KIND, ADDRESS|(URI,NAME), OPTIONS
+Lookup the definition for the specified KIND of definition: the name
+of a global element, global attribute, attributeGroup or model group.
+The ADDRESS is constructed as C< {uri}name > or as separate URI and NAME.
+
+=option  include_used BOOLEAN
+=default include_used <true>
+=cut
 
 sub find($$;$)
 {   my ($self, $kind) = (shift, shift);
@@ -96,6 +159,9 @@ sub find($$;$)
     undef;
 }
 
+=method doesExtend EXTTYPE, BASETYPE
+Returns true when EXTTYPE extends BASETYPE.
+=cut
 
 sub doesExtend($$)
 {   my ($self, $ext, $base) = @_;
@@ -157,6 +223,9 @@ sub doesExtend($$)
     $base eq $supertype ? 1 : $self->doesExtend($supertype, $base);
 }
 
+=method findTypeExtensions TYPE
+This method can be quite expensive, with large and nested schemas.
+=cut
 
 sub findTypeExtensions($)
 {   my ($self, $type) = @_;
@@ -183,6 +252,12 @@ sub autoexpand_xsi_type($)
     \@ext;
 }
 
+=method findSgMembers CLASS, TYPE
+Lookup the substitutionGroup alternatives for a specific element, which
+is an TYPE (element full name) of form C< {uri}name > or as separate
+URI and NAME.  Returned is an ARRAY of HASHes, each describing one type
+(as returned by M<find()>)
+=cut
 
 sub findSgMembers($$)
 {   my ($self, $class, $base) = @_;
@@ -197,6 +272,10 @@ sub findSgMembers($$)
     @sgs;
 }
 
+=method findID ADDRESS|(URI,ID)
+Lookup the definition for the specified id, which is constructed as
+C< uri#id > or as separate URI and ID.
+=cut
 
 sub findID($;$)
 {   my $self = shift;
@@ -223,6 +302,29 @@ sub findID($;$)
     undef;
 }
 
+=method printIndex [FILEHANDLE], OPTIONS
+Show all definitions from all namespaces, for debugging purposes, by
+default the selected.  Additional OPTIONS are passed to 
+M<XML::Compile::Schema::Instance::printIndex()>.
+
+=option  namespace URI|ARRAY-of-URI
+=default namespace <ALL>
+Show only information about the indicate namespaces.
+
+=option  include_used BOOLEAN
+=default include_used <true>
+Show also the index from all the schema objects which are defined
+to be usable as well; which were included via M<use()>.
+
+=examples
+ my $nss = $schema->namespaces;
+ $nss->printIndex(\*MYFILE);
+ $nss->printIndex(namespace => "my namespace");
+
+ # types defined in the wsdl schema
+ use XML::Compile::SOAP::Util qw/WSDL11/;
+ $nss->printIndex(\*STDERR, namespace => WSDL11);
+=cut
 
 sub printIndex(@)
 {   my $self = shift;
@@ -240,6 +342,31 @@ sub printIndex(@)
     }
 
     $self;
+}
+
+=method importIndex OPTIONS
+[1.41] Returns a HASH with namespaces which are declared in all currently
+known schema's, pointing to ARRAYs of the locations where the import should
+come from.
+
+In reality, the locations mentioned are often wrong. But when you think
+you want to load all schema's dynamically at start-up (no, you do not
+want it but it is a SOAP paradigma) then you get that info easily with
+this method.
+=cut
+
+sub importIndex(%)
+{   my ($self, %args) = @_;
+    my %import;
+    foreach my $fragment (map $self->schemas($_), $self->list)
+    {   foreach my $import ($fragment->imports)
+        {   $import{$import}{$_}++ for $fragment->importLocations($import);
+        }
+    }
+    foreach my $ns (keys %import)
+    {   $import{$ns} = [ grep length, keys %{$import{$ns}} ];
+    }
+    \%import;
 }
 
 1;

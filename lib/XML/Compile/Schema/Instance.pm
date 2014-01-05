@@ -1,15 +1,8 @@
-# Copyrights 2006-2013 by [Mark Overmeer].
-#  For other contributors see ChangeLog.
-# See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.01.
 
 use warnings;
 use strict;
 
 package XML::Compile::Schema::Instance;
-use vars '$VERSION';
-$VERSION = '1.40';
-
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::Compile::Schema::Specs;
@@ -19,6 +12,50 @@ my @defkinds = qw/element attribute simpleType complexType
                   attributeGroup group/;
 my %defkinds = map +($_ => 1), @defkinds;
 
+=chapter NAME
+
+XML::Compile::Schema::Instance - Represents one schema
+
+=chapter SYNOPSIS
+
+ # Used internally by XML::Compile::Schema
+ my $schema = XML::Compile::Schema::Instance->new($xml);
+
+=chapter DESCRIPTION
+
+This module collect information from one schema, and helps to
+process it.
+
+=chapter METHODS
+
+=section Constructors
+
+=method new TOP, OPTIONS
+Get's the top of an XML::LibXML tree, which must be a schema element.
+The tree is parsed: the information collected.
+
+=option  source STRING
+=default source C<undef>
+An indication where this information came from.
+
+=option  filename FILENAME
+=default filename C<undef>
+When the source is some file, this is its name.
+
+=option  element_form_default 'qualified'|'unqualified'
+=default element_form_default <undef>
+Overrule the default as found in the schema.  Many old schemas (like
+WSDL11 and SOAP11) do not specify the default in the schema but only
+in the text.
+
+=option  attribute_form_default 'qualified'|'unqualified'
+=default attribute_form_default <undef>
+
+=option  target_namespace NAMESPACE
+=default target_namespace <undef>
+Overrule or set the target namespace.
+
+=cut
 
 sub new($@)
 {   my $class = shift;
@@ -40,6 +77,15 @@ sub init($)
     $self;
 }
 
+=section Accessors
+
+=method targetNamespace
+=method schemaNamespace
+=method schemaInstance
+=method source
+=method filename
+=method schema
+=cut
 
 sub targetNamespace { shift->{tns} }
 sub schemaNamespace { shift->{xsd} }
@@ -48,18 +94,51 @@ sub source          { shift->{source} }
 sub filename        { shift->{filename} }
 sub schema          { shift->{schema} }
 
+=method tnses
+A schema can defined more than one target namespace, where recent
+schema spec changes provide a targetNamespace attribute.
+=cut
 
 sub tnses() {keys %{shift->{tnses}}}
 
+=method sgs
+Returns a HASH with the base-type as key and an ARRAY of types
+which extend it.
+=cut
 
 sub sgs() { shift->{sgs} }
 
+=method type URI
+Returns the type definition with the specified name.
+=cut
 
 sub type($) { $_[0]->{types}{$_[1]} }
 
+=method element URI
+Returns one global element definition.
+=cut
 
 sub element($) { $_[0]->{element}{$_[1]} }
 
+=method elements
+Returns a list of all globally defined element names.
+
+=method attributes
+Returns a lost of all globally defined attribute names.
+
+=method attributeGroups
+Returns a list of all defined attribute groups.
+
+=method groups
+Returns a list of all defined model groups.
+
+=method simpleTypes
+Returns a list with all simpleType names.
+
+=method complexTypes
+Returns a list with all complexType names.
+
+=cut
 
 sub elements()        { keys %{shift->{element}} }
 sub attributes()      { keys %{shift->{attributes}} }
@@ -68,11 +147,16 @@ sub groups()          { keys %{shift->{group}} }
 sub simpleTypes()     { keys %{shift->{simpleType}} }
 sub complexTypes()    { keys %{shift->{complexType}} }
 
+=method types
+Returns a list of all simpleTypes and complexTypes
+=cut
 
 sub types()           { ($_[0]->simpleTypes, $_[0]->complexTypes) }
 
+=section Index
+=cut
 
-my %skip_toplevel = map { ($_ => 1) } qw/annotation notation redefine/;
+my %skip_toplevel = map +($_ => 1), qw/annotation notation redefine/;
 
 sub _collectTypes($$)
 {   my ($self, $schema, $args) = @_;
@@ -103,7 +187,6 @@ sub _collectTypes($$)
 
     $self->{tnses} = {}; # added when used
     $self->{types} = {};
-
     $self->{schema} = $schema;
 
   NODE:
@@ -159,18 +242,44 @@ sub _collectTypes($$)
     $self;
 }
 
+=method includeLocations
+Returns a list of all schemaLocations which where specified with include
+statements.
+=cut
 
 sub includeLocations() { @{shift->{include}} }
 
+=method imports
+Returns a list with all namespaces which need to be imported.
+=cut
 
 sub imports() { keys %{shift->{import}} }
 
+=method importLocations NAMESPACE
+Returns a list of all schemaLocations specified with the import NAMESPACE
+(one of the values returned by M<imports()>).
+=cut
 
 sub importLocations($)
 {   my $locs = $_[0]->{import}{$_[1]};
     $locs ? @$locs : ();
 }
 
+=method printIndex [FILEHANDLE], OPTIONS
+Prints an overview over the defined objects within this schema to the
+selected FILEHANDLE.
+
+=option  kinds KIND|ARRAY-of-KIND
+=default kinds <all>
+Which KIND of definitions would you like to see.  Pick from
+C<element>, C<attribute>, C<simpleType>, C<complexType>, C<attributeGroup>,
+and C<group>.
+
+=option  list_abstract BOOLEAN
+=default list_abstract <true>
+Show abstract elements, or skip them (because they cannot be instantiated
+anyway).
+=cut
 
 sub printIndex(;$)
 {   my $self   = shift;
@@ -209,6 +318,11 @@ sub printIndex(;$)
     }
 }
 
+=method find KIND, FULLNAME
+Returns the definition for the object of KIND, with FULLNAME.
+=example of find
+  my $attr = $instance->find(attribute => '{myns}my_global_attr');
+=cut
 
 sub find($$)
 {    my ($self, $kind, $full) = @_;

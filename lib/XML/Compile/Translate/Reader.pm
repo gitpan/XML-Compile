@@ -1,11 +1,4 @@
-# Copyrights 2006-2013 by [Mark Overmeer].
-#  For other contributors see ChangeLog.
-# See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.01.
 package XML::Compile::Translate::Reader;
-use vars '$VERSION';
-$VERSION = '1.40';
-
 use base 'XML::Compile::Translate';
 
 use strict;
@@ -18,6 +11,23 @@ use List::Util qw/first/;
 use XML::Compile::Util qw/pack_type odd_elements type_of_node SCHEMA2001i/;
 use XML::Compile::Iterator ();
 
+=chapter NAME
+
+XML::Compile::Translate::Reader - translate XML to HASH
+
+=chapter SYNOPSIS
+
+ my $schema = XML::Compile::Schema->new(...);
+ my $code   = $schema->compile(READER => ...);
+
+=chapter DESCRIPTION
+The translator understands schemas, but does not encode that into
+actions.  This module implements those actions to translate from XML
+into a (nested) Perl HASH structure.
+
+=chapter METHODS
+
+=cut
 
 # Each action implementation returns a code reference, which will be
 # used to do the run-time work.  The mechanism of `closures' is used to
@@ -1180,5 +1190,347 @@ sub makeBlocked($$$)
 
 #-----------------------------------
 
+=chapter DETAILS
+
+=section Processing Wildcards
+
+If you want to collect information from the XML structure, which is
+permitted by C<any> and C<anyAttribute> specifications in the schema,
+you have to implement that yourself.  The problem is C<XML::Compile>
+has less knowledge than you about the possible data.
+
+=subsection option any_attribute
+
+By default, the C<anyAttribute> specification is ignored.  When C<TAKE_ALL>
+is given, all attributes which are fulfilling the name-space requirement
+added to the returned data-structure.  As key, the absolute element name
+will be used, with as value the related unparsed XML element.
+
+In the current implementation, if an explicit attribute is also
+covered by the name-spaces permitted by the anyAttribute definition,
+then it will also appear in that list (and hence the handler will
+be called as well).
+
+Use M<XML::Compile::Schema::compile(any_attribute)> to write your
+own handler, to influence the behavior.  The handler will be called for
+each attribute, and you must return list of pairs of derived information.
+When the returned is empty, the attribute data is lost.  The value may
+be a complex structure.
+
+=example anyAttribute in a READER
+Say your schema looks like this:
+
+ <schema targetNamespace="http://mine"
+    xmlns:me="http://mine" ...>
+   <element name="el">
+     <complexType>
+       <attribute name="a" type="xs:int" />
+       <anyAttribute namespace="##targetNamespace"
+          processContents="lax">
+     </complexType>
+   </element>
+   <simpleType name="non-empty">
+     <restriction base="NCName" />
+   </simpleType>
+ </schema>
+
+Then, in an application, you write:
+
+ my $r = $schema->compile
+  ( READER => pack_type('http://mine', 'el')
+  , anyAttribute => 'ALL'
+  );
+ # or lazy: READER => '{http://mine}el'
+
+ my $h = $r->( <<'__XML' );
+   <el xmlns:me="http://mine">
+     <a>42</a>
+     <b type="me:non-empty">
+        everything
+     </b>
+   </el>
+ __XML
+
+ use Data::Dumper 'Dumper';
+ print Dumper $h;
+ __XML__
+
+The output is something like
+
+ $VAR1 =
+  { a => 42
+  , '{http://mine}a' => ... # XML::LibXML::Node with <a>42</a>
+  , '{http://mine}b' => ... # XML::LibXML::Node with <b>everything</b>
+  };
+
+You can improve the reader with a callback.  When you know that the
+extra attribute is always of type C<non-empty>, then you can do
+
+ my $read = $schema->compile
+  ( READER => '{http://mine}el'
+  , anyAttribute => \&filter
+  );
+
+ my $anyAttRead = $schema->compile
+  ( READER => '{http://mine}non-empty'
+  );
+
+ sub filter($$$$)
+ {   my ($fqn, $xml, $path, $translator) = @_;
+     return () if $fqn ne '{http://mine}b';
+     (b => $anyAttRead->($xml));
+ }
+
+ my $h = $r->( see above );
+ print Dumper $h;
+
+Which will result in
+
+ $VAR1 =
+  { a => 42
+  , b => 'everything'
+  };
+
+The filter will be called twice, but return nothing in the first
+case.  You can implement any kind of complex processing in the filter.
+
+=subsection option any_element
+
+By default, the C<any> definition in a schema will ignore all elements
+from the container which are not used.  Also in this case C<TAKE_ALL>
+is required to produce C<any> results.  C<SKIP_ALL> will ignore all
+results, although this are being processed for validation needs.
+
+=subsection option any_type CODE
+
+By default, the elements which have type "xsd:anyType" will return
+an M<XML::LibXML::Element> when there are sub-elements.  Otherwise,
+it will return the textual content. 
+
+If you pass your own CODE reference, you can change this behavior.  It
+will get called with the path, the node, and the default handler.  Be
+awayre the $node may actually be a string already.
+
+   $schema->compile(READER => ..., any_type => \&handle_any_type);
+   sub handle_any_type($$$)
+   { my ($path, $node, $handler) = @_;
+     ref $node or return $node;
+     $node;
+   }
+
+=section Mixed elements
+
+[available since 0.86]
+ComplexType and ComplexContent components can be declared with the
+C<<mixed="true">> attribute.  This implies that text is not limited
+to the content of containers, but may also be used inbetween elements.
+Usually, you will only find ignorable white-space between elements.
+
+In this example, the C<a> container is marked to be mixed:
+  <a id="5"> before <b>2</b> after </a>
+
+Often the "mixed" option is bending one of both ways: either the element
+is needed as text, or the element should be parsed and the text ignored.
+The reader has various options to avoid the need of processing raw
+XML::LibXML nodes.
+
+[1.00]
+When the return is a HASH, that HASH will also contain the
+C<_MIXED_ELEMENT_MODE> key, to help people understand what
+happens.  This is not possible for all modes, only for some.
+
+With M<XML::Compile::Schema::compile(mixed_elements)> set to
+=over 4
+
+=item ATTRIBUTES  (the default)
+a HASH is returned, the attributes are processed.  The node is found
+as M<XML::LibXML::Element> with the key '_'.  Above example will
+produce
+  $r = { id => 5, _ => $xmlnode };
+
+=item TEXTUAL
+Like the previous, but now the textual representation of the content is
+returned with key '_'.  Above example will produce
+  $r = { id => 5, _ => ' before 2 after '};
+
+=item STRUCTURAL
+will remove all mixed-in text, and treat the element as normal element.
+The example will be transformed into
+  $r = { id => 5, b => 2 };
+
+=item XML_NODE
+return the M<XML::LibXML::Node> itself.  The example:
+  $r = $xmlnode;
+
+=item XML_STRING
+return the mixed node as XML string, just as in the source.  Be warned
+that it is rather expensive: the string was parsed and then stringified
+again, which is costly for large nodes.  Result:
+  $r = '<a id="5"> before <b>2</b> after </a>';
+
+=item CODE reference
+the reference is called with the M<XML::LibXML::Node> as first argument.
+When a value is returned (even undef), then the right tag with the value
+will be included in the translators result.  When an empty list is
+returned by the code reference, then nothing is returned (which may
+result in an error if the element is required according to the schema)
+=back
+
+When some of your mixed elements need different behavior from other
+elements, then you have to go play with the normal hooks in specific
+cases.
+
+=section Schema hooks
+
+=subsection hooks executed before the XML is being processed
+The C<before> hooks receives an M<XML::LibXML::Node> object and
+the path string.  It must return a new (or same) XML node which
+will be used from then on.  You probably can best modify a node
+clone, not the original as provided by the user.  When C<undef>
+is returned, the whole node will disappear.
+
+This hook offers a predefined C<PRINT_PATH>.
+
+=example to trace the paths
+ $schema->addHook
+   ( action => 'READER'
+   , path   => qr/./
+   , before => 'PRINT_PATH'
+   );
+
+=subsection hooks executed as replacement
+
+Your C<replace> hook should return a list of key-value pairs. To produce
+it, it will get the M<XML::LibXML::Element>, the translator settings as
+HASH, the path, and the localname.
+
+This hook has a predefined C<SKIP>, which will not process the
+found element, but simply return the string "SKIPPED" as value.
+This way, a whole tree of unneeded translations can be avoided.
+
+Sometimes, the Schema spec is such a mess, that XML::Compile cannot
+automatically translate it.  I have seen cases where confusion
+over name-spaces is created: a choice between three elements with
+the same name but different types.  Well, in such case you may use
+M<XML::LibXML::Simple> to translate a part of your tree.  Simply
+
+ use XML::LibXML::Simple  qw/XMLin/;
+ $schema->addHook
+   ( action  => 'READER'
+   , type    => 'tns:xyz'     # or pack_type($tns,'xyz')
+  #  path    => qr!/company$! # by element name
+   , replace =>
+       sub { my ($xml, $args, $path, $type, $r) = @_;
+             ($type => XMLin($xml, ...));
+           }
+   );
+
+=subsection hooks for post-processing, after the data is collected
+
+Your code reference gets called with three parameters: the XML node,
+the data collected and the path.  Be careful that the collected data
+might be a SCALAR (for simpleType).  Return a HASH or a SCALAR.  C<undef>
+may work, unless it is the value of a required element you throw awy.
+
+This hook also offers a predefined C<PRINT_PATH>.  Besides, it
+has C<INCLUDE_PATH>, C<XML_NODE>, C<NODE_TYPE>, C<ELEMENT_ORDER>,
+and C<ATTRIBUTE_ORDER>, which will result in additional fields in
+the HASH, respectively containing the NODE which was processed (an
+XML::LibXML::Element), the type_of_node, the element names, and the
+attribute names.  The keys start with an underscore C<_>.
+
+=section Typemaps
+
+In a typemap, a relation between an XML element type and a Perl class (or
+object) is made.  Each translator back-end will implement this a little
+differently.  This section is about how the reader handles typemaps.
+
+=subsection Typemap to Class
+
+Usually, an XML type will be mapped on a Perl class.  The Perl class
+implements the C<fromXML> method as constructor.
+
+ $schema->addTypemaps($sometype => 'My::Perl::Class');
+
+ package My::Perl::Class;
+ ...
+ sub fromXML
+ {   my ($class, $data, $xmltype) = @_;
+     my $self = $class->new($data);
+     ...
+     $self;
+ }
+
+Your method returns the data which will be included in the result tree
+of the reader.  You may return an object, the unmodified C<$data>, or
+C<undef>.  When C<undef> is returned, this may fail the schema parser
+when the data element is required.
+
+In the simpelest implementation, the class stores its data exactly as
+the XML structure:
+
+ package My::Perl::Class;
+ sub fromXML
+ {   my ($class, $data, $xmltype) = @_;
+     bless $data, $class;
+ }
+
+ # The same, even shorter:
+ sub fromXML { bless $_[1], $_[0] }
+
+=subsection Typemap to Object
+
+Another option is to implement an object factory: one object which creates
+other objects.  In this case, the C<$xmltype> parameter can come of use,
+to have one object spawning many different other objects.
+
+ my $object = My::Perl::Class->new(...);
+ $schema->typemap($sometype => $object);
+
+ package My::Perl::Class;
+ sub fromXML
+ {   my ($object, $xmltype, $data) = @_;
+     return Some::Other::Class->new($data);
+ }
+
+This object factory may be a very simple solution when you map XML onto
+objects which are not under your control; where there is not way to
+add the C<fromXML> method.
+
+=subsection Typemap to CODE
+
+The light version of an object factory works with CODE references.
+
+ $schema->typemap($t1 => \&myhandler);
+ sub myhandler
+ {   my ($backend, $data, $type) = @_;
+     return My::Perl::Class->new($data)
+         if $backend eq 'READER';
+     $data;
+ }
+
+ # shorter
+ $schema->typemap($t1 => sub {My::Perl::Class->new($_[1])} );
+
+=subsection Typemap implementation
+
+Internally, the typemap is simply translated into an "after" hook for the
+specific type.  After the data was processed via the usual mechanism,
+the hook will call method C<fromXML> on the class or object you specified
+with the data which was read.  You may still use "before" and "replace"
+hooks, if you need them.
+
+Syntactic sugar:
+
+  $schema->typemap($t1 => 'My::Package');
+  $schema->typemap($t2 => $object);
+
+is comparible to
+
+  $schema->typemap($t1 => sub {My::Package->fromXML(@_)});
+  $schema->typemap($t2 => sub {$object->fromXML(@_)} );
+
+with some extra checks.
+=cut
 
 1;
