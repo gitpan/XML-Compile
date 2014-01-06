@@ -824,6 +824,10 @@ See L<XML::Compile/"Administration">
 
 See L<documentation in the base class|XML::Compile/"DETAILS">.
  
+=head2 Distribution collection overview
+
+See L<documentation in the base class|XML::Compile/"Distribution collection overview">.
+ 
 =head2 Comparison
 
 See L<documentation in the base class|XML::Compile/"Comparison">.
@@ -1666,8 +1670,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.41,
-built on January 05, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.42,
+built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

@@ -59,11 +59,18 @@ example:
  print pack_type '', 'my-type';
  # all three show:   my-type
 
-=item B<unpack_type>(STRING)
+=item B<unpack_id>(STRING)
 
 Returns a LIST of two elements: the name-space and the id, as
 included in the STRING.  That STRING must be compatible with the
 result of L<pack_id()|XML::Compile::Util/"Packing">.
+
+=item B<unpack_type>(STRING)
+
+Returns a LIST of two elements: the name-space and the localname, as
+included in the STRING.  That STRING must be compatible with the
+result of L<pack_type()|XML::Compile::Util/"Packing">.  When no name-space is present, an empty
+string is used.
 
 =back
 
@@ -87,8 +94,8 @@ Translate an XML::LibXML::Node into a packed type.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.41,
-built on January 05, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.42,
+built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

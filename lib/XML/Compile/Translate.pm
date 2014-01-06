@@ -8,7 +8,7 @@ no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.41';
+$VERSION = '1.42';
 
 
 # Errors are either in _class 'usage': called with request
@@ -20,7 +20,8 @@ use List::Util  qw/first max/;
 use XML::Compile::Schema::Specs;
 use XML::Compile::Schema::BuiltInFacets;
 use XML::Compile::Schema::BuiltInTypes qw/%builtin_types/;
-use XML::Compile::Util      qw/pack_type unpack_type type_of_node SCHEMA2001/;
+use XML::Compile::Util      qw/pack_type unpack_type type_of_node SCHEMA2001
+   unpack_id/;
 use XML::Compile::Iterator  ();
 
 my %translators =
@@ -1031,10 +1032,11 @@ sub attributeOne($)
 
         $name       = $ref->getAttribute('name')
             or error __x"ref attribute without name at {where}"
-                 , where => $tree->path, _class => 'schema';
+                 , where => $where, _class => 'schema';
 
-        if($typeattr = $ref->getAttribute('type'))
+        if(my $t = $ref->getAttribute('type'))
         {   # postpone interpretation
+            $typeattr = $self->rel2abs($where, $ref, $t);
         }
         else
         {   my $other = $tree->descend($ref);
@@ -1042,10 +1044,10 @@ sub attributeOne($)
                 or error __x"toplevel attribute {type} has no type attribute nor single simpleType child"
                      , type => $refname, _class => 'schema';
             $type   = $self->simpleType($other->descend);
+            $tns    = $self->{tns};
         }
         $form   = $ref->getAttribute('form');
         $attr_q = $self->{attrs_qual};
-        $tns    = $self->{tns};
     }
     elsif($tree->nrChildren==1)
     {   $tree->currentLocal eq 'simpleType'

@@ -11,7 +11,7 @@ XML::Compile - Compilation based XML processing
 
 =head1 SYNOPSIS
 
- # See XML::Compile::Schema / ::WSDL / ::SOAP
+ # See XML::Compile::Schema / ::WSDL / ::SOAP11 etc
 
 =head1 DESCRIPTION
 
@@ -45,48 +45,6 @@ dynamically; you have to call L<XML::Compile::Schema::importDefinitions()|XML::C
 explicitly with filenames of locally stored copies. Includes do only
 work if they have a targetNamespace defined, which is the same as that
 of the schema it is included into.
-
-=back
-
-For end-users, the following packages are of interest (the other
-are support packages):
-
-=over 4
-
-=item L<XML::Compile::Schema|XML::Compile::Schema>
-
-Interpret schema elements and types: create processors for XML messages.
-
-=item L<XML::Compile::SOAP|XML::Compile::SOAP>
-
-Use the SOAP protocol, client side.
-
-=item L<XML::Compile::WSDL11|XML::Compile::WSDL11>
-
-Use SOAP with a WSDL version 1.1 communication specification file.
-
-=item L<XML::Compile::SOAP::Daemon|XML::Compile::SOAP::Daemon>
-
-Create a SOAP daemon, directly from a WSDL file.
-
-=item L<XML::Compile::Tester|XML::Compile::Tester>
-
-Helps you write regression tests.
-
-=item L<XML::Compile::Cache|XML::Compile::Cache>
-
-Helps you administer compiled readers and writers, especially useful it
-there are a lot of them.  Extends L<XML::Compile::Schema|XML::Compile::Schema>.
-
-=item L<XML::Rewrite|XML::Rewrite>
-
-Clean-up XML structures: beautify, simplify, extract.
-
-=item L<XML::Compile::Dumper|XML::Compile::Dumper>
-
-Enables you to save pre-compiled XML handlers, the results of any
-C<compileClient>.  However, this results in huge files, so this may
-not be worth the effort.
 
 =back
 
@@ -263,6 +221,54 @@ nodes will be skipped.
 
 =head1 DETAILS
 
+=head2 Distribution collection overview
+
+For end-users, the following packages are of interest (the other
+are support packages):
+
+=over 4
+
+=item * L<XML::Compile::Schema|XML::Compile::Schema>
+
+Interpret schema elements and types: create processors for XML messages.
+
+=item * L<XML::Compile::Cache|XML::Compile::Cache>
+
+Helps you administer compiled readers and writers, especially useful it
+there are a lot of them.  Extends L<XML::Compile::Schema|XML::Compile::Schema>.
+
+=item * L<XML::Compile::SOAP|XML::Compile::SOAP>
+
+Implements the SOAP 1.1 protocol. client side.
+
+=item * L<XML::Compile::SOAP12|XML::Compile::SOAP12>
+
+Implements the SOAP 1.2 protocol.
+
+=item * L<XML::Compile::WSDL11|XML::Compile::WSDL11>
+
+Use SOAP with a WSDL version 1.1 communication specification file.
+
+=item * L<XML::Compile::SOAP::Daemon|XML::Compile::SOAP::Daemon>
+
+Create a SOAP daemon, directly from a WSDL file.
+
+=item * L<XML::Compile::Tester|XML::Compile::Tester>
+
+Helps you write regression tests.
+
+=item * L<XML::Rewrite|XML::Rewrite>
+
+Clean-up XML structures: beautify, simplify, extract.
+
+=item * L<XML::Compile::Dumper|XML::Compile::Dumper>
+
+Enables you to save pre-compiled XML handlers, the results of any
+C<compileClient>.  However, this results in huge files, so this may
+not be worth the effort.
+
+=back
+
 =head2 Comparison
 
 Where other Perl modules (like SOAP::WSDL) help you using these schemas
@@ -289,8 +295,8 @@ other modules.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.41,
-built on January 05, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.42,
+built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
