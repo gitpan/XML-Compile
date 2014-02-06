@@ -3,8 +3,7 @@
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.01.
 package XML::Compile::Translate::Reader;
-use vars '$VERSION';
-$VERSION = '1.42';
+our $VERSION = '1.43';
 
 use base 'XML::Compile::Translate';
 
@@ -630,7 +629,7 @@ sub makeTaggedElement
     my @attrs = (odd_elements(@$attrs), @$attrs_any);
 
     sub { my $tree   = shift or return ();
-          my $simple = $is_nillable && $tree->nodeNil ? 'NIL' : $st->($tree);
+          my $simple = $is_nillable && ref $tree && $tree->nodeNil ? 'NIL' : $st->($tree);
           ref $tree or return ($tag => {_ => $simple});
           my $node   = $tree->node;
           my @pairs  = map $_->($node), @attrs;

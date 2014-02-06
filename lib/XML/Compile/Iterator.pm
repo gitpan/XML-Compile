@@ -6,8 +6,7 @@ use warnings;
 use strict;
 
 package XML::Compile::Iterator;
-use vars '$VERSION';
-$VERSION = '1.42';
+our $VERSION = '1.43';
 
 
 use XML::Compile::Util  qw/pack_type type_of_node SCHEMA2001i/;

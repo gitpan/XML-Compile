@@ -25,7 +25,7 @@ older definitions).
 
 =over 4
 
-=item $obj-E<gt>B<new>(OPTIONS)
+=item $obj-E<gt>B<new>(%options)
 
 =back
 
@@ -33,7 +33,7 @@ older definitions).
 
 =over 4
 
-=item $obj-E<gt>B<add>(SCHEMA, [SCHEMAS])
+=item $obj-E<gt>B<add>( $schema, [$schemas] )
 
 Add L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects to the internal
 knowledge of this object.
@@ -42,15 +42,15 @@ knowledge of this object.
 
 Returns a list of all known schema instances.
 
-=item $obj-E<gt>B<doesExtend>(EXTTYPE, BASETYPE)
+=item $obj-E<gt>B<doesExtend>($exttype, $basetype)
 
-Returns true when EXTTYPE extends BASETYPE.
+Returns true when $exttype extends $basetype.
 
-=item $obj-E<gt>B<find>(KIND, ADDRESS|(URI,NAME), OPTIONS)
+=item $obj-E<gt>B<find>($kind, $address|<$uri,$name>, %options)
 
-Lookup the definition for the specified KIND of definition: the name
+Lookup the definition for the specified $kind of definition: the name
 of a global element, global attribute, attributeGroup or model group.
-The ADDRESS is constructed as C< {uri}name > or as separate URI and NAME.
+The $address is constructed as C< {uri}name > or as separate $uri and $name.
 
  -Option      --Default
   include_used  <true>
@@ -61,23 +61,23 @@ The ADDRESS is constructed as C< {uri}name > or as separate URI and NAME.
 
 =back
 
-=item $obj-E<gt>B<findID>(ADDRESS|(URI,ID))
+=item $obj-E<gt>B<findID>( $address|<$uri,$id> )
 
 Lookup the definition for the specified id, which is constructed as
-C< uri#id > or as separate URI and ID.
+C< uri#id > or as separate $uri and $id.
 
-=item $obj-E<gt>B<findSgMembers>(CLASS, TYPE)
+=item $obj-E<gt>B<findSgMembers>($class, $type)
 
 Lookup the substitutionGroup alternatives for a specific element, which
-is an TYPE (element full name) of form C< {uri}name > or as separate
+is an $type (element full name) of form C< {uri}name > or as separate
 URI and NAME.  Returned is an ARRAY of HASHes, each describing one type
 (as returned by L<find()|XML::Compile::Schema::NameSpaces/"Accessors">)
 
-=item $obj-E<gt>B<findTypeExtensions>(TYPE)
+=item $obj-E<gt>B<findTypeExtensions>($type)
 
 This method can be quite expensive, with large and nested schemas.
 
-=item $obj-E<gt>B<importIndex>(OPTIONS)
+=item $obj-E<gt>B<importIndex>(%options)
 
 [1.41] Returns a HASH with namespaces which are declared in all currently
 known schema's, pointing to ARRAYs of the locations where the import should
@@ -92,15 +92,15 @@ this method.
 
 Returns the list of name-space URIs defined.
 
-=item $obj-E<gt>B<namespace>(URI)
+=item $obj-E<gt>B<namespace>($uri)
 
 Returns a list of L<XML::Compile::Schema::Instance|XML::Compile::Schema::Instance> objects which have
-the URI as target namespace.
+the $uri as target namespace.
 
-=item $obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
+=item $obj-E<gt>B<printIndex>( [$fh], %options )
 
 Show all definitions from all namespaces, for debugging purposes, by
-default the selected.  Additional OPTIONS are passed to 
+default the selected.  Additional %options are passed to 
 L<XML::Compile::Schema::Instance::printIndex()|XML::Compile::Schema::Instance/"Index">.
 
  -Option      --Default
@@ -130,12 +130,12 @@ example:
  use XML::Compile::SOAP::Util qw/WSDL11/;
  $nss->printIndex(\*STDERR, namespace => WSDL11);
 
-=item $obj-E<gt>B<schemas>(URI)
+=item $obj-E<gt>B<schemas>($uri)
 
 We need the name-space; when it is lacking then import must help, but that
 must be called explicitly.
 
-=item $obj-E<gt>B<use>(OBJECT)
+=item $obj-E<gt>B<use>($object)
 
 Use any other L<XML::Compile::Schema|XML::Compile::Schema> extension as fallback, if the
 L<find()|XML::Compile::Schema::NameSpaces/"Accessors"> does not succeed for the current object.  Searches for
@@ -148,8 +148,8 @@ This method implements L<XML::Compile::Schema::useSchema()|XML::Compile::Schema/
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

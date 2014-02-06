@@ -4,8 +4,7 @@
 # Pod stripped from pm file by OODoc 2.01.
 
 package XML::Compile::Translate::Template;
-use vars '$VERSION';
-$VERSION = '1.42';
+our $VERSION = '1.43';
 
 use base 'XML::Compile::Translate';
 
@@ -18,7 +17,7 @@ use XML::Compile::Util
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use List::Util  qw/max/;
 
-our $VERSION;         # OODoc adds $VERSION to the script
+use vars '$VERSION';         # OODoc adds $VERSION to the script
 $VERSION ||= 'undef';
 
 

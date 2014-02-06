@@ -4,8 +4,7 @@
 # Pod stripped from pm file by OODoc 2.01.
 
 package XML::Compile::Schema;
-use vars '$VERSION';
-$VERSION = '1.42';
+our $VERSION = '1.43';
 
 use base 'XML::Compile';
 
@@ -467,7 +466,7 @@ sub _parseFile($)
     my $self = $thing;
 
     my ($mtime, $size) = (stat $fn)[9,7];
-    my $filestamp = basename($fn) . '-'. $mtime . '-' . $size;
+    my $filestamp = File::Spec->rel2abs($fn) . '-'. $mtime . '-' . $size;
 
     if($self->{_cache_file}{$filestamp})
     {   trace "reusing schemas from file $filestamp";

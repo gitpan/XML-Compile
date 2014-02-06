@@ -20,19 +20,19 @@ The translator understands schemas, but does not encode that into
 actions.  This module implements those actions to translate from
 a (nested) Perl HASH structure onto XML.
 
-See L<documentation in the base class|XML::Compile::Translate/"DESCRIPTION">.
+Extends L<"DESCRIPTION" in XML::Compile::Translate|XML::Compile::Translate/"DESCRIPTION">.
  
 =head1 METHODS
 
-See L<documentation in the base class|XML::Compile::Translate/"METHODS">.
+Extends L<"METHODS" in XML::Compile::Translate|XML::Compile::Translate/"METHODS">.
  
 =head1 DETAILS
 
-See L<documentation in the base class|XML::Compile::Translate/"DETAILS">.
+Extends L<"DETAILS" in XML::Compile::Translate|XML::Compile::Translate/"DETAILS">.
  
 =head2 Translator options
 
-See L<documentation in the base class|XML::Compile::Translate/"Translator options">.
+Extends L<"Translator options" in XML::Compile::Translate|XML::Compile::Translate/"Translator options">.
  
 =head2 Processing Wildcards
 
@@ -212,8 +212,8 @@ writer considerably.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

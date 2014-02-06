@@ -20,7 +20,7 @@ process it.
 
 =over 4
 
-=item $obj-E<gt>B<new>(TOP, OPTIONS)
+=item $obj-E<gt>B<new>($top, %options)
 
 Get's the top of an XML::LibXML tree, which must be a schema element.
 The tree is parsed: the information collected.
@@ -74,7 +74,7 @@ Returns a lost of all globally defined attribute names.
 
 Returns a list with all complexType names.
 
-=item $obj-E<gt>B<element>(URI)
+=item $obj-E<gt>B<element>($uri)
 
 Returns one global element definition.
 
@@ -112,7 +112,7 @@ Returns a list with all simpleType names.
 A schema can defined more than one target namespace, where recent
 schema spec changes provide a targetNamespace attribute.
 
-=item $obj-E<gt>B<type>(URI)
+=item $obj-E<gt>B<type>($uri)
 
 Returns the type definition with the specified name.
 
@@ -126,17 +126,17 @@ Returns a list of all simpleTypes and complexTypes
 
 =over 4
 
-=item $obj-E<gt>B<find>(KIND, FULLNAME)
+=item $obj-E<gt>B<find>($kind, $fullname)
 
-Returns the definition for the object of KIND, with FULLNAME.
+Returns the definition for the object of $kind, with $fullname.
 
 example: of find
 
   my $attr = $instance->find(attribute => '{myns}my_global_attr');
 
-=item $obj-E<gt>B<importLocations>(NAMESPACE)
+=item $obj-E<gt>B<importLocations>($ns)
 
-Returns a list of all schemaLocations specified with the import NAMESPACE
+Returns a list of all schemaLocations specified with the import $ns
 (one of the values returned by L<imports()|XML::Compile::Schema::Instance/"Index">).
 
 =item $obj-E<gt>B<imports>()
@@ -148,10 +148,10 @@ Returns a list with all namespaces which need to be imported.
 Returns a list of all schemaLocations which where specified with include
 statements.
 
-=item $obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
+=item $obj-E<gt>B<printIndex>( [$fh], %options )
 
 Prints an overview over the defined objects within this schema to the
-selected FILEHANDLE.
+selected $fh.
 
  -Option       --Default
   kinds          <all>
@@ -176,8 +176,8 @@ anyway).
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

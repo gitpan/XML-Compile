@@ -167,29 +167,29 @@ which do work well with this module, but are not valid according to W3C.
 In many cases, however, the translater will refuse to accept mistakes:
 mainly because it cannot produce valid code.
 
-See L<documentation in the base class|XML::Compile/"DESCRIPTION">.
+Extends L<"DESCRIPTION" in XML::Compile|XML::Compile/"DESCRIPTION">.
  
 =head1 METHODS
 
-See L<documentation in the base class|XML::Compile/"METHODS">.
+Extends L<"METHODS" in XML::Compile|XML::Compile/"METHODS">.
  
 =head2 Constructors
 
-See L<documentation in the base class|XML::Compile/"Constructors">.
+Extends L<"Constructors" in XML::Compile|XML::Compile/"Constructors">.
  
 =over 4
 
-=item XML::Compile::Schema-E<gt>B<new>([XMLDATA], OPTIONS)
+=item XML::Compile::Schema-E<gt>B<new>( [$xmldata], %options )
 
 Details about many name-spaces can be organized with only a single
 schema object (actually, the data is administered in an internal
 L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces> object)
 
-The initial information is extracted from the XMLDATA source.  The XMLDATA
+The initial information is extracted from the $xmldata source.  The $xmldata
 can be anything what is acceptable by L<importDefinitions()|XML::Compile::Schema/"Administration">, which
 is everything accepted by L<dataToXML()|XML::Compile/"Compilers"> or an ARRAY of those things.
 You may also add any OPTION accepted by L<addSchemas()|XML::Compile::Schema/"Accessors"> to guide the
-understanding of the schema.  When no XMLDATA is provided, you can add
+understanding of the schema.  When no $xmldata is provided, you can add
 it later with L<importDefinitions()|XML::Compile::Schema/"Administration">
 
 You can specify the hooks before you define the schemas the hooks
@@ -212,13 +212,13 @@ the readers and writers get compiled.
 
 See L<blockNamespace()|XML::Compile::Schema/"Accessors">
 
-=item hook => ARRAY-WITH-HOOKDATA | HOOK
+=item hook => HOOK|ARRAY
 
-See L<addHook()|XML::Compile::Schema/"Accessors">.  Adds one HOOK (HASH).
+See L<addHook()|XML::Compile::Schema/"Accessors">.  Adds one HOOK (HASH) or more at once.
 
-=item hooks => ARRAY-OF-HOOK
+=item hooks => ARRAY
 
-See L<addHooks()|XML::Compile::Schema/"Accessors">.
+Add one or more hooks.  See L<addHooks()|XML::Compile::Schema/"Accessors">.
 
 =item ignore_unused_tags => BOOLEAN|REGEXP
 
@@ -232,7 +232,7 @@ With a REGEXP, you can have more control.  Only keys which do match
 the expression will be ignored silently.  Other keys (usually typos
 and other mistakes) will get reported.  See L</Typemaps>
 
-=item key_rewrite => HASH|CODE|ARRAY-of-HASH-and-CODE
+=item key_rewrite => HASH|CODE|ARRAY
 
 Translate XML element local-names into different Perl keys.
 See L</Key rewrite>.
@@ -252,22 +252,21 @@ serialization of objects.
 
 =head2 Accessors
 
-See L<documentation in the base class|XML::Compile/"Accessors">.
+Extends L<"Accessors" in XML::Compile|XML::Compile/"Accessors">.
  
 =over 4
 
-=item $obj-E<gt>B<addHook>(HOOKDATA|HOOK|undef)
+=item $obj-E<gt>B<addHook>($hook|LIST|undef)
 
-HOOKDATA is a LIST of options as key-value pairs, HOOK is a HASH with
-the same data.  C<undef> is ignored. See L<addHooks()|XML::Compile::Schema/"Accessors"> and
-L</Schema hooks> below.
+A $hook is specified as HASH or a LIST of PAIRS.  When C<undef>, this call
+is ignored. See L<addHooks()|XML::Compile::Schema/"Accessors"> and L</Schema hooks> below.
 
-=item $obj-E<gt>B<addHooks>(HOOK, [HOOK, ...])
+=item $obj-E<gt>B<addHooks>( $hook, [$hook, ...] )
 
 Add multiple hooks at once.  These must all be HASHes. See L</Schema hooks>
 and L<addHook()|XML::Compile::Schema/"Accessors">. C<undef> values are ignored.
 
-=item $obj-E<gt>B<addKeyRewrite>(PREDEF|CODE|HASH, ...)
+=item $obj-E<gt>B<addKeyRewrite>($predef|CODE|HASH, ...)
 
 Add new rewrite rules to the existing list (initially provided with
 L<new(key_rewrite)|XML::Compile::Schema/"Constructors">).  The whole list of rewrite rules is returned.
@@ -276,15 +275,15 @@ C<PREFIXED> rules will be applied first.  Special care is taken that the
 prefix will not be called twice.  The last added set of rewrite rules
 will be applied first.  See L</Key rewrite>.
 
-=item $obj-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
+=item $obj-E<gt>B<addSchemaDirs>($directories|$filename)
 
-=item XML::Compile::Schema-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
+=item XML::Compile::Schema-E<gt>B<addSchemaDirs>($directories|$filename)
 
-See L<XML::Compile/"Accessors">
+Inherited, see L<XML::Compile/"Accessors">
 
-=item $obj-E<gt>B<addSchemas>(XML, OPTIONS)
+=item $obj-E<gt>B<addSchemas>($xml, %options)
 
-Collect all the schemas defined in the XML data.  The XML parameter
+Collect all the schemas defined in the $xml data.  The $xml parameter
 must be a XML::LibXML node, therefore it is advised to use
 L<importDefinitions()|XML::Compile::Schema/"Administration">, which has a much more flexible way to
 specify the data.
@@ -332,9 +331,9 @@ Synonym for L<addTypemap()|XML::Compile::Schema/"Accessors">.
 
 Add new XML-Perl type relations.  See L</Typemaps>.
 
-=item $obj-E<gt>B<blockNamespace>(NAMESPACE|TYPE|HASH|CODE|ARRAY)
+=item $obj-E<gt>B<blockNamespace>($ns|$type|HASH|CODE|ARRAY)
 
-Block all references to a NAMESPACE or full TYPE, as if they do not appear
+Block all references to a $ns or full $type, as if they do not appear
 in the schema.  Specially useful if the schema includes references to
 old (deprecated) versions of itself which are not being used.  It can
 also be used to block inclusion of huge structures which are not used,
@@ -343,18 +342,18 @@ for increased compile performance, or to avoid buggy constructs.
 These values can also be passed with L<new(block_namespace)|XML::Compile::Schema/"Constructors"> and
 L<compile(block_namespace)|XML::Compile::Schema/"Compilers">.
 
-=item $obj-E<gt>B<hooks>([READER|WRITER])
+=item $obj-E<gt>B<hooks>( [<'READER'|'WRITER'>] )
 
 Returns the LIST of defined hooks (as HASHes).
 [1.36] When an action parameter is provided, it will only return a list
 with hooks added with that action value or no action at all.
 
-=item $obj-E<gt>B<useSchema>(SCHEMA, [SCHEMA])
+=item $obj-E<gt>B<useSchema>( $schema, [$schema, ...] )
 
 Pass a L<XML::Compile::Schema|XML::Compile::Schema> object, or extensions like
 L<XML::Compile::Cache|XML::Compile::Cache>, to be used as definitions as well.  First,
 elements are looked-up in the current schema definition object.  If not
-found the other provided SCHEMA objects are checked in the order as
+found the other provided $schema objects are checked in the order as
 they were added.
 
 Searches for definitions do not recurse into schemas which are used
@@ -372,17 +371,17 @@ example: use other Schema
 
 =head2 Compilers
 
-See L<documentation in the base class|XML::Compile/"Compilers">.
+Extends L<"Compilers" in XML::Compile|XML::Compile/"Compilers">.
  
 =over 4
 
-=item $obj-E<gt>B<compile>(('READER'|'WRITER'), TYPE, OPTIONS)
+=item $obj-E<gt>B<compile>( <'READER'|'WRITER'>, $type, %options )
 
 Translate the specified ELEMENT (found in one of the read schemas) into
 a CODE reference which is able to translate between XML-text and a HASH.
-When the TYPE is C<undef>, an empty LIST is returned.
+When the $type is C<undef>, an empty LIST is returned.
 
-The indicated TYPE is the starting-point for processing in the
+The indicated $type is the starting-point for processing in the
 data-structure, a toplevel element or attribute name.  The name must
 be specified in C<{url}name> format, there the url is the name-space.
 An alternative is the C<url#id> which refers to an element or type with
@@ -397,7 +396,7 @@ When a WRITER is created, a CODE reference is returned which needs
 to be called with an XML::LibXML::Document object and a HASH, and
 returns a XML::LibXML::Node.
 
-Many OPTIONS below are B<explained in more detailed> in the manual-page
+Many %options below are B<explained in more detailed> in the manual-page
 L<XML::Compile::Translate|XML::Compile::Translate>, which implements the compilation.
 
  -Option                        --Default
@@ -556,7 +555,7 @@ optional.  Not too hard to fix.  For the WRITER, you still have to state
 NIL explicitly, but the elements are not constructed.  The READER will
 output NIL when the nillable elements are missing.
 
-=item key_rewrite => HASH|CODE|ARRAY-of-HASH-and-CODE
+=item key_rewrite => HASH|CODE|ARRAY
 
 Add key rewrite rules to the front of the list of rules, as set by
 L<new(key_rewrite)|XML::Compile::Schema/"Constructors"> and L<addKeyRewrite()|XML::Compile::Schema/"Accessors">.  See L</Key rewrite>
@@ -658,30 +657,30 @@ auto-detect. This may be slow and may produce incomplete results.
 
 =back
 
-=item $obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+=item $obj-E<gt>B<dataToXML>($node|REF-XML|XML-STRING|$filename|$fh|$known)
 
-=item XML::Compile::Schema-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+=item XML::Compile::Schema-E<gt>B<dataToXML>($node|REF-XML|XML-STRING|$filename|$fh|$known)
 
-See L<XML::Compile/"Compilers">
+Inherited, see L<XML::Compile/"Compilers">
 
-=item $obj-E<gt>B<initParser>(OPTIONS)
+=item $obj-E<gt>B<initParser>(%options)
 
-=item XML::Compile::Schema-E<gt>B<initParser>(OPTIONS)
+=item XML::Compile::Schema-E<gt>B<initParser>(%options)
 
-See L<XML::Compile/"Compilers">
+Inherited, see L<XML::Compile/"Compilers">
 
-=item $obj-E<gt>B<template>('XML'|'PERL'|'TREE', ELEMENT, OPTIONS)
+=item $obj-E<gt>B<template>( <'XML'|'PERL'|'TREE'>, $element, %options )
 
 Schema's can be horribly complex and unreadible.  Therefore, this template
 method can be called to create an example which demonstrates how data
-of the specified ELEMENT shown as XML or Perl is organized in practice.
+of the specified $element shown as XML or Perl is organized in practice.
 
 The 'TREE' template returns the intermediate parse tree, which gets
 formatted into the XML or Perl example.  This is not a very stable
 interface: it may change without much notice.
 
-Some OPTIONS are explained in L<XML::Compile::Translate|XML::Compile::Translate>.  There are
-some extra OPTIONS defined for the final output process.
+Some %options are explained in L<XML::Compile::Translate|XML::Compile::Translate>.  There are
+some extra %options defined for the final output process.
 
 The templates produced are B<not always correct>.  Please contribute
 improvements: read and understand the comments in the text.
@@ -713,7 +712,7 @@ By default, do not show abstract types in the output.
 The leading indentation string per nesting.  Must start with at least one
 blank.
 
-=item key_rewrite => HASH|CODE|ARRAY-of-HASH-and-CODE
+=item key_rewrite => HASH|CODE|ARRAY
 
 =item show_comments => STRING|'ALL'|'NONE'
 
@@ -732,30 +731,30 @@ Skip the comment header from the output.
 
 =head2 Administration
 
-See L<documentation in the base class|XML::Compile/"Administration">.
+Extends L<"Administration" in XML::Compile|XML::Compile/"Administration">.
  
 =over 4
 
-=item $obj-E<gt>B<doesExtend>(EXTTYPE, BASETYPE)
+=item $obj-E<gt>B<doesExtend>($exttype, $basetype)
 
-Returns true when the EXTTYPE extends the BASETYPE. See
+Returns true when the $exttype extends the $basetype. See
 L<XML::Compile::Schema::NameSpaces::doesExtend()|XML::Compile::Schema::NameSpaces/"Accessors">
 
 =item $obj-E<gt>B<elements>()
 
 List all elements, defined by all schemas sorted alphabetically.
 
-=item $obj-E<gt>B<findSchemaFile>(FILENAME)
+=item $obj-E<gt>B<findSchemaFile>($filename)
 
-=item XML::Compile::Schema-E<gt>B<findSchemaFile>(FILENAME)
+=item XML::Compile::Schema-E<gt>B<findSchemaFile>($filename)
 
-See L<XML::Compile/"Administration">
+Inherited, see L<XML::Compile/"Administration">
 
-=item $obj-E<gt>B<importDefinitions>(XMLDATA, OPTIONS)
+=item $obj-E<gt>B<importDefinitions>($xmldata, %options)
 
-Import (include) the schema information included in the XMLDATA.  The
-XMLDATA must be acceptable for L<dataToXML()|XML::Compile/"Compilers">.  The resulting node
-and all the OPTIONS are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">. The schema node does
+Import (include) the schema information included in the $xmldata.  The
+$xmldata must be acceptable for L<dataToXML()|XML::Compile/"Compilers">.  The resulting node
+and all the %options are passed to L<addSchemas()|XML::Compile::Schema/"Accessors">. The schema node does
 not need to be the top element: any schema node found in the data
 will be decoded.
 
@@ -770,7 +769,7 @@ XML structures.
 As an extension to the handling L<dataToXML()|XML::Compile/"Compilers"> provides, you can specify an
 ARRAY of things which are acceptable to C<dataToXML>.  This way, you can
 specify multiple resources at once, each of which will be processed with
-the same OPTIONS.
+the same %options.
 
  -Option --Default
   details  <from XMLDATA>
@@ -792,21 +791,21 @@ example: of use of importDefinitions
   my @specs = ('my-spec.xsd', 'types.xsd', $other);
   $schema->importDefinitions(\@specs, @options);
 
-=item $obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+=item $obj-E<gt>B<knownNamespace>($ns|PAIRS)
 
-=item XML::Compile::Schema-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+=item XML::Compile::Schema-E<gt>B<knownNamespace>($ns|PAIRS)
 
-See L<XML::Compile/"Administration">
+Inherited, see L<XML::Compile/"Administration">
 
 =item $obj-E<gt>B<namespaces>()
 
 Returns the L<XML::Compile::Schema::NameSpaces|XML::Compile::Schema::NameSpaces> object which is used
 to collect schemas.
 
-=item $obj-E<gt>B<printIndex>([FILEHANDLE], OPTIONS)
+=item $obj-E<gt>B<printIndex>( [$fh], %options )
 
-Print all the elements which are defined in the schemas to the FILEHANDLE
-(by default the selected handle).  OPTIONS are passed to
+Print all the elements which are defined in the schemas to the $fh
+(by default the selected handle).  %options are passed to
 L<XML::Compile::Schema::NameSpaces::printIndex()|XML::Compile::Schema::NameSpaces/"Accessors"> and
 L<XML::Compile::Schema::Instance::printIndex()|XML::Compile::Schema::Instance/"Index">.
 
@@ -814,23 +813,23 @@ L<XML::Compile::Schema::Instance::printIndex()|XML::Compile::Schema::Instance/"I
 
 List all types, defined by all schemas sorted alphabetically.
 
-=item $obj-E<gt>B<walkTree>(NODE, CODE)
+=item $obj-E<gt>B<walkTree>($node, CODE)
 
-See L<XML::Compile/"Administration">
+Inherited, see L<XML::Compile/"Administration">
 
 =back
 
 =head1 DETAILS
 
-See L<documentation in the base class|XML::Compile/"DETAILS">.
+Extends L<"DETAILS" in XML::Compile|XML::Compile/"DETAILS">.
  
 =head2 Distribution collection overview
 
-See L<documentation in the base class|XML::Compile/"Distribution collection overview">.
+Extends L<"Distribution collection overview" in XML::Compile|XML::Compile/"Distribution collection overview">.
  
 =head2 Comparison
 
-See L<documentation in the base class|XML::Compile/"Comparison">.
+Extends L<"Comparison" in XML::Compile|XML::Compile/"Comparison">.
  
 =head2 Collecting definitions
 
@@ -1670,8 +1669,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

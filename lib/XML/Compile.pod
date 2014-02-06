@@ -61,9 +61,9 @@ and therefore should not be accessed directly.
 
 =over 4
 
-=item XML::Compile-E<gt>B<new>([XMLDATA], OPTIONS)
+=item XML::Compile-E<gt>B<new>( [$xmldata], %options )
 
-The XMLDATA is a source of XML. See L<dataToXML()|XML::Compile/"Compilers"> for valid ways,
+The $xmldata is a source of XML. See L<dataToXML()|XML::Compile/"Compilers"> for valid ways,
 for example as filename, string or C<undef>.
 
 If you have compiled all readers and writers you need, you may simply
@@ -96,11 +96,11 @@ See L<addSchemaDirs()|XML::Compile/"Accessors"> for a detailed explanation.
 
 =over 4
 
-=item $obj-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
+=item $obj-E<gt>B<addSchemaDirs>($directories|$filename)
 
-=item XML::Compile-E<gt>B<addSchemaDirs>(DIRECTORIES|FILENAME)
+=item XML::Compile-E<gt>B<addSchemaDirs>($directories|$filename)
 
-Each time this method is called, the specified DIRECTORIES will be added
+Each time this method is called, the specified $directories will be added
 in front of the list of already known schema directories.  Initially,
 the value of the environment variable C<SCHEMA_DIRECTORIES> is added
 (therefore tried as last resort). The constructor option C<schema_dirs>
@@ -110,7 +110,7 @@ Values which are C<undef> are skipped.  ARRAYs are flattened.  Arguments
 are split at colons (on UNIX) or semi-colons (windows) after flattening.
 The list of directories is returned, in all but VOID context.
 
-When a C<.pm> package FILENAME is given, then the directory
+When a C<.pm> package $filename is given, then the directory
 to be used is calculated from it (platform independently).  So,
 C<something/XML/Compile.pm> becomes C<something/XML/Compile/xsd/>.
 This way, modules can simply add their definitions via C<<
@@ -138,20 +138,20 @@ example: adding xsd's from your own distribution
 
 =over 4
 
-=item $obj-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+=item $obj-E<gt>B<dataToXML>($node|REF-XML|XML-STRING|$filename|$fh|$known)
 
-=item XML::Compile-E<gt>B<dataToXML>(NODE|REF-XML-STRING|XML-STRING|FILENAME|FILEHANDLE|KNOWN)
+=item XML::Compile-E<gt>B<dataToXML>($node|REF-XML|XML-STRING|$filename|$fh|$known)
 
-Collect XML data, from a wide variety of sources.  In SCALAR context,
+Collect $xml data, from a wide variety of sources.  In SCALAR context,
 an XML::LibXML::Element or XML::LibXML::Document is returned.
 In LIST context, pairs of additional information follow the scalar result.
 
-When a ready XML::LibXML::Node (::Element or ::Document) NODE is
+When a ready XML::LibXML::Node (::Element or ::Document) $node is
 provided, it is returned immediately and unchanged.  A SCALAR reference is
-interpreted as reference to XML as plain text (XML texts can be large,
+interpreted as reference to $xml as plain text ($xml texts can be large,
 and you can improve performance by passing it around by reference
 instead of copy).  Any value which starts with blanks followed by a
-'E<lt>' is interpreted as XML text.
+'E<lt>' is interpreted as $xml text.
 
 You may also specify a pre-defined I<known> name-space URI.  A set of
 definition files is included in the distribution, and installed somewhere
@@ -159,8 +159,8 @@ when this all gets installed.  Either define an environment variable
 named SCHEMA_LOCATION or use L<new(schema_dirs)|XML::Compile/"Constructors"> (option available to
 all end-user objects) to inform the library where to find these files.
 
-According the XML::LibXML::Parser manual page, passing a FILEHANDLE
-is much slower than pasing a FILENAME.  However, it may be needed to
+According the XML::LibXML::Parser manual page, passing a $fh
+is much slower than pasing a $filename.  However, it may be needed to
 open a file with an explicit character-set.
 
 example: 
@@ -170,9 +170,9 @@ example:
 
   my $xml = XML::Compile->dataToXML('/etc/config.xml');
 
-=item $obj-E<gt>B<initParser>(OPTIONS)
+=item $obj-E<gt>B<initParser>(%options)
 
-=item XML::Compile-E<gt>B<initParser>(OPTIONS)
+=item XML::Compile-E<gt>B<initParser>(%options)
 
 Create a new parser, an XML::LibXML::Parser object. By default, the
 parsing is set in a safe mode, avoiding exploits. You may explicitly
@@ -184,26 +184,26 @@ overrule it, especially if you need to process entities.
 
 =over 4
 
-=item $obj-E<gt>B<findSchemaFile>(FILENAME)
+=item $obj-E<gt>B<findSchemaFile>($filename)
 
-=item XML::Compile-E<gt>B<findSchemaFile>(FILENAME)
+=item XML::Compile-E<gt>B<findSchemaFile>($filename)
 
 Runs through all defined schema directories (see L<addSchemaDirs()|XML::Compile/"Accessors">)
-in search of the specified FILENAME.  When the FILENAME is absolute,
+in search of the specified $filename.  When the $filename is absolute,
 that will be used, and no search is needed.  An C<undef> is returned when
 the file is not found, otherwise a full path to the file is returned to
 the caller.
 
 Although the file may be found, it still could be unreadible.
 
-=item $obj-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+=item $obj-E<gt>B<knownNamespace>($ns|PAIRS)
 
-=item XML::Compile-E<gt>B<knownNamespace>(NAMESPACE|PAIRS)
+=item XML::Compile-E<gt>B<knownNamespace>($ns|PAIRS)
 
-If used with only one NAMESPACE, it returns the filename in the
+If used with only one $ns, it returns the filename in the
 distribution (not the full path) which contains the definition.
 
-When PAIRS of NAMESPACE-FILENAME are given, then those get defined.
+When PAIRS of $ns-FILENAME are given, then those get defined.
 This is typically called during the initiation of modules, like
 L<XML::Compile::WSDL11|XML::Compile::WSDL11> and L<XML::Compile::SOAP|XML::Compile::SOAP>.  The definitions
 are global: not related to specific instances.
@@ -211,10 +211,10 @@ are global: not related to specific instances.
 The FILENAMES are relative to the directories as specified with some
 L<addSchemaDirs()|XML::Compile/"Accessors"> call.
 
-=item $obj-E<gt>B<walkTree>(NODE, CODE)
+=item $obj-E<gt>B<walkTree>($node, CODE)
 
-Walks the whole tree from NODE downwards, calling the CODE reference
-for each NODE found.  When that routine returns false, the child
+Walks the whole tree from $node downwards, calling the CODE reference
+for each $node found.  When that routine returns false, the child
 nodes will be skipped.
 
 =back
@@ -295,8 +295,8 @@ other modules.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

@@ -6,8 +6,7 @@ use warnings;
 use strict;
 
 package TestTools;
-use vars '$VERSION';
-$VERSION = '1.42';
+our $VERSION = '1.43';
 
 use base 'Exporter';
 
@@ -61,7 +60,7 @@ sub test_rw($$$$;$$)
     }
 
 #warn "COMPARE READ: ", Dumper($h, $hash);
-    cmp_deeply($h, $hash, "from xml");
+    is_deeply($h, $hash, "from xml");
 
     # Writer
 

@@ -7,8 +7,7 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::Instance;
-use vars '$VERSION';
-$VERSION = '1.42';
+our $VERSION = '1.43';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';

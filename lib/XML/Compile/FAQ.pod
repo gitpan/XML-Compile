@@ -196,7 +196,7 @@ prefix for clarity.
 =head3 my data is not recognized
 
 You do specify the data in your structure, but it seems not to
-be recognized.  See L</"Wrong error message">
+be recognized.  See L</"wrong error message">
 
 =head3 wrong error message
 
@@ -214,8 +214,8 @@ Try turning on debugging with:
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

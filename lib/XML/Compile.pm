@@ -7,8 +7,7 @@ use warnings;
 use strict;
 
 package XML::Compile;
-use vars '$VERSION';
-$VERSION = '1.42';
+our $VERSION = '1.43';
 
 
 use Log::Report 'xml-compile';
@@ -122,6 +121,9 @@ sub dataToXML($)
     }
     elsif(-f $raw)
     {   ($xml, %details) = $thing->_parseFile($raw);
+    }
+    elsif($raw !~ /[\n\r<]/ && $raw =~ m![/\\]|\.xsd$|\.wsdl!i)
+    {   error __x"file {fn} does not exist", fn => $fn;
     }
     else
     {   my $data = "$raw";

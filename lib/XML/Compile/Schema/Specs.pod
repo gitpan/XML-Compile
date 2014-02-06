@@ -17,9 +17,9 @@ This package defines the various schema-specifications.
 
 =over 4
 
-=item XML::Compile::Schema::Specs-E<gt>B<builtInType>((NODE|undef), EXPANDED | (URI,LOCAL), OPTIONS)
+=item XML::Compile::Schema::Specs-E<gt>B<builtInType>( <$node|undef>, $expanded | <$uri,$local>, %options )
 
-Provide an EXPANDED (full) type name or an namespace URI and a LOCAL node
+Provide an $expanded (full) type name or an namespace $uri and a $local node
 name.  Returned is a HASH with process information or C<undef> if not
 found.
 
@@ -45,10 +45,10 @@ compliant.
 
 =back
 
-=item XML::Compile::Schema::Specs-E<gt>B<predefinedSchema>(URI)
+=item XML::Compile::Schema::Specs-E<gt>B<predefinedSchema>($uri)
 
 Return a HASH which contains the schema information for the specified
-URI (or undef if it doesn't exist).
+$uri (or undef if it doesn't exist).
 
 =item XML::Compile::Schema::Specs-E<gt>B<predefinedSchemas>()
 
@@ -58,8 +58,8 @@ Returns the uri of all predefined schemas.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

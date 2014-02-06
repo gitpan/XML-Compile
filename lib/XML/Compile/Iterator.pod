@@ -19,23 +19,23 @@ The main user for this object currently is L<XML::Compile::Translate|XML::Compil
 
 =over 4
 
-=item $obj-E<gt>B<descend>([NODE, [PATH, [FILTER]]])
+=item $obj-E<gt>B<descend>( [$node, [$path, [$filter]]] )
 
-The NODE is a child of the node handled by the iterator where this
-method is called upon.  Without explicit NODE, the current node is used.
+The $node is a child of the node handled by the iterator where this
+method is called upon.  Without explicit $node, the current node is used.
 Returned is a new L<XML::Compile::Iterator|XML::Compile::Iterator> object.  The new iterator
-will use the same FILTER as the parent iterator by default.  The internal
-administered path with be extended with the PATH.
+will use the same $filter as the parent iterator by default.  The internal
+administered path with be extended with the $path.
 
-=item XML::Compile::Iterator-E<gt>B<new>(NODE, PATH, FILTER,)
+=item XML::Compile::Iterator-E<gt>B<new>($node, $path, $filter,)
 
-The NODE is a XML::LibXML::Node object, of which the direct children
+The $node is a XML::LibXML::Node object, of which the direct children
 are inspected.
 
-The FILTER a CODE reference which is called for each child node.
-The only parameter is the parent NODE, and then it must return
+The $filter a CODE reference which is called for each child node.
+The only parameter is the parent $node, and then it must return
 either true or false.  In case of true, the node is selected.
-The FILTERS is applied to all children of the NODE once, when the
+The FILTERS is applied to all children of the $node once, when the
 first child is requested by the program.
 
 =back
@@ -132,8 +132,8 @@ Returns the textContent of the L<node()|XML::Compile::Iterator/"Attributes">, or
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

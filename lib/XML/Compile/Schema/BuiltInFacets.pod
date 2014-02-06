@@ -26,14 +26,14 @@ The content is not for end-users, but called by the schema translator.
 
 =over 4
 
-=item B<builtin_facet>(PATH, ARGS, TYPE, [VALUE])
+=item B<builtin_facet>( $path, $args, $type, [$value] )
 
 =back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

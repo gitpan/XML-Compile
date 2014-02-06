@@ -63,9 +63,9 @@ See chapter L</DETAILS> for more on how the tune the translator.
 
 =over 4
 
-=item $obj-E<gt>B<new>(TRANSLATOR, OPTIONS)
+=item $obj-E<gt>B<new>($translator, %options)
 
-The OPTIONS are described in L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">.  Those
+The %options are described in L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers">.  Those
 descriptions will probably move here, eventually.
 
  -Option--Default
@@ -77,9 +77,9 @@ descriptions will probably move here, eventually.
 
 =back
 
-=item $obj-E<gt>B<register>(NAME)
+=item $obj-E<gt>B<register>($name)
 
-=item XML::Compile::Translate-E<gt>B<register>(NAME)
+=item XML::Compile::Translate-E<gt>B<register>($name)
 
 Register a new back-end.
 
@@ -97,7 +97,7 @@ example:
 
 =over 4
 
-=item XML::Compile::Translate-E<gt>B<compile>(ELEMENT|ATTRIBUTE|TYPE, OPTIONS)
+=item XML::Compile::Translate-E<gt>B<compile>($element|$attribute|$type, %options)
 
 Do not call this function yourself, but use
 L<XML::Compile::Schema::compile()|XML::Compile::Schema/"Compilers"> (or wrappers around that).
@@ -321,7 +321,7 @@ you do not need.  So, with this option, you can make the compilation to
 ignore whole namespaces and specific elements or types.
 
 The NAMESPACE is a uri, which will disable use of any element or type
-defined in that space.  You may also provide a specific full TYPE (toplevel
+defined in that space.  You may also provide a specific full $type (toplevel
 element or type name).  You may also give an LIST or ARRAY of these, but
 then a HASH is much more suitable: with linear lookup time.
 
@@ -396,8 +396,8 @@ element does not contains sub-elements, otherwise the XML node.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

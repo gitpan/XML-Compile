@@ -32,7 +32,7 @@ SCHEMA2000, SCHEMA2001, and SCHEMA2001i.
 
 =over 4
 
-=item B<pack_id>(NAMESPACE, ID)
+=item B<pack_id>($ns, $id)
 
 Translates the two arguments into one compact string representation of
 the node id.
@@ -42,10 +42,10 @@ example:
  print pack_id 'http://my-ns', 'my-id';
  # shows:  http://my-ns#my-id
 
-=item B<pack_type>([NAMESPACE], LOCALNAME)
+=item B<pack_type>( [$ns], $localname )
 
 Translates the arguments into one compact string representation of
-the node type.  When the NAMESPACE is not present, C<undef>, or an
+the node type.  When the $ns is not present, C<undef>, or an
 empty string, then no namespace is presumed, and no curly braces
 part made.
 
@@ -59,16 +59,16 @@ example:
  print pack_type '', 'my-type';
  # all three show:   my-type
 
-=item B<unpack_id>(STRING)
+=item B<unpack_id>($string)
 
 Returns a LIST of two elements: the name-space and the id, as
-included in the STRING.  That STRING must be compatible with the
+included in the $string.  That $string must be compatible with the
 result of L<pack_id()|XML::Compile::Util/"Packing">.
 
-=item B<unpack_type>(STRING)
+=item B<unpack_type>($string)
 
 Returns a LIST of two elements: the name-space and the localname, as
-included in the STRING.  That STRING must be compatible with the
+included in the $string.  That $string must be compatible with the
 result of L<pack_type()|XML::Compile::Util/"Packing">.  When no name-space is present, an empty
 string is used.
 
@@ -86,7 +86,7 @@ Returns the even-numbered elements from the LIST.
 
 Returns the odd-numbered elements from the LIST.
 
-=item B<type_of_node>(NODE)
+=item B<type_of_node>($node)
 
 Translate an XML::LibXML::Node into a packed type.
 
@@ -94,8 +94,8 @@ Translate an XML::LibXML::Node into a packed type.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.42,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.43,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
