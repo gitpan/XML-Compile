@@ -7,12 +7,14 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::Instance;
-our $VERSION = '1.43';
+use vars '$VERSION';
+$VERSION = '1.44';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
 use XML::Compile::Schema::Specs;
 use XML::Compile::Util qw/pack_type unpack_type/;
+use Scalar::Util       qw/weaken/;
 
 my @defkinds = qw/element attribute simpleType complexType
                   attributeGroup group/;
@@ -88,9 +90,16 @@ sub _collectTypes($$)
 
         $self->{xsi} = $def->{uri_xsi};
     }
-    my $tns = $self->{tns} = $args->{target_namespace}
-      || $schema->getAttribute('targetNamespace')
-      || '';
+
+    my $tns;
+    if($tns = $args->{target_namespace})
+    {   $schema->removeAttribute('targetNamespace');
+        $schema->setAttribute(targetNamespace => $tns);
+    }
+    else
+    {   $tns = $schema->getAttribute('targetNamespace') || '';
+    }
+    $self->{tns} = $tns;
 
     $self->{efd} = $args->{element_form_default}
       || $schema->getAttribute('elementFormDefault')
@@ -102,7 +111,9 @@ sub _collectTypes($$)
 
     $self->{tnses} = {}; # added when used
     $self->{types} = {};
+
     $self->{schema} = $schema;
+    weaken($self->{schema});
 
   NODE:
     foreach my $node ($schema->childNodes)
@@ -219,14 +230,13 @@ sub find($$)
      my %info = (type => $kind, node => $node, full => $full);
      @info{'ns', 'name'} = unpack_type $full;
 
-#    weaken($info->{schema});
      $self->{$kind}{$full} = \%info;
 
      my $abstract    = $node->getAttribute('abstract') || '';
      $info{abstract} = $abstract eq 'true' || $abstract eq '1';
 
      my $final       = $node->getAttribute('final') || '';
-     $info{final}    =  $final eq 'true' || $final eq '1';
+     $info{final}    = $final eq 'true' || $final eq '1';
 
      my $local = $node->localName;
         if($local eq 'element')  { $info{efd} = $node->getAttribute('form') }

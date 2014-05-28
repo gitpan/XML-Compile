@@ -6,7 +6,8 @@ use warnings;
 use strict;
 
 package XML::Compile::Iterator;
-our $VERSION = '1.43';
+use vars '$VERSION';
+$VERSION = '1.44';
 
 
 use XML::Compile::Util  qw/pack_type type_of_node SCHEMA2001i/;
@@ -47,15 +48,13 @@ sub descend(;$$$)
       ($node, $path, ($filter || $self->{filter}));
 }
 
+#----------------
 
 sub node()   {shift->{node}}
-
-
 sub filter() {shift->{filter}}
+sub path()   {shift->{path}}
 
-
-sub path() {shift->{path}}
-
+#----------------
 
 sub childs()
 {   my $self = shift;
@@ -100,6 +99,7 @@ sub nrChildren()
     scalar @$list;
 }
 
+#---------
 
 sub nodeType() { type_of_node(shift->node) || '' }
 

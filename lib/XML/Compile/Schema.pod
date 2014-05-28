@@ -275,9 +275,9 @@ C<PREFIXED> rules will be applied first.  Special care is taken that the
 prefix will not be called twice.  The last added set of rewrite rules
 will be applied first.  See L</Key rewrite>.
 
-=item $obj-E<gt>B<addSchemaDirs>($directories|$filename)
+=item $obj-E<gt>B<addSchemaDirs>(@directories|$filename)
 
-=item XML::Compile::Schema-E<gt>B<addSchemaDirs>($directories|$filename)
+=item XML::Compile::Schema-E<gt>B<addSchemaDirs>(@directories|$filename)
 
 Inherited, see L<XML::Compile/"Accessors">
 
@@ -460,11 +460,9 @@ back-end.
 
 [1.07] how to handle "anyType" type elements.  Depends on the backend.
 
-=item attributes_qualified => BOOLEAN
+=item attributes_qualified => C<ALL>|C<NONE>|BOOLEAN
 
-When defined, this will overrule the C<attributeFormDefault> flags in
-all schemas.  When not qualified, the xml will not produce nor
-process prefixes on attributes.
+[1.44] Like option C<elements_qualified>, but then for attributes.
 
 =item block_namespace => NAMESPACE|TYPE|HASH|CODE|ARRAY
 
@@ -499,17 +497,26 @@ See L</Default Values>.
 =item elements_qualified => C<TOP>|C<ALL>|C<NONE>|BOOLEAN
 
 When defined, this will overrule the namespace use on elements in
-all schemas.  When C<TOP> is specified, at least the top-element will
-be name-space qualified.  When C<ALL> or a true value is given, then all
-elements will be used qualified.  When C<NONE> or a false value is given,
-the XML will not produce or process prefixes on the elements.
+all schemas.  When C<ALL> or a true value is given, then all elements
+will be used qualified.  When C<NONE> or a false value is given, the
+XML will not produce or process prefixes on any element.
 
-The C<form> attributes will be respected, except on the top element when
-C<TOP> is specified.  Use hooks when you need to fix name-space use in
-more subtile ways.
+All top-level elements (and attributes) will be used in a name-space
+qualified way, if they have a targetNamespace.  Some applications require
+some global element with qualification, so refuse global elements which
+have no qualification.  Using the C<TOP> setting, the compiler checks
+that the targetNamespace exists.
+
+The C<form> attributes in the schema will be respected; overrule the
+effects of this option.  Use hooks when you need to fix name-space use
+in more subtile ways.
 
 With C<element_form_default>, you can correct whole
 schema's about their name-space behavior.
+
+Change in [1.44]: C<TOP> before enforced a name-space on the top-level.
+There should always be a name-space on the top element.  It got changed
+into that C<TOP> checks that the globals have a targetNamespace.
 
 =item hook => HOOK|ARRAY-OF-HOOKS
 
@@ -599,7 +606,7 @@ prefix, uri PAIRS is simpler.
  prefixes => { $myns => 'mine', $twons => 'two' }
 
  # the previous is short for:
- prefixes => { $myns => [ uri => $myns, prefix => 'mine', used => 0 ]
+ prefixes => { $myns  => [ uri => $myns, prefix => 'mine', used => 0 ]
              , $twons => [ uri => $twons, prefix => 'two', ...] };
 
 =item sloppy_floats => BOOLEAN
@@ -1669,8 +1676,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.43,
-built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.44,
+built on May 28, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

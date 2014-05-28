@@ -3,7 +3,8 @@
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.01.
 package XML::Compile::Translate::Reader;
-our $VERSION = '1.43';
+use vars '$VERSION';
+$VERSION = '1.44';
 
 use base 'XML::Compile::Translate';
 
@@ -12,7 +13,8 @@ use warnings;
 no warnings 'once', 'recursion';
 
 use Log::Report 'xml-compile', syntax => 'SHORT';
-use List::Util qw/first/;
+use List::Util   qw/first/;
+use Scalar::Util qw/weaken/;
 
 use XML::Compile::Util qw/pack_type odd_elements type_of_node SCHEMA2001i/;
 use XML::Compile::Iterator ();
@@ -128,8 +130,10 @@ sub makeSequence($@)
     {   my ($take, $action) = @pairs;
         my $code
          = (ref $action eq 'BLOCK' || ref $action eq 'ANY')
-         ? sub { $action->($_[0])}
-         : sub { $action->($_[0] && $_[0]->currentType eq $take ? $_[0]:undef)};
+         ? sub { $action->($_[0]) }
+         : sub {
+#warn "T=$take ", $_[0] && $_[0]->currentType;
+ $action->($_[0] && $_[0]->currentType eq $take ? $_[0]:undef)};
         return bless $code, 'BLOCK';
     }
 
@@ -472,7 +476,7 @@ sub makeRequired
     sub { my $tree  = shift;  # can be undef
           my @pairs = $do->($tree);
           @pairs
-          or error __x"data for element or block starting with `{tag}' missing at {path}"
+              or error __x"data for element or block starting with `{tag}' missing at {path}"
                , tag => $label, path => $path, _class => 'misfit';
           @pairs;
         };
@@ -495,6 +499,9 @@ sub makeElementHref
 sub makeElement
 {   my ($self, $path, $ns, $childname, $do) = @_;
     sub { my $tree  = shift;
+#warn "NT=", ($tree ? $tree->nodeType : 'undef'), ' expected ', $childname;
+#use Carp qw/cluck/;
+#cluck if $childname =~ /c1_a/;
           my $value = defined $tree && $tree->nodeType eq $childname
              ? $do->($tree) : $do->(undef);
           defined $value ? ($childname => $value) : ();
@@ -573,8 +580,8 @@ sub makeElementAbstract
 # complexType and complexType/ComplexContent
 #
 
-sub _notProcessed($$)
-{   my ($self, $child, $path) = @_;
+sub _not_processed($$)
+{   my ($child, $path) = @_;
     error __x"element `{name}' not processed for {path} at {where}"
       , name => type_of_node($child), path => $path
       , _class => 'misfit', where => $child->nodePath;
@@ -582,11 +589,11 @@ sub _notProcessed($$)
 
 sub makeComplexElement
 {   my ($self, $path, $tag, $elems, $attrs, $attrs_any,undef,$is_nillable) = @_;
-#my @e = @$elems; my @a = @$attrs;
+my @e = @$elems; my @a = @$attrs;
     my @elems = odd_elements @$elems;
     my @attrs = (odd_elements(@$attrs), @$attrs_any);
 
-    $is_nillable || @elems > 1 || @attrs and return
+    $is_nillable and return
     sub { my $tree    = shift or return ();
           my $node    = $tree->node;
           my %complex =
@@ -594,8 +601,21 @@ sub makeComplexElement
             , (map $_->($node), @attrs)
             );
 
-          $self->_notProcessed($tree->currentChild, $path)
-             if $tree->currentChild;
+          _not_processed $tree->currentChild, $path
+              if $tree->currentChild;
+
+          ($tag => \%complex);
+        };
+
+    @elems > 1 || @attrs and return
+    sub { my $tree    = shift or return ();
+          my $node    = $tree->node;
+#warn $node->toString(1);
+#warn "@e @a";
+          my %complex = ((map $_->($tree), @elems), (map $_->($node), @attrs));
+
+          _not_processed $tree->currentChild, $path
+              if $tree->currentChild;
 
           ($tag => \%complex);
         };
@@ -603,8 +623,8 @@ sub makeComplexElement
     @elems || return
     sub { my $tree = shift or return ();
 
-          $self->_notProcessed($tree->currentChild, $path)
-             if $tree->currentChild;
+          _not_processed $tree->currentChild, $path
+              if $tree->currentChild;
 
           ($tag => {});
         };
@@ -613,8 +633,8 @@ sub makeComplexElement
     sub { my $tree    = shift or return ();
           my %complex = $el->($tree);
 
-          $self->_notProcessed($tree->currentChild, $path)
-             if $tree->currentChild;
+          _not_processed $tree->currentChild, $path
+              if $tree->currentChild;
 
           ($tag => \%complex);
         };
@@ -855,7 +875,7 @@ sub makeAttributeProhibited
 sub makeAttribute
 {   my ($self, $path, $ns, $tag, $label, $do) = @_;
     sub { my $node = $_[0]->getAttributeNodeNS($ns, $tag);
-          defined $node or return ();;
+          defined $node or return ();
           my $val = $do->($node);
           defined $val ? ($label => $val) : ();
         };
@@ -947,6 +967,8 @@ sub makeAnyAttribute
           @result;
         };
 
+    weaken $self;
+
     # Create filter if requested
     my $run = $handler eq 'TAKE_ALL' ? $all
     : ref $handler ne 'CODE'
@@ -994,6 +1016,7 @@ sub makeAnyElement
           $count >= $min
               or error __x"too few any elements, requires {min} and got {found}"
                     , min => $min, found => $count;
+
           %result;
       }
     : sub
@@ -1009,6 +1032,10 @@ sub makeAnyElement
       };
  
     bless $any, 'ANY';
+
+# I would like to weaken here, but "ANY" needs the whole compiler structure
+# intact: someone has to catch it.
+#   weaken $self;
 
     # Create filter if requested
     my $run
@@ -1071,6 +1098,8 @@ sub makeHook($$$$$$)
     my @replace = $replace ? map $self->_decodeReplace($path,$_),@$replace : ();
     my @before  = $before  ? map $self->_decodeBefore($path,$_), @$before  : ();
     my @after   = $after   ? map $self->_decodeAfter($path,$_),  @$after   : ();
+
+    weaken $self;
 
     sub
      { my $tree = shift or return ();

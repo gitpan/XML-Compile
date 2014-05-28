@@ -7,7 +7,8 @@ use warnings;
 use strict;
 
 package XML::Compile::Schema::NameSpaces;
-our $VERSION = '1.43';
+use vars '$VERSION';
+$VERSION = '1.44';
 
 
 use Log::Report 'xml-compile', syntax => 'SHORT';

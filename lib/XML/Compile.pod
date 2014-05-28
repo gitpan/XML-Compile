@@ -96,11 +96,11 @@ See L<addSchemaDirs()|XML::Compile/"Accessors"> for a detailed explanation.
 
 =over 4
 
-=item $obj-E<gt>B<addSchemaDirs>($directories|$filename)
+=item $obj-E<gt>B<addSchemaDirs>(@directories|$filename)
 
-=item XML::Compile-E<gt>B<addSchemaDirs>($directories|$filename)
+=item XML::Compile-E<gt>B<addSchemaDirs>(@directories|$filename)
 
-Each time this method is called, the specified $directories will be added
+Each time this method is called, the specified @directories will be added
 in front of the list of already known schema directories.  Initially,
 the value of the environment variable C<SCHEMA_DIRECTORIES> is added
 (therefore tried as last resort). The constructor option C<schema_dirs>
@@ -295,8 +295,8 @@ other modules.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.43,
-built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.44,
+built on May 28, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

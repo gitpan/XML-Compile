@@ -78,6 +78,23 @@ string is used.
 
 =over 4
 
+=item B<add_duration>( $duration, [$time] )
+
+[1.44] Add the $duration to the $time (defaults to 'now')  This is an
+expensive operation: in many cases the L<duration2secs()|XML::Compile::Util/"Other"> produces
+useful results as well.
+
+example: 
+
+   my $now      = time;
+   my $deadline = add_duration 'P1M', $now;  # deadline in 1 month
+
+=item B<duration2secs>($duration)
+
+[1.44] Translate any format into seconds.  This is an example of
+a valid duration: C<-PT1M30.5S>  Average month and year lengths
+are used.  If you need more precise calculations, then use L<add_duration()|XML::Compile::Util/"Other">.
+
 =item B<even_elements>(LIST)
 
 Returns the even-numbered elements from the LIST.
@@ -94,8 +111,8 @@ Translate an XML::LibXML::Node into a packed type.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.43,
-built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.44,
+built on May 28, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

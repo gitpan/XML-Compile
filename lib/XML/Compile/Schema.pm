@@ -4,7 +4,8 @@
 # Pod stripped from pm file by OODoc 2.01.
 
 package XML::Compile::Schema;
-our $VERSION = '1.43';
+use vars '$VERSION';
+$VERSION = '1.44';
 
 use base 'XML::Compile';
 

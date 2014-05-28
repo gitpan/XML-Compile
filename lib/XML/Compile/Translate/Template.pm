@@ -4,7 +4,8 @@
 # Pod stripped from pm file by OODoc 2.01.
 
 package XML::Compile::Translate::Template;
-our $VERSION = '1.43';
+use vars '$VERSION';
+$VERSION = '1.44';
 
 use base 'XML::Compile::Translate';
 
@@ -15,7 +16,7 @@ no warnings 'once', 'recursion';
 use XML::Compile::Util
   qw/odd_elements even_elements SCHEMA2001i pack_type unpack_type/;
 use Log::Report 'xml-compile', syntax => 'SHORT';
-use List::Util  qw/max/;
+use List::Util  qw/max first/;
 
 use vars '$VERSION';         # OODoc adds $VERSION to the script
 $VERSION ||= 'undef';
@@ -231,7 +232,8 @@ sub makeElementAbstract
 
 sub makeComplexElement
 {   my ($self, $path, $tag, $elems, $attrs, $any_attr, $type, $is_nillable)=@_;
-    my @parts = (odd_elements(@$elems, @$attrs), @$any_attr);
+    my @elem_parts = odd_elements @$elems;
+    my @attr_parts = (odd_elements(@$attrs), @$any_attr);
 
     sub { my (@attrs, @elems);
           my $is_pseudo_type = $type !~ m/^{/;  # like "unnamed complex"
@@ -256,11 +258,9 @@ sub makeComplexElement
 
           $recurse_type{$type}++; $recurse_tag{$tag}++;
           $reuse_type{$type}++;   $reuse_tag{$tag}++;
-          foreach my $part (@parts)
-          {   my $child = $part->();
-              if($child->{attr}) { push @attrs, $child }
-              else               { push @elems, $child }
-          }
+          push @elems, $_->() for @elem_parts;
+          push @attrs, $_->() for @attr_parts;
+
           $recurse_type{$type}--; $recurse_tag{$tag}--;
 
           +{ kind   => 'complex'
@@ -277,7 +277,7 @@ sub makeTaggedElement
 {   my ($self, $path, $tag, $st, $attrs, $attrs_any, $type, $is_nillable) = @_;
     my @parts = (odd_elements(@$attrs), @$attrs_any);
 
-    sub { my @attrs  = map {$_->()} @parts;
+    sub { my @attrs  = map $_->(), @parts;
           my %simple = $st->();
 
           my @struct = 'string content of the container';
@@ -320,7 +320,7 @@ sub makeMixedElement
         return sub { \%mixed };
     }
 
-    sub { my @attrs = map {$_->()} @parts;
+    sub { my @attrs = map $_->(), @parts;
           +{ kind    => 'mixed'
            , struct  => "$tag has a mixed content"
            , tag     => $tag
@@ -353,8 +353,13 @@ sub makeList
     sub { my %d = $st->();
           $d{struct} = 'a list of values, where each';
           my $example = $d{example};
-          $example    = qq("$example") if $example =~ m/[^0-9.]/;
-          $d{example} = "[ $example , ... ]";
+          if($self->{_output} eq 'PERL')
+          {   $example    = qq("$example") if $example =~ m/[^0-9.]/;
+              $d{example} = "[ $example , ... ]";
+          }
+          else
+          {   $d{example} = "$example $example ...";
+          }
           %d };
 }
 
@@ -438,7 +443,8 @@ sub makeAttributeProhibited
 sub makeAttribute
 {   my ($self, $path, $ns, $tag, $label, $do) = @_;
     sub { +{ kind    => 'attr'
-           , tag     => $label
+           , tag     => $tag
+           , occur   => "becomes an attribute"
            , $do->()
            };
         };
@@ -446,8 +452,9 @@ sub makeAttribute
 
 sub makeAttributeDefault
 {   my ($self, $path, $ns, $tag, $label, $do) = @_;
-    sub { +{ kind  => 'attr'
-           , tag   => $label
+    sub {
+          +{ kind  => 'attr'
+           , tag   => $tag
            , occur => "attribute $tag has default"
            , $do->()
            };
@@ -459,7 +466,7 @@ sub makeAttributeFixed
     my $value = $fixed->value;
 
     sub { +{ kind   => 'attr'
-           , tag    => $label
+           , tag    => $tag
            , occur  => "attribute $tag is fixed"
            , example => $value
            };
@@ -478,7 +485,13 @@ sub makeSubstgroup
             my ($label, $call) = @$info;
             my $processed = $call->();
             my $show = '';
-            if(my $type = $processed->{_TYPE})
+            if($processed->{kind} eq 'substitution group')
+            {   # substr extended by subst, which already is formatted.
+                # need to extract only the indicated type info.
+                my $s = $processed->{struct} || [];
+                /^  $label (.*)/ and $show = $1 for @$s;
+            }
+            elsif(my $type = $processed->{_TYPE})
             {   $show = $self->prefixed($type);
             }
 
@@ -510,7 +523,7 @@ sub makeSubstgroup
         , tag     => $group
         , struct  => [ "substitutionGroup $name", @lines ]
         , example => $example
-        }
+        };
     };
 }
 
@@ -596,7 +609,6 @@ sub _decodeReplace($$)
     if($call eq 'COLLAPSE')
     {   return sub 
          {  my ($tag, $path, $do) = @_;
-panic "$tag, $path, $do\n" unless ref $do;
             my $h = $do->();
             $h->{elems} = [ { struct => [ 'content collapsed' ]
                             , kind   => 'collapsed' } ];
@@ -814,9 +826,11 @@ sub toXML($$%)
     my $now = localtime();
 
     my $header = $doc->createComment( <<_HEADER . '    ' );
+
  BE WARNED: in most cases, the example below cannot be used without
   interpretation. The comments will guide you.
-  Produced by $pkg version $VERSION on $now
+  Produced by $pkg version $VERSION
+          on $now
 _HEADER
 
     unless($args{skip_header})
@@ -860,13 +874,15 @@ sub _xmlAny($$$$)
     }
 
     if(defined $ast->{kind} && $ast->{kind} eq 'union')
-    {   push @comment, map { "  $_->{type}"} @{$ast->{choice}};
+    {   push @comment, map "  $_->{type}", @{$ast->{choice}};
     }
 
     my @attrs = @{$ast->{attrs} || []};
     foreach my $attr (@attrs)
     {   push @res, $doc->createAttribute($attr->{tag}, $attr->{example});
-        push @comment, "$attr->{tag}: $attr->{type}"
+        my ($ns, $local) = unpack_type $attr->{_TYPE};
+        my $prefix = $self->_registerNSprefix('', $ns, 1);
+        push @comment, "attr $attr->{tag} has type $prefix:$local"
             if $args->{show_type};
     }
 
@@ -887,8 +903,10 @@ sub _xmlAny($$$$)
         {   push @res, $doc->createTextNode($indent.$elem->{example});
         }
         else
-        {   push @res, $doc->createTextNode($indent)
-              , scalar $self->_xmlAny($doc, $elem, $nest_indent, $args);
+        {   my $node = $self->_xmlAny($doc, $elem, $nest_indent, $args);
+            push @res, $doc->createTextNode($indent)
+                if $node->isa('XML::LibXML::Element');
+            push @res, $node;
         }
     }
 
@@ -908,7 +926,7 @@ sub _xmlAny($$$$)
         if wantarray;
 
     my $node = $doc->createElement($ast->{tag});
-    $node->addChild($_) for @res;
+    $node->addChild($_)         for @res;
     $node->appendText($outdent) if @elems;
     $node;
 }
