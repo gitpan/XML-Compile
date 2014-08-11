@@ -42,11 +42,11 @@
             "Test::Deep" : "0.095",
             "Test::More" : "0.54",
             "XML::Compile::Tester" : "0.9",
-            "XML::LibXML" : "1.94",
+            "XML::LibXML" : "2.01",
             "bignum" : "0.1"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "1.44"
+   "version" : "1.45"
 }

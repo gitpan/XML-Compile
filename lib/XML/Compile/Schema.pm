@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.44';
+$VERSION = '1.45';
 
 use base 'XML::Compile';
 
@@ -335,7 +335,6 @@ sub template($@)
     $args{mixed_elements}     ||= 'ATTRIBUTES';
     $args{default_values}     ||= 'EXTEND';
     $args{abstract_types}     ||= 'ERROR';
-    $args{elements_qualified} ||= 'TOP';
 
     exists $args{include_namespaces}
         or $args{include_namespaces} = 1;

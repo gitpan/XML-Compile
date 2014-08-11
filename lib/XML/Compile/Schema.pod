@@ -695,7 +695,7 @@ improvements: read and understand the comments in the text.
  -Option              --Default
   abstract_types        'ERROR'
   attributes_qualified  <undef>
-  elements_qualified    'TOP'
+  elements_qualified    <undef>
   include_namespaces    <true>
   indent                " "
   key_rewrite           []
@@ -1676,8 +1676,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.44,
-built on May 28, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.45,
+built on August 11, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
