@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.45';
+$VERSION = '1.46';
 
 use base 'XML::Compile::Translate';
 
@@ -667,7 +667,7 @@ sub toPerl($%)
     # remove leading  'type =>'
     for(my $linenr = 0; $linenr < @lines; $linenr++)
     {   next if $lines[$linenr] =~ m/^\s*\#/;
-        next unless $lines[$linenr] =~ s/.* \=\>\s*//;
+        next unless $lines[$linenr] =~ s/.*? \=\>\s*//;
         $lines[$linenr] =~ m/\S/ or splice @lines, $linenr, 1;
         last;
     }
