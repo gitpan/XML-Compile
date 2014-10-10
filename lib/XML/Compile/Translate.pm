@@ -8,7 +8,7 @@ no warnings 'recursion';  # trees can be quite deep
 
 package XML::Compile::Translate;
 use vars '$VERSION';
-$VERSION = '1.46';
+$VERSION = '1.47';
 
 
 # Errors are either in _class 'usage': called with request
@@ -910,8 +910,7 @@ sub xsiType($$$$$)
         $altnode->setAttribute(name => $name);
         $altnode->setAttribute(type => $type);
 
-        my $altnodeid = $altnode->nodePath.'#'.$name;
-        delete $self->{_created}{$altnodeid}; # clean nesting cache
+        delete $self->{_created}{$altnode->unique_key}; # clean nesting cache
         (undef, $alt{$alttype}) = $self->element($tree->descend($altnode));
     }
     $self->makeXsiTypeSwitch($tree->path, $name, $type, \%alt);

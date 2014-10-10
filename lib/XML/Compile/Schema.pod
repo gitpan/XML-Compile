@@ -1676,8 +1676,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.46,
-built on September 02, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.47,
+built on October 11, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
