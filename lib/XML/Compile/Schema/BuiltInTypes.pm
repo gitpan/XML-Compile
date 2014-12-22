@@ -8,7 +8,7 @@ no warnings 'recursion';
 
 package XML::Compile::Schema::BuiltInTypes;
 use vars '$VERSION';
-$VERSION = '1.47';
+$VERSION = '1.48';
 
 use base 'Exporter';
 
@@ -293,7 +293,8 @@ $builtin_types{double} =
  };
 
 $builtin_types{sloppy_float} =
- { check => sub {
+ { parse   => sub { $_[0] }
+ , check   => sub {
       my $v = eval {use warnings FATAL => 'all'; $_[0] + 0.0};
       $@ ? undef : 1;
     }

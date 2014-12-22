@@ -5,7 +5,7 @@
 
 package XML::Compile::Schema;
 use vars '$VERSION';
-$VERSION = '1.47';
+$VERSION = '1.48';
 
 use base 'XML::Compile';
 
@@ -191,8 +191,8 @@ sub compile($$@)
         $args{ignore_facets} = ! $args{validation};
     }
     else
-    {   exists $args{check_values}   or $args{check_values} = 1;
-        exists $args{check_occurs}   or $args{check_occurs} = 1;
+    {   exists $args{check_values} or $args{check_values} = 1;
+        exists $args{check_occurs} or $args{check_occurs} = 1;
     }
 
     my $iut = exists $args{ignore_unused_tags}
@@ -286,13 +286,12 @@ sub _namespaceTable($;$$)
     $table;
 }
 
-# undocumented, on purpose: do we like this interface?
+
 sub compileType($$@)
 {   my ($self, $action, $type, %args) = @_;
 
     # translator can only create elements, not types.
-    my $elem           = delete $args{element}
-       or error __x"compileType requires an element name to be created";
+    my $elem           = delete $args{element} || $type;
     my ($ens, $elocal) = unpack_type $elem;
     my ($ns, $local)   = unpack_type $type;
 
@@ -300,8 +299,7 @@ sub compileType($$@)
     $self->importDefinitions( <<_DIRTY_TRICK );
 <schema xmlns="$SchemaNS"
    targetNamespace="$ens"
-   xmlns:tns="$ns"
-   elementFormDefault="qualified">
+   xmlns:tns="$ns">
   <element name="$elocal" type="tns:$local" />
 </schema>
 _DIRTY_TRICK

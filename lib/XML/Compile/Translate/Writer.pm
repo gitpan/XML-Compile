@@ -5,7 +5,7 @@
  
 package XML::Compile::Translate::Writer;
 use vars '$VERSION';
-$VERSION = '1.47';
+$VERSION = '1.48';
 
 use base 'XML::Compile::Translate';
 
@@ -17,7 +17,7 @@ use Log::Report   qw/xml-compile/;
 use List::Util    qw/first/;
 use Scalar::Util  qw/blessed weaken/;
 use XML::Compile::Util qw/pack_type unpack_type type_of_node SCHEMA2001i
-  odd_elements even_elements/;
+  SCHEMA2001 odd_elements even_elements/;
 
 
 # Each action implementation returns a code reference, which will be
@@ -1057,8 +1057,8 @@ sub makeXsiTypeSwitch($$$$)
     };
 }
 
-sub makeHook($$$$$$)
-{   my ($self, $path, $r, $tag, $before, $replace, $after) = @_;
+sub makeHook($$$$$$$)
+{   my ($self, $path, $r, $tag, $before, $replace, $after, $fulltype) = @_;
     return $r unless $before || $replace || $after;
 
     error __x"writer only supports one production (replace) hook"
@@ -1074,17 +1074,17 @@ sub makeHook($$$$$$)
     {  my ($doc, $val) = @_;
        defined $val or return;
        foreach (@before)
-       {   $val = $_->($doc, $val, $path);
+       {   $val = $_->($doc, $val, $path, $fulltype);
            defined $val or return ();
        }
 
        my $xml = @replace
-               ? $replace[0]->($doc, $val, $path, $tag, $r)
+               ? $replace[0]->($doc, $val, $path, $tag, $r, $fulltype)
                : $r->($doc, $val);
        defined $xml or return ();
 
        foreach (@after)
-       {   $xml = $_->($doc, $xml, $path, $val);
+       {   $xml = $_->($doc, $xml, $path, $val, $fulltype);
            defined $xml or return ();
        }
 
@@ -1141,6 +1141,21 @@ sub makeBlocked($$$)
     : panic "blocking of $class for $type not implemented";
 }
 
+sub addTypeAttribute($$)
+{   my ($self, $type, $do) = @_;
+    my $xsi   = $self->_registerNSprefix(xsi => SCHEMA2001i, 1) . ':type';
+    my $xsd   = $self->_registerNSprefix(xsd => SCHEMA2001, 1);
+    my $typed = $self->prefixed($type);
+
+    sub {
+        my $r = $do->(@_);
+        $type && $r && UNIVERSAL::isa($r, 'XML::LibXML::Element') or return $r;
+        return $r if $r->getAttributeNS(SCHEMA2001i, 'type');
+        $r->setAttribute($xsi, $typed);
+        $r;
+    };
+}
+
+#------------
 
 1;
-

@@ -85,6 +85,10 @@ can be a SCALAR or a HASH, dependent on the type.  You can intervene
 on higher data-structure levels, to repair lower levels, if you want
 to.
 
+[1.48] The hooks get a long list of parameters.  The C<$fulltype>
+indicates the type of object which is being processed, which is
+especially usefull with the 'extends' selector.
+
 =head3 hooks executed before normal processing
 
 The C<before> hook gives you the opportunity to fix the user
@@ -212,8 +216,8 @@ writer considerably.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.47,
-built on October 11, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.48,
+built on December 22, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

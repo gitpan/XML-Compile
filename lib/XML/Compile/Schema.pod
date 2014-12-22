@@ -429,6 +429,7 @@ L<XML::Compile::Translate|XML::Compile::Translate>, which implements the compila
   use_default_namespace           <false>
   validation                      <true>
   xsi_type                        {}
+  xsi_type_everywhere             <false>
 
 =over 2
 
@@ -442,7 +443,7 @@ them as non-abstract types.
 
 =item any_attribute => CODE|'TAKE_ALL'|'SKIP_ALL'
 
-[0.89] In general, C<anyAttribute> schema components cannot be handled
+[0.89, reader] In general, C<anyAttribute> schema components cannot be handled
 automatically.  If  you need to create or process anyAttribute
 information, then read about wildcards in the DETAILS chapter of the
 manual-page for the specific back-end.
@@ -450,15 +451,16 @@ manual-page for the specific back-end.
 
 =item any_element => CODE|'TAKE_ALL'|'SKIP_ALL'
 
-[0.89] In general, C<any> schema components cannot be handled automatically.
-If  you need to create or process any information, then read about
-wildcards in the DETAILS chapter of the manual-page for the specific
-back-end.
+[0.89, reader] In general, C<any> schema components cannot be handled
+automatically.  If  you need to create or process any information, then
+read about wildcards in the DETAILS chapter of the manual-page for the
+specific back-end.
 [pre-0.89] this option was named C<anyElement>, which will still work.
 
 =item any_type => CODE
 
-[1.07] how to handle "anyType" type elements.  Depends on the backend.
+[1.07] how to handle "anyType" type elements.  Supported values depends
+on the backend, specializations of L<XML::Compile::Translate|XML::Compile::Translate>.
 
 =item attributes_qualified => C<ALL>|C<NONE>|BOOLEAN
 
@@ -466,7 +468,7 @@ back-end.
 
 =item block_namespace => NAMESPACE|TYPE|HASH|CODE|ARRAY
 
-See L<blockNamespace()|XML::Compile::Schema/"Accessors">.
+[reader] See L<blockNamespace()|XML::Compile::Schema/"Accessors">.
 
 =item check_occurs => BOOLEAN
 
@@ -487,7 +489,7 @@ external sources: validation is a crucial requirement for XML.
 
 =item default_values => 'MINIMAL'|'IGNORE'|'EXTEND'
 
-How to treat default values as provided by the schema.
+[reader] How to treat default values as provided by the schema.
 With C<IGNORE> (the writer default), you will see exactly what is
 specified in the XML or HASH.  With C<EXTEND> (the reader default) will
 show the default and fixed values in the result.  C<MINIMAL> does remove
@@ -496,10 +498,10 @@ See L</Default Values>.
 
 =item elements_qualified => C<TOP>|C<ALL>|C<NONE>|BOOLEAN
 
-When defined, this will overrule the namespace use on elements in
-all schemas.  When C<ALL> or a true value is given, then all elements
-will be used qualified.  When C<NONE> or a false value is given, the
-XML will not produce or process prefixes on any element.
+When defined, this will overrule the use of namespaces (as prefix) on
+elements in all schemas.  When C<ALL> or a true value is given, then all
+elements will be used qualified.  When C<NONE> or a false value is given,
+the XML will not produce or process prefixes on any element.
 
 All top-level elements (and attributes) will be used in a name-space
 qualified way, if they have a targetNamespace.  Some applications require
@@ -540,15 +542,15 @@ data comes from external sources.
 
 =item ignore_unused_tags => BOOLEAN|REGEXP
 
-Overrules what is set with L<new(ignore_unused_tags)|XML::Compile::Schema/"Constructors">.
+[writer] Overrules what is set with L<new(ignore_unused_tags)|XML::Compile::Schema/"Constructors">.
 
 =item include_namespaces => BOOLEAN|CODE
 
-Indicates whether the WRITER should include the prefix to namespace
-translation on the top-level element of the returned tree.  If not,
-you may continue with the same name-space table to combine various
-XML components into one, and add the namespaces later.  No namespace
-definition can be added the production rule produces an attribute.
+[writer] Indicates whether the namespace declaration should be included
+on the top-level element.  If not, you may continue with the same
+name-space table to combine various XML components into one, and add the
+namespaces later.  No namespace definition can be added the production
+rule produces an attribute.
 
 When a CODE reference is passed, it will be called for each namespace
 to decide whether it should be included or not. When true, it will
@@ -569,12 +571,12 @@ L<new(key_rewrite)|XML::Compile::Schema/"Constructors"> and L<addKeyRewrite()|XM
 
 =item mixed_elements => CODE|PREDEFINED
 
-What to do when mixed schema elements are to be processed.  Read
+[reader] What to do when mixed schema elements are to be processed.  Read
 more in the L</DETAILS> section below.
 
 =item namespace_reset => BOOLEAN
 
-Use the same prefixes in C<prefixes> as with some other compiled
+[writer] Use the same prefixes in C<prefixes> as with some other compiled
 piece, but reset the counts to zero first.
 
 =item output_namespaces => HASH|ARRAY-of-PAIRS
@@ -588,10 +590,10 @@ error in the XML-Scheme tree.
 
 =item permit_href => BOOLEAN
 
-When parsing SOAP-RPC encoded messages, the elements may have a C<href>
-attribute pointing to an object with C<id>.  The READER will return the
-unparsed, unresolved node when the attribute is detected, and the SOAP-RPC
-decoder will have to discover and resolve it.
+[reader] When parsing SOAP-RPC encoded messages, the elements may have
+a C<href> attribute pointing to an object with C<id>.  The READER will
+return the unparsed, unresolved node when the attribute is detected,
+and the SOAP-RPC decoder will have to discover and resolve it.
 
 =item prefixes => HASH|ARRAY-of-PAIRS
 
@@ -611,15 +613,15 @@ prefix, uri PAIRS is simpler.
 
 =item sloppy_floats => BOOLEAN
 
-The float types of XML are all quite big, and support NaN, INF, and -INF.
-Perl's normal floats do not, and therefore Math::BigFloat is used.  This,
-however, is slow.  When true, you will crash on any value which is not
-understood by Perl's default float... but run much faster.  See also
-C<sloppy_integers>.
+[reader] The float types of XML are all quite big, and support NaN, INF,
+and -INF.  Perl's normal floats do not, and therefore Math::BigFloat
+is used.  This, however, is slow.  When true, you will crash on any value
+which is not understood by Perl's default float... but run much faster.
+See also C<sloppy_integers>.
 
 =item sloppy_integers => BOOLEAN
 
-The XML C<integer> data-types must support at least 18 digits,
+[reader] The XML C<integer> data-types must support at least 18 digits,
 which is larger than Perl's 32 bit internal integers.  Therefore, the
 implementation will use Math::BigInt objects to handle them.  However,
 often an simple C<int> type whould have sufficed, but the XML designer
@@ -644,7 +646,7 @@ L<addTypemaps()|XML::Compile::Schema/"Accessors">
 
 =item use_default_namespace => BOOLEAN
 
-[0.91] When mixing qualified and unqualified namespaces, then the use of
+[0.91, writer] When mixing qualified and unqualified namespaces, then the use of
 a default namespace can be quite confusing: a name-space without prefix.
 Therefore, by default, all qualified elements will have an explicit prefix.
 
@@ -659,10 +661,30 @@ C<check_occurs>, and C<ignore_facets>.
 
 See L</Handling xsi:type>.  The HASH maps types as mentioned in the schema,
 to extensions of those types which are addressed via the horrible C<xsi:type>
-construct.  When you specify C<AUTO> as value, the translator tries to
-auto-detect. This may be slow and may produce incomplete results.
+construct.  When you specify C<AUTO> as value for some type, the translator
+tries collect possible xsi:type values from the loaded schemas. This may be
+slow and may produce imperfect results.
+
+=item xsi_type_everywhere => BOOLEAN
+
+[1.48, writer] Add an C<xsi:type> attribute to all elements, for instance as
+used in SOAP RPC/encoded.  The type added is the type according to the
+schema, unless the C<xsi:type> is already present on an element for
+some other reason.
+
+Be aware that this option has a different purpose from C<xsi_type>.
+In this case, we do add exactly the type specified in the xsd to each
+element which does not have an C<xsi:type> attribute yet.  The C<xsi_type>
+on the other hand, implements the (mis-)feature that the element's
+content may get replaced by any extended type with this dynamic flag.
 
 =back
+
+=item $obj-E<gt>B<compileType>( <'READER'|'WRITER'>, $type, %options )
+
+This is a hack to be able to process components of SOAP messages, which
+are only specified by type.  Probably (hopefully) you do no need it.
+All %options are the same as for L<compile()|XML::Compile::Schema/"Compilers">.
 
 =item $obj-E<gt>B<dataToXML>($node|REF-XML|XML-STRING|$filename|$fh|$known)
 
@@ -1325,6 +1347,8 @@ Available selectors (see below for details on each of them):
 
 =item . type
 
+=item . extends
+
 =item . id
 
 =item . path
@@ -1350,13 +1374,27 @@ C<before>, C<replace>, and C<after>.
 The C<type> selector specifies a complexType of simpleType by name.
 Best is to base the selection on the full name, like C<{ns}type>,
 which will avoid all kinds of name-space conflicts in the future.
-However, you may also specify only the C<type> (in any name-space).
+However, you may also specify only the C<local type> (in any name-space).
 Any REGEX will be matched to the full type name. Be careful with the
 pattern archors.
 
 If you use L<XML::Compile::Cache|XML::Compile::Cache> [release 0.90], then you can use
 C<prefix:type> as type specification as well.  You have to explicitly
 define prefix to namespace beforehand.
+
+=head3 Hooks on extended type
+
+[1.48] This hook will match all elements which use a type which is equal or
+based on the given type.  In the schema, you will find extension and
+restriction constructs.  You may only pass a single full type (no arrays
+of types or local names) per 'extend' hook.
+
+Using a hooks on extended types is quite expensive for the compiler.
+
+example:
+
+ $schemas->addHook(extends => "{ns}local", ...);
+ $schemas->addHook(extends => 'mine:sometype', ...);  # need ::Cache
 
 =head3 Hooks on matching ids
 
@@ -1676,8 +1714,8 @@ then still only one prefix is added.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile distribution version 1.47,
-built on October 11, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile distribution version 1.48,
+built on December 22, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

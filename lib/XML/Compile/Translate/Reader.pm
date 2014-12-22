@@ -4,7 +4,7 @@
 # Pod stripped from pm file by OODoc 2.01.
 package XML::Compile::Translate::Reader;
 use vars '$VERSION';
-$VERSION = '1.47';
+$VERSION = '1.48';
 
 use base 'XML::Compile::Translate';
 
@@ -403,7 +403,7 @@ sub makeBlockHandler
 
 sub makeElementHandler
 {   my ($self, $path, $label, $min, $max, $required, $optional) = @_;
-    $max eq "0" and return sub {};  # max can be "unbounded"
+    $max eq "0" and return sub {};  # max can be "unbounded", hence strcmp
 
     if($max ne 'unbounded' && $max==1)
     {   return $min==1
@@ -485,6 +485,7 @@ sub makeElementHref
 {   my ($self, $path, $ns, $childname, $do) = @_;
 
     sub { my $tree  = shift;
+
           return ($childname => $tree->node)
               if defined $tree
               && $tree->nodeType eq $childname
@@ -1085,8 +1086,8 @@ sub makeXsiTypeSwitch($$$$)
 
 # any kind of hook
 
-sub makeHook($$$$$$)
-{   my ($self, $path, $r, $tag, $before, $replace, $after) = @_;
+sub makeHook($$$$$$$)
+{   my ($self, $path, $r, $tag, $before, $replace, $after, $fulltype) = @_;
     return $r unless $before || $replace || $after;
 
     return sub { ($_[0]->node->localName => 'SKIPPED') }
@@ -1102,19 +1103,19 @@ sub makeHook($$$$$$)
      { my $tree = shift or return ();
        my $xml  = $tree->node;
        foreach (@before)
-       {   $xml = $_->($xml, $path);
+       {   $xml = $_->($xml, $path, $fulltype);
            defined $xml or return ();
        }
 
        my $process = sub { $r->($tree->descend($xml)) };
        my @h = @replace
-         ? map $_->($xml, $self, $path, $tag, $process), @replace
+         ? map $_->($xml, $self, $path, $tag, $process, $fulltype), @replace
          : $process->();
 
        @h or return ();
        my $h = @h==1 && !ref $h[0] ? {_ => $h[0]} : $h[1];  # detect simpleType
        foreach my $after (@after)
-       {   $h = $after->($xml, $h, $path);
+       {   $h = $after->($xml, $h, $path, $fulltype);
            defined $h or return ();
        }
        ($tag => $h);

@@ -5,7 +5,7 @@
 
 package XML::Compile::Translate::Template;
 use vars '$VERSION';
-$VERSION = '1.47';
+$VERSION = '1.48';
 
 use base 'XML::Compile::Translate';
 
@@ -474,10 +474,11 @@ sub makeAttributeFixed
 }
 
 sub makeSubstgroup
-{   my ($self, $path, $type, @do) = @_;
+{   my ($self, $path, $type, @todo) = @_;
 
     sub {
         my (@example_tags, $example_nest, %tags);
+        my @do    = @todo;
         my $group = $do[1][0];
 
         while(@do)
@@ -570,8 +571,8 @@ sub makeAnyElement
     bless sub { +$data }, 'ANY';
 }
 
-sub makeHook($$$$$$)
-{   my ($self, $path, $r, $tag, $before, $replace, $after) = @_;
+sub makeHook($$$$$$$)
+{   my ($self, $path, $r, $tag, $before, $replace, $after, $fulltype) = @_;
 
     return $r unless $before || $replace || $after;
 
